@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b1016;
+  --panel: #151b22;
+  --panel-raised: #1b232d;
+  --paper: #f3f0e9;
+  --muted: #9aa6b4;
+  --accent: #ff4655;
+  --line: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--ink);
+  --color-foreground: var(--paper);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 70, 85, 0.065), transparent 32rem),
+    var(--ink);
+  color: var(--paper);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+.font-display {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-stretch: condensed;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  width: 2rem;
+  height: 2px;
+  background: currentColor;
+  content: "";
+}
+
+.grid-noise {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.valorant-cut {
+  border-radius: 0;
+}
+
+.valorant-cut-sm {
+  border-radius: 0;
+}
+
+.valorant-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: var(--panel);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.valorant-panel::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  background: var(--accent);
+  content: "";
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 62% 100%, 0 100%);
+}
+
+.valorant-panel:hover,
+.valorant-panel:focus-within {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--panel-raised);
+}
+
+.valorant-action {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.valorant-action:hover,
+.valorant-action:focus-visible {
+  border-color: var(--accent);
+  background: rgba(255, 70, 85, 0.1);
+}
+
+.valorant-action[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.route-wait {
+  animation: route-wait 800ms ease-in-out infinite alternate;
+}
+
+.skeleton-sweep {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.skeleton-sweep::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.12), transparent 80%);
+  content: "";
+  transform: translateX(-100%);
+  animation: sweep 1.2s linear infinite;
+}
+
+@keyframes route-wait {
+  from {
+    opacity: 0.35;
+    transform: scaleX(0.45);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

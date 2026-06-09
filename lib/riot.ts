@@ -1,0 +1,335 @@
+import type { Region } from "@/lib/constants";
+
+const ROUTING_REGIONS: Record<Region, string> = {
+  ap: "asia",
+  na: "americas",
+  eu: "europe",
+  kr: "asia",
+  br: "americas",
+  latam: "americas",
+};
+
+const PLATFORM_REGIONS: Record<Region, string> = {
+  ap: "ap",
+  na: "na",
+  eu: "eu",
+  kr: "kr",
+  br: "br",
+  latam: "latam",
+};
+
+export class RiotApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "RiotApiError";
+  }
+}
+
+export interface RiotAccount {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+}
+
+export interface MatchReference {
+  matchId: string;
+  gameStartTimeMillis: number;
+  queueId: string;
+}
+
+export interface MatchList {
+  puuid: string;
+  history: MatchReference[];
+}
+
+export interface MatchParticipant {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+  teamId: string;
+  characterId: string;
+  stats: {
+    score: number;
+    roundsPlayed: number;
+    kills: number;
+    deaths: number;
+    assists: number;
+    playtimeMillis: number;
+  } | null;
+}
+
+interface RoundPlayerStats {
+  puuid: string;
+  damage: Array<{
+    headshots: number;
+    bodyshots: number;
+    legshots: number;
+    damage: number;
+  }>;
+}
+
+export interface RiotMatch {
+  matchInfo: {
+    matchId: string;
+    mapId: string;
+    gameStartMillis: number;
+    gameLengthMillis: number;
+    queueId: string;
+    isCompleted: boolean;
+  };
+  players: MatchParticipant[];
+  teams: Array<{
+    teamId: string;
+    won: boolean;
+    roundsPlayed: number;
+    roundsWon: number;
+    numPoints: number;
+  }>;
+  roundResults: Array<{
+    roundNum: number;
+    winningTeam: string;
+    roundResult: string;
+    roundCeremony: string;
+    playerStats: RoundPlayerStats[];
+  }>;
+}
+
+export interface LeaderboardPlayer {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+  leaderboardRank: number;
+  rankedRating: number;
+  numberOfWins: number;
+  competitiveTier: number;
+}
+
+export interface Leaderboard {
+  actId: string;
+  players: LeaderboardPlayer[];
+  totalPlayers: number;
+  immortalStartingPage: number;
+  immortalStartingIndex: number;
+  topTierRRThreshold: number;
+  tierDetails: Record<
+    string,
+    {
+      rankedRatingThreshold: number;
+      startingPage: number;
+      startingIndex: number;
+    }
+  >;
+}
+
+interface RiotStatusTranslation {
+  locale: string;
+  content: string;
+}
+
+interface RiotStatusUpdate {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  publish: boolean;
+  author: string;
+  translations: RiotStatusTranslation[];
+  publish_locations: string[];
+}
+
+export interface RiotStatusNotice {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  archive_at: string | null;
+  titles: RiotStatusTranslation[];
+  updates: RiotStatusUpdate[];
+  platforms: string[];
+  maintenance_status: string | null;
+  incident_severity: string | null;
+}
+
+export interface RiotPlatformStatus {
+  id: string;
+  name: string;
+  locales: string[];
+  maintenances: RiotStatusNotice[];
+  incidents: RiotStatusNotice[];
+}
+
+function getApiKey(): string {
+  const apiKey = process.env.RIOT_API_KEY;
+
+  if (!apiKey) {
+    throw new RiotApiError("Riot access is not available yet.", 503);
+  }
+
+  return apiKey;
+}
+
+async function riotRequest<T>(
+  url: string,
+  options: { revalidate: number | false; tag: string },
+): Promise<T> {
+  const response = await fetch(url, {
+    headers: { "X-Riot-Token": getApiKey() },
+    next:
+      options.revalidate === false
+        ? { revalidate: false, tags: [options.tag] }
+        : { revalidate: options.revalidate, tags: [options.tag] },
+  });
+
+  if (!response.ok) {
+    const messages: Partial<Record<number, string>> = {
+      401: "Riot access is no longer valid.",
+      403:
+        "Detailed player data requires Riot approval and player permission.",
+      404: "The requested content was not found.",
+      429: "Too many searches. Please try again shortly.",
+    };
+
+    throw new RiotApiError(
+      messages[response.status] ?? "Riot could not return a result right now.",
+      response.status,
+    );
+  }
+
+  return (await response.json()) as T;
+}
+
+export async function getRiotAccount(
+  name: string,
+  tag: string,
+  region: Region,
+): Promise<RiotAccount> {
+  const routingRegion = ROUTING_REGIONS[region];
+  return riotRequest<RiotAccount>(
+    `https://${routingRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
+    {
+      revalidate: 300,
+      tag: `player:${region}:${name}:${tag}`,
+    },
+  );
+}
+
+export async function getMatchList(
+  puuid: string,
+  region: Region,
+  startIndex = 0,
+  endIndex = 10,
+  queue?: string,
+): Promise<MatchList> {
+  const platform = PLATFORM_REGIONS[region];
+  const search = new URLSearchParams({
+    startIndex: startIndex.toString(),
+    endIndex: endIndex.toString(),
+  });
+  if (queue) search.set("queue", queue);
+
+  return riotRequest<MatchList>(
+    `https://${platform}.api.riotgames.com/val/match/v1/matchlists/by-puuid/${encodeURIComponent(puuid)}?${search}`,
+    { revalidate: 300, tag: `matches:${region}:${puuid}:${startIndex}:${endIndex}` },
+  );
+}
+
+export async function getMatch(
+  matchId: string,
+  region: Region,
+): Promise<RiotMatch> {
+  const platform = PLATFORM_REGIONS[region];
+  return riotRequest<RiotMatch>(
+    `https://${platform}.api.riotgames.com/val/match/v1/matches/${encodeURIComponent(matchId)}`,
+    { revalidate: false, tag: `match:${region}:${matchId}` },
+  );
+}
+
+export async function getRecentMatches(
+  puuid: string,
+  region: Region,
+  count = 10,
+): Promise<RiotMatch[]> {
+  const list = await getMatchList(puuid, region, 0, count);
+  const matches: RiotMatch[] = [];
+
+  for (let index = 0; index < list.history.length; index += 5) {
+    const batch = list.history.slice(index, index + 5);
+    matches.push(
+      ...(await Promise.all(
+        batch.map((reference) => getMatch(reference.matchId, region)),
+      )),
+    );
+  }
+
+  return matches;
+}
+
+export async function getLeaderboard(
+  region: Region,
+  actId: string,
+  size = 200,
+): Promise<Leaderboard> {
+  const platform = PLATFORM_REGIONS[region];
+  return riotRequest<Leaderboard>(
+    `https://${platform}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/${encodeURIComponent(actId)}?size=${Math.min(200, Math.max(1, size))}`,
+    { revalidate: 600, tag: `leaderboard:${region}:${actId}:${size}` },
+  );
+}
+
+export async function getPlatformStatus(
+  region: Region,
+): Promise<RiotPlatformStatus> {
+  const platform = PLATFORM_REGIONS[region];
+  return riotRequest<RiotPlatformStatus>(
+    `https://${platform}.api.riotgames.com/val/status/v1/platform-data`,
+    { revalidate: 60, tag: `platform-status:${region}` },
+  );
+}
+
+export function getStatusText(
+  translations: RiotStatusTranslation[],
+  locale = "en_US",
+): string {
+  return (
+    translations.find((item) => item.locale === locale)?.content ??
+    translations.find((item) => item.locale === "en_US")?.content ??
+    translations[0]?.content ??
+    "Riot service notice"
+  );
+}
+
+export function getParticipantHeadshotRate(
+  match: RiotMatch,
+  puuid: string,
+): number {
+  let head = 0;
+  let body = 0;
+  let leg = 0;
+
+  for (const round of match.roundResults) {
+    const stats = round.playerStats.find((player) => player.puuid === puuid);
+    if (!stats) continue;
+
+    for (const damage of stats.damage) {
+      head += damage.headshots;
+      body += damage.bodyshots;
+      leg += damage.legshots;
+    }
+  }
+
+  const total = head + body + leg;
+  return total === 0 ? 0 : (head / total) * 100;
+}
+
+export function getParticipantDamage(match: RiotMatch, puuid: string): number {
+  let total = 0;
+
+  for (const round of match.roundResults) {
+    const stats = round.playerStats.find((player) => player.puuid === puuid);
+    if (!stats) continue;
+    for (const damage of stats.damage) total += damage.damage;
+  }
+
+  return total;
+}

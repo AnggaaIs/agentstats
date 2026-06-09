@@ -1,0 +1,13 @@
+export const APP_NAME = "AgentStats";
+
+export const REGIONS = ["ap", "na", "eu", "kr", "br", "latam"] as const;
+
+export type Region = (typeof REGIONS)[number];
+
+export const NAV_ITEMS = [
+  { href: "/meta", label: "Meta" },
+  { href: "/agents", label: "Agents" },
+  { href: "/weapons", label: "Weapons" },
+  { href: "/maps", label: "Maps" },
+  { href: "/leaderboard", label: "Leaderboard" },
+] as const;
