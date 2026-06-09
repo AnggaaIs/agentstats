@@ -16,7 +16,7 @@ export function BrandMark({ className }: BrandMarkProps) {
       priority
       aria-hidden="true"
       className={cn(
-        "size-9 shrink-0",
+        "brand-pulse size-9 shrink-0",
         className,
       )}
     />

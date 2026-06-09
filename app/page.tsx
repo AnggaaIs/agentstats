@@ -131,7 +131,7 @@ export default async function HomePage() {
               <p className="mt-3 max-w-xs text-sm leading-6 text-[var(--muted)]">
                 {item.copy}
               </p>
-              <span className="mt-7 inline-block text-sm font-black uppercase tracking-widest transition group-hover:translate-x-2">
+              <span className="mt-7 inline-block text-sm font-black uppercase tracking-widest transition group-hover:translate-x-1">
                 Explore →
               </span>
             </RouteLink>

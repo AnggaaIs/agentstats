@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
 import { REGIONS, type Region } from "@/lib/constants";
-import { getPlatformStatus, getStatusText } from "@/lib/riot";
+import {
+  getPlatformStatus,
+  getStatusText,
+  isActiveStatusNotice,
+} from "@/lib/riot";
 import { getAgents, getValorantVersion } from "@/lib/valorant-api";
 
 const OFFICIAL_PATCH_NOTES_URL =
@@ -67,7 +71,7 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
           ...notice,
           kind: "Maintenance" as const,
         })),
-      ]
+      ].filter((notice) => isActiveStatusNotice(notice))
     : [];
   return (
     <main>

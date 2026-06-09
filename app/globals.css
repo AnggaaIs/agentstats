@@ -32,6 +32,34 @@ body {
     var(--ink);
   color: var(--paper);
   font-family: var(--font-geist-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(255, 70, 85, 0.12);
+}
+
+body > main {
+  animation: page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 ::selection {
@@ -60,6 +88,8 @@ body {
   height: 2px;
   background: currentColor;
   content: "";
+  transform-origin: left;
+  animation: line-enter 520ms 100ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .grid-noise {
@@ -84,6 +114,8 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.11);
   background: var(--panel);
   transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
     border-color 180ms ease,
     background-color 180ms ease;
 }
@@ -101,8 +133,10 @@ body {
 
 .valorant-panel:hover,
 .valorant-panel:focus-within {
+  transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.3);
   background: var(--panel-raised);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
 .valorant-action {
@@ -110,6 +144,7 @@ body {
   overflow: hidden;
   background: transparent;
   transition:
+    transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
     color 160ms ease,
     border-color 160ms ease,
     background-color 160ms ease;
@@ -117,8 +152,13 @@ body {
 
 .valorant-action:hover,
 .valorant-action:focus-visible {
+  transform: translateY(-1px);
   border-color: var(--accent);
   background: rgba(255, 70, 85, 0.1);
+}
+
+.valorant-action:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .valorant-action[aria-current="page"] {
@@ -127,20 +167,177 @@ body {
   color: white;
 }
 
+.motion-rise {
+  animation: rise-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-card {
+  animation: rise-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-stagger > :nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.motion-stagger > :nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.motion-stagger > :nth-child(4) {
+  animation-delay: 135ms;
+}
+
+.motion-stagger > :nth-child(n + 5) {
+  animation-delay: 180ms;
+}
+
+.motion-agent {
+  animation: agent-enter 680ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-pop {
+  animation: pop-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+}
+
+.motion-drop {
+  animation: drop-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top;
+}
+
+.motion-dialog[open] .motion-dialog-content {
+  animation: dialog-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: center;
+}
+
+.motion-dialog::backdrop {
+  animation: backdrop-enter 200ms ease both;
+}
+
+.brand-pulse {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 180ms ease;
+}
+
+a:hover .brand-pulse,
+a:focus-visible .brand-pulse {
+  transform: rotate(-1.5deg) scale(1.025);
+  filter: drop-shadow(0 0 9px rgba(255, 70, 85, 0.3));
+}
+
+.ability-icon,
+.ability-heading {
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 260ms ease,
+    color 260ms ease,
+    opacity 260ms ease;
+}
+
+.ability-card::after {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 72%);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.35);
+  transform-origin: left;
+  transition:
+    opacity 260ms ease,
+    transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ability-card:hover,
+.ability-card:focus-within {
+  transform: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.ability-card:hover::after,
+.ability-card:focus-within::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.ability-card:hover .ability-icon,
+.ability-card:focus-within .ability-icon {
+  filter: drop-shadow(0 5px 10px rgba(255, 70, 85, 0.18));
+  opacity: 0.92;
+}
+
+.ability-card:hover .ability-heading,
+.ability-card:focus-within .ability-heading {
+  transform: translateX(1px);
+}
+
 .route-wait {
   animation: route-wait 800ms ease-in-out infinite alternate;
+}
+
+.favorite-star {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 2.15;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    fill 180ms ease,
+    filter 180ms ease;
+}
+
+.favorite-star.is-selected {
+  fill: currentColor;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+}
+
+.favorite-action:hover .favorite-star,
+.favorite-action:focus-visible .favorite-star {
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.28));
+}
+
+.community-progress {
+  overflow: hidden;
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  appearance: none;
+}
+
+.community-progress::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.community-progress::-webkit-progress-value {
+  background: var(--accent);
+  transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.community-progress::-moz-progress-bar {
+  background: var(--accent);
 }
 
 .skeleton-sweep {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.055);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.035)
+  );
 }
 
 .skeleton-sweep::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.12), transparent 80%);
+  background: linear-gradient(
+    100deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.08),
+    transparent 75%
+  );
   content: "";
   transform: translateX(-100%);
   animation: sweep 1.2s linear infinite;
@@ -160,6 +357,59 @@ body {
 @keyframes sweep {
   to {
     transform: translateX(100%);
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes agent-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.99);
+  }
+}
+
+@keyframes line-enter {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pop-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+}
+
+@keyframes drop-enter {
+  from {
+    opacity: 0;
+    transform: scaleY(0.96);
+  }
+}
+
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+@keyframes backdrop-enter {
+  from {
+    opacity: 0;
   }
 }
 

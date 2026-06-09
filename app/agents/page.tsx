@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
+import { getCurrentFavorites } from "@/lib/community";
 import { getAgents } from "@/lib/valorant-api";
 
 export const metadata: Metadata = {
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AgentsPage() {
-  const agents = await getAgents();
+  const [agents, favorites] = await Promise.all([
+    getAgents(),
+    getCurrentFavorites(),
+  ]);
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
@@ -31,6 +35,8 @@ export default async function AgentsPage() {
         groups={[...new Set(agents.map((agent) => agent.role?.displayName ?? "Other"))]}
         perPage={12}
         searchPlaceholder="Search agents or roles"
+        favoriteCategory="agent"
+        initialFavoriteId={favorites.agent}
       />
     </section>
   );

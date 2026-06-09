@@ -3,6 +3,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
+import { FavoriteButton } from "@/components/favorite-button";
+import { RouteLink } from "@/components/route-link";
+import { getCurrentFavorites } from "@/lib/community";
 import { getWeapon } from "@/lib/valorant-api";
 
 interface WeaponPageProps {
@@ -23,9 +26,13 @@ export async function generateMetadata({
 export default async function WeaponPage({ params }: WeaponPageProps) {
   const { uuid } = await params;
   let weapon;
+  let favorites;
 
   try {
-    weapon = await getWeapon(uuid);
+    [weapon, favorites] = await Promise.all([
+      getWeapon(uuid),
+      getCurrentFavorites(),
+    ]);
   } catch {
     notFound();
   }
@@ -51,6 +58,20 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
           <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             {weapon.shopData ? `${weapon.shopData.cost} credits` : "Standard weapon"}
           </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <RouteLink
+              href={`/weapons/compare?a=${weapon.uuid}`}
+              className="valorant-action inline-flex min-h-12 items-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-xs font-black uppercase tracking-[0.14em]"
+            >
+              Compare this weapon
+            </RouteLink>
+            <FavoriteButton
+              category="weapon"
+              targetId={weapon.uuid}
+              targetName={weapon.displayName}
+              selected={favorites.weapon === weapon.uuid}
+            />
+          </div>
         </div>
         <div className="valorant-panel relative aspect-[16/8]">
           <Image

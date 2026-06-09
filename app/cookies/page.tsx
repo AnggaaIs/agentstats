@@ -18,9 +18,11 @@ export default function CookiesPage() {
     >
       <h2>Current use</h2>
       <p>
-        AgentStats does not currently set advertising, audience measurement, or
-        preference cookies. It therefore does not currently show a cookie
-        preference banner.
+        AgentStats does not set advertising or audience measurement cookies. A
+        strictly necessary cookie is used only when you participate in
+        Community Favorites. It gives the browser a protected random
+        identifier so one active choice can be maintained per category and
+        repeated voting can be limited.
       </p>
       <p>
         The service uses browser storage, which is different from a cookie, to
@@ -29,6 +31,14 @@ export default function CookiesPage() {
         cross-site tracking.
       </p>
       <ClearLocalData />
+
+      <h2>Community voting control</h2>
+      <p>
+        Removing site cookies from your browser removes the local voting
+        identifier. To also remove the related choices from AgentStats, use the
+        “Clear my favorites” control on the Community page before clearing
+        browser data.
+      </p>
 
       <h2>Service providers</h2>
       <p>

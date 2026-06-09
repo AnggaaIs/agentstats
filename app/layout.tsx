@@ -2,8 +2,16 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { APP_NAME } from "@/lib/constants";
+import {
+  SiteHeader,
+  type HeaderStatusNotice,
+} from "@/components/site-header";
+import { APP_NAME, REGIONS } from "@/lib/constants";
+import {
+  getPlatformStatus,
+  getStatusText,
+  isActiveStatusNotice,
+} from "@/lib/riot";
 
 import "./globals.css";
 
@@ -45,11 +53,63 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function getHeaderStatus(): Promise<HeaderStatusNotice | null> {
+  try {
+    const results = await Promise.allSettled(
+      REGIONS.map((region) => getPlatformStatus(region)),
+    );
+    const activeNotices = results.flatMap((result) => {
+      if (result.status !== "fulfilled") return [];
+
+      return [
+        ...result.value.incidents,
+        ...result.value.maintenances,
+      ]
+        .filter((notice) => isActiveStatusNotice(notice))
+        .map((notice) => ({ notice }));
+    });
+    const active = activeNotices.sort(
+      (left, right) =>
+        new Date(right.notice.created_at).getTime() -
+        new Date(left.notice.created_at).getTime(),
+    )[0];
+
+    if (!active) return null;
+
+    const latestUpdate = active.notice.updates
+      .filter((update) => update.publish)
+      .at(-1);
+    const severity =
+      active.notice.incident_severity === "critical"
+        ? "critical"
+        : active.notice.incident_severity === "warning"
+          ? "warning"
+          : "info";
+
+    return {
+      severity,
+      title: getStatusText(active.notice.titles),
+      message: latestUpdate
+        ? getStatusText(latestUpdate.translations)
+        : "Riot has not published an additional update.",
+      date: new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Jakarta",
+      }).format(new Date(active.notice.created_at)),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const statusNotice = await getHeaderStatus();
+
   return (
     <html
       lang="en"
@@ -63,7 +123,7 @@ export default function RootLayout({
         >
           Skip navigation
         </a>
-        <SiteHeader />
+        <SiteHeader statusNotice={statusNotice} />
         <main id="main-content" className="flex-1">
           {children}
         </main>

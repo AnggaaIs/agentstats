@@ -2,7 +2,7 @@ export default function Loading() {
   return (
     <section
       aria-label="Loading page"
-      className="grid-noise mx-auto min-h-[70vh] max-w-7xl px-5 py-20 lg:px-8"
+      className="mx-auto min-h-[70vh] max-w-7xl px-5 py-20 lg:px-8"
     >
       <div className="flex items-center gap-4">
         <span className="size-3 rotate-45 bg-[var(--accent)]" />
@@ -13,14 +13,16 @@ export default function Loading() {
       <div className="mt-8 h-1 max-w-xl overflow-hidden bg-white/8">
         <div className="h-full w-1/2 origin-left bg-[var(--accent)] route-wait" />
       </div>
-      <div className="mt-10 skeleton-sweep h-16 max-w-3xl" />
-      <div className="mt-5 skeleton-sweep h-5 max-w-xl" />
-      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 8 }, (_, index) => (
-          <div
-            key={index}
-            className="skeleton-sweep aspect-[4/5]"
-          />
+      <div className="mt-10 skeleton-sweep h-10 max-w-2xl" />
+      <div className="mt-4 skeleton-sweep h-3 max-w-xl opacity-75" />
+      <div className="mt-3 skeleton-sweep h-3 max-w-md opacity-55" />
+      <div className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="space-y-4">
+            <div className="skeleton-sweep h-44 opacity-80" />
+            <div className="skeleton-sweep h-3 w-20 opacity-60" />
+            <div className="skeleton-sweep h-6 w-3/4" />
+          </div>
         ))}
       </div>
     </section>

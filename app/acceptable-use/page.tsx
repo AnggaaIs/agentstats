@@ -32,6 +32,10 @@ export default function AcceptableUsePage() {
           reasonable limits.
         </li>
         <li>
+          Automate, duplicate, purchase, exchange, or otherwise manipulate
+          Community Favorites votes or rankings.
+        </li>
+        <li>
           Distribute malware, deceptive material, spam, or harmful
           instructions.
         </li>

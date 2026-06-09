@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 
 import { CatalogCard } from "@/components/catalog-card";
 import { ChoiceChip } from "@/components/choice-chip";
+import { FavoriteButton } from "@/components/favorite-button";
+import type { FavoriteCategoryName } from "@/lib/community";
 
 export interface CatalogItem {
   id: string;
@@ -22,6 +24,8 @@ interface CatalogBrowserProps {
   columns?: "three" | "four" | "two";
   perPage?: number;
   searchPlaceholder?: string;
+  favoriteCategory?: FavoriteCategoryName;
+  initialFavoriteId?: string | null;
 }
 
 export function CatalogBrowser({
@@ -30,10 +34,13 @@ export function CatalogBrowser({
   columns = "four",
   perPage = 12,
   searchPlaceholder = "Search collection",
+  favoriteCategory,
+  initialFavoriteId = null,
 }: CatalogBrowserProps) {
   const [activeGroups, setActiveGroups] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [favoriteId, setFavoriteId] = useState(initialFavoriteId);
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
 
@@ -76,7 +83,7 @@ export function CatalogBrowser({
 
   return (
     <>
-      <div className="mt-12 grid gap-3 border-y border-white/8 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="motion-rise mt-12 grid gap-3 border-y border-white/8 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <label className="relative block">
           <span className="sr-only">{searchPlaceholder}</span>
           <svg
@@ -128,17 +135,30 @@ export function CatalogBrowser({
       ) : null}
 
       {visible.length ? (
-        <div className={`mt-10 grid gap-5 ${gridClass}`}>
+        <div className={`motion-stagger mt-10 grid gap-5 ${gridClass}`}>
           {visible.map((item) => (
-            <CatalogCard
-              key={item.id}
-              href={item.href}
-              image={item.image}
-              title={item.title}
-              meta={item.meta}
-              variant={item.variant}
-              imageFit={item.imageFit}
-            />
+            <div key={item.id} className="motion-card relative">
+              <CatalogCard
+                href={item.href}
+                image={item.image}
+                title={item.title}
+                meta={item.meta}
+                variant={item.variant}
+                imageFit={item.imageFit}
+                action={
+                  favoriteCategory ? (
+                    <FavoriteButton
+                      category={favoriteCategory}
+                      targetId={item.id}
+                      targetName={item.title}
+                      selected={favoriteId === item.id}
+                      onChange={setFavoriteId}
+                      appearance="compact"
+                    />
+                  ) : undefined
+                }
+              />
+            </div>
           ))}
         </div>
       ) : (

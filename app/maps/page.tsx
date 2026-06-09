@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
+import { getCurrentFavorites } from "@/lib/community";
 import { getMaps } from "@/lib/valorant-api";
 
 export const metadata: Metadata = {
@@ -19,7 +20,10 @@ function getMapGroup(mapUrl: string): string {
 }
 
 export default async function MapsPage() {
-  const maps = await getMaps();
+  const [maps, favorites] = await Promise.all([
+    getMaps(),
+    getCurrentFavorites(),
+  ]);
   const items = maps.map((map) => {
     const group = getMapGroup(map.mapUrl);
 
@@ -48,6 +52,8 @@ export default async function MapsPage() {
         columns="two"
         perPage={6}
         searchPlaceholder="Search maps or modes"
+        favoriteCategory="map"
+        initialFavoriteId={favorites.map}
       />
     </section>
   );

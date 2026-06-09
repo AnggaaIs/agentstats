@@ -37,8 +37,30 @@ export interface Weapon {
   weaponStats: {
     fireRate: number;
     magazineSize: number;
+    runSpeedMultiplier: number;
     reloadTimeSeconds: number;
     equipTimeSeconds: number;
+    firstBulletAccuracy: number;
+    shotgunPelletCount: number;
+    wallPenetration: string;
+    feature: string | null;
+    fireMode: string | null;
+    altFireType: string | null;
+    adsStats: {
+      zoomMultiplier: number;
+      fireRate: number;
+      runSpeedMultiplier: number;
+      burstCount: number;
+      firstBulletAccuracy: number;
+    } | null;
+    altShotgunStats: {
+      shotgunPelletCount: number;
+      burstRate: number;
+    } | null;
+    airBurstStats: {
+      shotgunPelletCount: number;
+      burstDistance: number;
+    } | null;
     damageRanges: Array<{
       rangeStartMeters: number;
       rangeEndMeters: number;
@@ -119,6 +141,10 @@ export async function getWeapon(uuid: string): Promise<Weapon> {
 export async function getMaps(): Promise<ValorantMap[]> {
   const maps = await getApiData<ValorantMap[]>("/maps");
   return maps.filter((map) => map.splash && map.displayName !== "The Range");
+}
+
+export async function getMap(uuid: string): Promise<ValorantMap> {
+  return getApiData<ValorantMap>(`/maps/${encodeURIComponent(uuid)}`);
 }
 
 export async function getSeasons(): Promise<Season[]> {

@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FavoriteCategory {
+  AGENT
+  MAP
+  WEAPON
+}
+
+enum VoteAction {
+  CREATED
+  CHANGED
+}
+
+model CommunityVote {
+  id         String           @id @default(cuid())
+  deviceHash String
+  category   FavoriteCategory
+  targetId   String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([deviceHash, category])
+  @@index([category, targetId])
+  @@map("community_votes")
+}
+
+model VoteEvent {
+  id          BigInt           @id @default(autoincrement())
+  deviceHash  String
+  networkHash String
+  category    FavoriteCategory
+  targetId    String
+  action      VoteAction
+  createdAt   DateTime         @default(now())
+
+  @@index([deviceHash, createdAt])
+  @@index([networkHash, createdAt])
+  @@index([category, createdAt])
+  @@index([createdAt])
+  @@map("community_vote_events")
+}

@@ -14,3 +14,16 @@ export const playerSearchSchema = z.object({
 });
 
 export type PlayerSearchInput = z.infer<typeof playerSearchSchema>;
+
+export const favoriteCategorySchema = z.enum(["agent", "map", "weapon"]);
+
+export const communityVoteSchema = z.object({
+  category: favoriteCategorySchema,
+  targetId: z
+    .string()
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      "Choose a valid catalog item.",
+    ),
+  website: z.string().max(0).optional().default(""),
+});

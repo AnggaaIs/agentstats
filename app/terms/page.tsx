@@ -48,6 +48,11 @@ export default function TermsPage() {
         or harm another person.
       </p>
       <p>
+        Community Favorites are intended for genuine personal preferences. You
+        may not automate votes, create artificial voting identities, evade
+        voting limits, or coordinate manipulation of a ranking.
+      </p>
+      <p>
         The separate <a href="/acceptable-use">Acceptable Use Policy</a> is part
         of these terms.
       </p>

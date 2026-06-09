@@ -299,6 +299,21 @@ export function getStatusText(
   );
 }
 
+export function isActiveStatusNotice(
+  notice: RiotStatusNotice,
+  now = Date.now(),
+): boolean {
+  const archiveTime = notice.archive_at
+    ? new Date(notice.archive_at).getTime()
+    : null;
+  const hasPublishedUpdate = notice.updates.some((update) => update.publish);
+
+  if (archiveTime !== null && archiveTime <= now) return false;
+  if (notice.maintenance_status === "complete") return false;
+
+  return hasPublishedUpdate;
+}
+
 export function getParticipantHeadshotRate(
   match: RiotMatch,
   puuid: string,

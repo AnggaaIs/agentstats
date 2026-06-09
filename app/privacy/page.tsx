@@ -29,6 +29,21 @@ export default function PrivacyPage() {
         valorant-api.com, such as agent, weapon, and map information.
       </p>
 
+      <h3>Community favorites</h3>
+      <p>
+        You can choose a favorite agent, map, and weapon without creating an
+        account. AgentStats places a protected random identifier in your
+        browser and stores a one-way version with each choice. It does not
+        contain your name, Riot account, or email address.
+      </p>
+      <p>
+        A one-way version of the network address used for a vote is kept in a
+        activity record for up to about 30 days to limit repeated changes and unusual voting
+        bursts. The original address is not stored in the community voting
+        database. Activity records are used only for security and vote
+        integrity.
+      </p>
+
       <h3>Information kept on your device</h3>
       <p>
         Up to five recent player searches are kept in your browser so you can
@@ -54,6 +69,7 @@ export default function PrivacyPage() {
         <li>To return the player information and game content you request.</li>
         <li>To remember recent searches on your device.</li>
         <li>To protect the service and investigate errors or misuse.</li>
+        <li>To count community favorites and limit manipulated voting.</li>
         <li>To meet legal obligations and enforce the service rules.</li>
       </ul>
       <p>
@@ -84,6 +100,12 @@ export default function PrivacyPage() {
         leaderboard results within about ten minutes, and public game content
         within about one day. A completed match record may be retained longer
         because it does not normally change.
+      </p>
+      <p>
+        A community favorite remains until it is changed or removed. The
+        Community page provides a control to remove all choices associated
+        with the current browser. Anonymous security activity may be retained
+        for up to about 30 days to investigate voting abuse.
       </p>
       <p>
         Hosting and security records are retained according to the provider
