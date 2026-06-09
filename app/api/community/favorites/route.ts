@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  DEFAULT_FAVORITE_SCOPE,
   getCommunityCounts,
+  toFavoriteScope,
   toDatabaseCategory,
   type FavoriteCategoryName,
 } from "@/lib/community";
@@ -41,25 +43,27 @@ function setDeviceCookie(response: NextResponse, credential: string) {
   });
 }
 
-async function targetExists(
+async function resolveTargetScope(
   category: FavoriteCategoryName,
   targetId: string,
-): Promise<boolean> {
+): Promise<string | null> {
   try {
     if (category === "agent") {
-      await getAgent(targetId);
-      return true;
+      const agent = await getAgent(targetId);
+      return toFavoriteScope(agent.role?.displayName ?? "other");
     }
 
     if (category === "weapon") {
       await getWeapon(targetId);
-      return true;
+      return DEFAULT_FAVORITE_SCOPE;
     }
 
     const map = await getMap(targetId);
-    return Boolean(map.splash && map.displayName !== "The Range");
+    return map.splash && map.displayName !== "The Range"
+      ? DEFAULT_FAVORITE_SCOPE
+      : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -91,6 +95,9 @@ export async function GET(request: NextRequest) {
   }
 
   const category = parsedCategory.data;
+  const scopeKey = toFavoriteScope(
+    request.nextUrl.searchParams.get("scopeKey"),
+  );
   const token = verifyDeviceCredential(
     request.cookies.get(COMMUNITY_DEVICE_COOKIE)?.value,
   );
@@ -99,9 +106,10 @@ export async function GET(request: NextRequest) {
     token
       ? prisma.communityVote.findUnique({
           where: {
-            deviceHash_category: {
+            deviceHash_category_scopeKey: {
               deviceHash: hashDeviceToken(token),
               category: toDatabaseCategory(category),
+              scopeKey,
             },
           },
           select: { targetId: true },
@@ -111,6 +119,7 @@ export async function GET(request: NextRequest) {
 
   return apiSuccess({
     category,
+    scopeKey,
     counts,
     selectedTargetId: selected?.targetId ?? null,
     totalVotes: counts.reduce((sum, item) => sum + item.votes, 0),
@@ -144,8 +153,12 @@ export async function POST(request: NextRequest) {
   }
 
   const { category, targetId } = parsed.data;
-  if (!(await targetExists(category, targetId))) {
+  const scopeKey = await resolveTargetScope(category, targetId);
+  if (!scopeKey) {
     return apiError("That item is not available for community voting.", 404);
+  }
+  if (parsed.data.scopeKey && parsed.data.scopeKey !== scopeKey) {
+    return apiError("That favorite role does not match the selected agent.", 400);
   }
 
   const { credential, token } = getCredential(request);
@@ -161,9 +174,10 @@ export async function POST(request: NextRequest) {
       async (transaction) => {
         const existing = await transaction.communityVote.findUnique({
           where: {
-            deviceHash_category: {
+            deviceHash_category_scopeKey: {
               deviceHash,
               category: databaseCategory,
+              scopeKey,
             },
           },
         });
@@ -198,12 +212,18 @@ export async function POST(request: NextRequest) {
 
         const updated = await transaction.communityVote.upsert({
           where: {
-            deviceHash_category: {
+            deviceHash_category_scopeKey: {
               deviceHash,
               category: databaseCategory,
+              scopeKey,
             },
           },
-          create: { deviceHash, category: databaseCategory, targetId },
+          create: {
+            deviceHash,
+            category: databaseCategory,
+            scopeKey,
+            targetId,
+          },
           update: { targetId },
         });
 
@@ -212,6 +232,7 @@ export async function POST(request: NextRequest) {
             deviceHash,
             networkHash,
             category: databaseCategory,
+            scopeKey,
             targetId,
             action: existing ? VoteAction.CHANGED : VoteAction.CREATED,
           },
@@ -232,6 +253,7 @@ export async function POST(request: NextRequest) {
     });
     const response = apiSuccess({
       category,
+      scopeKey,
       selectedTargetId: vote.targetId,
       counts,
       totalVotes: counts.reduce((sum, item) => sum + item.votes, 0),
@@ -268,6 +290,10 @@ export async function DELETE(request: NextRequest) {
   const parsedCategory = favoriteCategorySchema.safeParse(
     request.nextUrl.searchParams.get("category"),
   );
+  const hasScope = request.nextUrl.searchParams.has("scopeKey");
+  const scopeKey = toFavoriteScope(
+    request.nextUrl.searchParams.get("scopeKey"),
+  );
   const deviceHash = hashDeviceToken(token);
 
   if (request.nextUrl.searchParams.has("category") && !parsedCategory.success) {
@@ -279,7 +305,10 @@ export async function DELETE(request: NextRequest) {
       where: {
         deviceHash,
         ...(parsedCategory.success
-          ? { category: toDatabaseCategory(parsedCategory.data) }
+          ? {
+              category: toDatabaseCategory(parsedCategory.data),
+              ...(hasScope ? { scopeKey } : {}),
+            }
           : {}),
       },
     });

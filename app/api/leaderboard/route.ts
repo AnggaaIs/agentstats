@@ -1,7 +1,7 @@
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { REGIONS, type Region } from "@/lib/constants";
 import { getLeaderboard, RiotApiError } from "@/lib/riot";
-import { getCurrentAct } from "@/lib/valorant-api";
+import { getCompetitiveActs } from "@/lib/valorant-api";
 
 function isRegion(value: string | null): value is Region {
   return REGIONS.some((region) => region === value);
@@ -10,6 +10,7 @@ function isRegion(value: string | null): value is Region {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const region = url.searchParams.get("region");
+  const requestedActId = url.searchParams.get("act");
   const requestedSize = Number(url.searchParams.get("size") ?? "200");
 
   if (
@@ -22,7 +23,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    const act = await getCurrentAct();
+    const acts = await getCompetitiveActs();
+    const requestedAct = requestedActId
+      ? acts.find((item) => item.uuid === requestedActId)
+      : undefined;
+
+    if (requestedActId && !requestedAct) {
+      return apiError("Competitive Act is not valid.", 400);
+    }
+
+    const act = requestedAct ?? acts.find((item) => item.isCurrent);
+    if (!act) return apiError("Competitive Act is not available.", 503);
+
     return apiSuccess({
       act,
       leaderboard: await getLeaderboard(region, act.uuid, requestedSize),

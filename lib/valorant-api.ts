@@ -94,6 +94,12 @@ export interface Season {
   endTime: string;
 }
 
+export interface CompetitiveAct extends Season {
+  seasonDisplayName: string | null;
+  displayLabel: string;
+  isCurrent: boolean;
+}
+
 export interface ValorantVersion {
   manifestId: string;
   branch: string;
@@ -151,18 +157,68 @@ export async function getSeasons(): Promise<Season[]> {
   return getApiData<Season[]>("/seasons");
 }
 
-export async function getCurrentAct(): Promise<Season> {
+function formatSeasonName(displayName: string): string {
+  const yearMatch = /^V(\d{2})$/i.exec(displayName);
+  return yearMatch ? `Season 20${yearMatch[1]}` : displayName;
+}
+
+function enrichAct(
+  act: Season,
+  seasons: Season[],
+  now: number,
+): CompetitiveAct {
+  const actStartsAt = Date.parse(act.startTime);
+  const actEndsAt = Date.parse(act.endTime);
+  const parentSeason = seasons
+    .filter((season) => {
+      const startsAt = Date.parse(season.startTime);
+      const endsAt = Date.parse(season.endTime);
+      return (
+        season.uuid !== act.uuid &&
+        season.type !== "EAresSeasonType::Act" &&
+        startsAt <= actStartsAt &&
+        endsAt >= actEndsAt
+      );
+    })
+    .sort(
+      (left, right) =>
+        Date.parse(left.endTime) -
+        Date.parse(left.startTime) -
+        (Date.parse(right.endTime) - Date.parse(right.startTime)),
+    )[0];
+  const seasonDisplayName = parentSeason
+    ? formatSeasonName(parentSeason.displayName)
+    : null;
+
+  return {
+    ...act,
+    seasonDisplayName,
+    displayLabel: seasonDisplayName
+      ? `${seasonDisplayName} / ${act.displayName}`
+      : act.displayName,
+    isCurrent: actStartsAt <= now && actEndsAt >= now,
+  };
+}
+
+export async function getCompetitiveActs(): Promise<CompetitiveAct[]> {
   const seasons = await getSeasons();
   const now = Date.now();
-  const act = seasons.find((season) => {
-    const startsAt = Date.parse(season.startTime);
-    const endsAt = Date.parse(season.endTime);
-    return (
-      season.type === "EAresSeasonType::Act" &&
-      startsAt <= now &&
-      endsAt >= now
-    );
-  });
+  return seasons
+    .filter(
+      (season) =>
+        season.type === "EAresSeasonType::Act" &&
+        Date.parse(season.startTime) <= now,
+    )
+    .sort(
+      (left, right) =>
+        Date.parse(right.startTime) - Date.parse(left.startTime),
+    )
+    .map((act) => enrichAct(act, seasons, now));
+}
+
+export async function getCurrentAct(): Promise<CompetitiveAct> {
+  const acts = await getCompetitiveActs();
+  const act = acts.find((item) => item.isCurrent);
 
   if (!act) {
     throw new Error("The current Valorant act could not be found.");

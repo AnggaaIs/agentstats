@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
+import { ActSelector } from "@/components/act-selector";
 import { Pagination } from "@/components/pagination";
 import { PageHeading } from "@/components/page-heading";
+import { RankDistribution } from "@/components/rank-distribution";
 import { RouteLink } from "@/components/route-link";
 import { REGIONS, type Region } from "@/lib/constants";
+import {
+  buildRankDistribution,
+  getCompetitiveTierName,
+} from "@/lib/rank-distribution";
 import { getLeaderboard } from "@/lib/riot";
-import { getCurrentAct } from "@/lib/valorant-api";
+import { getCompetitiveActs } from "@/lib/valorant-api";
 
 export const metadata: Metadata = {
   title: "Leaderboard",
 };
 
 interface LeaderboardPageProps {
-  searchParams: Promise<{ region?: string; page?: string }>;
+  searchParams: Promise<{ region?: string; act?: string; page?: string }>;
 }
 
 function isRegion(value: string | undefined): value is Region {
@@ -25,8 +31,18 @@ export default async function LeaderboardPage({
   const selected = query.region;
   const region: Region = isRegion(selected) ? selected : "ap";
   const requestedPage = Number(query.page ?? "1");
-  const act = await getCurrentAct();
+  const acts = await getCompetitiveActs();
+  const visibleActs = acts.slice(0, 12);
+  const currentAct = acts.find((item) => item.isCurrent);
+  const requestedAct = acts.find((item) => item.uuid === query.act);
+  const act = requestedAct ?? currentAct;
+
+  if (!act) {
+    throw new Error("The competitive Act list is unavailable.");
+  }
+
   const leaderboard = await getLeaderboard(region, act.uuid);
+  const distribution = buildRankDistribution(leaderboard);
   const perPage = 25;
   const totalPages = Math.ceil(leaderboard.players.length / perPage);
   const page = Math.min(
@@ -41,15 +57,20 @@ export default async function LeaderboardPage({
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
       <PageHeading
-        eyebrow={`${act.displayName} / ${region}`}
+        eyebrow={`${act.displayLabel} / ${region}`}
         title="Leaderboard"
-        description="The top 200 players in each region, ordered by competitive rating."
+        description="Explore the official competitive ladder by region and Act, with exact Immortal and Radiant distribution."
       />
-      <nav className="mt-12 flex flex-wrap gap-2" aria-label="Leaderboard region">
+      <ActSelector
+        acts={visibleActs}
+        selectedActId={act.uuid}
+        region={region}
+      />
+      <nav className="mt-8 flex flex-wrap gap-2" aria-label="Leaderboard region">
         {REGIONS.map((item) => (
           <RouteLink
             key={item}
-            href={`/leaderboard?region=${item}&page=1`}
+            href={`/leaderboard?region=${item}&act=${act.uuid}&page=1`}
             current={item === region}
             className={
               item === region
@@ -61,6 +82,11 @@ export default async function LeaderboardPage({
           </RouteLink>
         ))}
       </nav>
+      <RankDistribution
+        distribution={distribution}
+        totalPlayers={leaderboard.totalPlayers}
+        region={region}
+      />
       <div className="mt-6 overflow-x-auto border border-white/8">
         <table className="w-full min-w-[48rem] border-collapse text-left">
           <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
@@ -96,7 +122,9 @@ export default async function LeaderboardPage({
                 </td>
                 <td className="p-5 text-lg font-black">{player.rankedRating}</td>
                 <td className="p-5">{player.numberOfWins}</td>
-                <td className="p-5 font-mono text-sm">{player.competitiveTier}</td>
+                <td className="p-5 font-mono text-sm">
+                  {getCompetitiveTierName(player.competitiveTier)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -106,7 +134,7 @@ export default async function LeaderboardPage({
         page={page}
         totalPages={totalPages}
         makeHref={(nextPage) =>
-          `/leaderboard?region=${region}&page=${nextPage}`
+          `/leaderboard?region=${region}&act=${act.uuid}&page=${nextPage}`
         }
       />
     </section>

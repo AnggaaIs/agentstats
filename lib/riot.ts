@@ -272,7 +272,7 @@ export async function getLeaderboard(
 ): Promise<Leaderboard> {
   const platform = PLATFORM_REGIONS[region];
   return riotRequest<Leaderboard>(
-    `https://${platform}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/${encodeURIComponent(actId)}?size=${Math.min(200, Math.max(1, size))}`,
+    `https://${platform}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/${encodeURIComponent(actId)}?size=${Math.min(200, Math.max(1, size))}&startIndex=0`,
     { revalidate: 600, tag: `leaderboard:${region}:${actId}:${size}` },
   );
 }

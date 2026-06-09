@@ -107,7 +107,7 @@ export default async function PlayerPage({
   let ladderPlayer = null;
   let currentActName = "";
   if (actResult.status === "fulfilled") {
-    currentActName = actResult.value.displayName;
+    currentActName = actResult.value.displayLabel;
     try {
       const leaderboard = await getLeaderboard(region, actResult.value.uuid);
       ladderPlayer =

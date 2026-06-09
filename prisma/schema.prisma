@@ -22,12 +22,13 @@ model CommunityVote {
   id         String           @id @default(cuid())
   deviceHash String
   category   FavoriteCategory
+  scopeKey   String           @default("default")
   targetId   String
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
-  @@unique([deviceHash, category])
-  @@index([category, targetId])
+  @@unique([deviceHash, category, scopeKey])
+  @@index([category, scopeKey, targetId])
   @@map("community_votes")
 }
 
@@ -36,13 +37,14 @@ model VoteEvent {
   deviceHash  String
   networkHash String
   category    FavoriteCategory
+  scopeKey    String
   targetId    String
   action      VoteAction
   createdAt   DateTime         @default(now())
 
   @@index([deviceHash, createdAt])
   @@index([networkHash, createdAt])
-  @@index([category, createdAt])
+  @@index([category, scopeKey, createdAt])
   @@index([createdAt])
   @@map("community_vote_events")
 }

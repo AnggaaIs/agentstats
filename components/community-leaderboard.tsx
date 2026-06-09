@@ -6,13 +6,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorite-button";
-import type { FavoriteCategoryName } from "@/lib/community";
+import type {
+  CurrentFavorites,
+  FavoriteCategoryName,
+} from "@/lib/community";
 
 export interface CommunityLeaderboardRow {
   id: string;
   name: string;
   image: string;
   meta: string;
+  scopeKey: string;
   votes: number;
   percentage: number;
   href?: string;
@@ -21,7 +25,7 @@ export interface CommunityLeaderboardRow {
 interface CommunityLeaderboardProps {
   boards: Record<FavoriteCategoryName, CommunityLeaderboardRow[]>;
   totals: Record<FavoriteCategoryName, number>;
-  initialFavorites: Record<FavoriteCategoryName, string | null>;
+  initialFavorites: CurrentFavorites;
 }
 
 const CATEGORY_LABELS: Record<FavoriteCategoryName, string> = {
@@ -40,8 +44,17 @@ export function CommunityLeaderboard({
   const [favorites, setFavorites] = useState(initialFavorites);
   const rows = boards[category];
 
-  function updateFavorite(targetId: string | null) {
-    setFavorites((current) => ({ ...current, [category]: targetId }));
+  function updateFavorite(targetId: string | null, scopeKey: string) {
+    setFavorites((current) => {
+      if (category !== "agent") {
+        return { ...current, [category]: targetId };
+      }
+
+      const agents = { ...current.agent };
+      if (targetId) agents[scopeKey] = targetId;
+      else delete agents[scopeKey];
+      return { ...current, agent: agents };
+    });
     router.refresh();
   }
 
@@ -144,9 +157,14 @@ export function CommunityLeaderboard({
                   </div>
                   <FavoriteButton
                     category={category}
+                    scopeKey={row.scopeKey}
                     targetId={row.id}
                     targetName={row.name}
-                    selected={favorites[category] === row.id}
+                    selected={
+                      category === "agent"
+                        ? favorites.agent[row.scopeKey] === row.id
+                        : favorites[category] === row.id
+                    }
                     onChange={updateFavorite}
                   />
                 </div>

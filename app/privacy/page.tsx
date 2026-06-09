@@ -31,10 +31,11 @@ export default function PrivacyPage() {
 
       <h3>Community favorites</h3>
       <p>
-        You can choose a favorite agent, map, and weapon without creating an
-        account. AgentStats places a protected random identifier in your
-        browser and stores a one-way version with each choice. It does not
-        contain your name, Riot account, or email address.
+        You can choose one favorite agent per role, plus a favorite map and
+        weapon, without creating an account. AgentStats places a protected
+        random identifier in your browser and stores a one-way version with
+        each choice. It does not contain your name, Riot account, or email
+        address.
       </p>
       <p>
         A one-way version of the network address used for a vote is kept in a

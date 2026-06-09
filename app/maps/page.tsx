@@ -53,7 +53,9 @@ export default async function MapsPage() {
         perPage={6}
         searchPlaceholder="Search maps or modes"
         favoriteCategory="map"
-        initialFavoriteId={favorites.map}
+        initialFavoriteIds={
+          favorites.map ? { default: favorites.map } : {}
+        }
       />
     </section>
   );

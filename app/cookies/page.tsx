@@ -21,8 +21,9 @@ export default function CookiesPage() {
         AgentStats does not set advertising or audience measurement cookies. A
         strictly necessary cookie is used only when you participate in
         Community Favorites. It gives the browser a protected random
-        identifier so one active choice can be maintained per category and
-        repeated voting can be limited.
+        identifier so one active agent choice can be maintained per role,
+        alongside one map and weapon choice, and repeated voting can be
+        limited.
       </p>
       <p>
         The service uses browser storage, which is different from a cookie, to

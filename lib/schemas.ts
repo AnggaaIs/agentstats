@@ -19,6 +19,13 @@ export const favoriteCategorySchema = z.enum(["agent", "map", "weapon"]);
 
 export const communityVoteSchema = z.object({
   category: favoriteCategorySchema,
+  scopeKey: z
+    .string()
+    .trim()
+    .min(1)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   targetId: z
     .string()
     .regex(

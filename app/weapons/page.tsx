@@ -63,7 +63,9 @@ export default async function WeaponsPage() {
         perPage={9}
         searchPlaceholder="Search weapons or categories"
         favoriteCategory="weapon"
-        initialFavoriteId={favorites.weapon}
+        initialFavoriteIds={
+          favorites.weapon ? { default: favorites.weapon } : {}
+        }
       />
     </section>
   );

@@ -6,10 +6,11 @@ import type { FavoriteCategoryName } from "@/lib/community";
 
 interface FavoriteButtonProps {
   category: FavoriteCategoryName;
+  scopeKey?: string;
   targetId: string;
   targetName: string;
   selected: boolean;
-  onChange?: (targetId: string | null) => void;
+  onChange?: (targetId: string | null, scopeKey: string) => void;
   className?: string;
   appearance?: "standard" | "compact";
 }
@@ -23,6 +24,7 @@ interface VoteResponse {
 
 export function FavoriteButton({
   category,
+  scopeKey = "default",
   targetId,
   targetName,
   selected,
@@ -46,7 +48,9 @@ export function FavoriteButton({
     try {
       const response = await fetch(
         `/api/community/favorites${
-          isSelected ? `?category=${encodeURIComponent(category)}` : ""
+          isSelected
+            ? `?category=${encodeURIComponent(category)}&scopeKey=${encodeURIComponent(scopeKey)}`
+            : ""
         }`,
         {
           method: isSelected ? "DELETE" : "POST",
@@ -55,7 +59,7 @@ export function FavoriteButton({
             : { "Content-Type": "application/json" },
           body: isSelected
             ? undefined
-            : JSON.stringify({ category, targetId, website: "" }),
+            : JSON.stringify({ category, scopeKey, targetId, website: "" }),
         },
       );
       const payload = (await response.json()) as VoteResponse;
@@ -69,12 +73,12 @@ export function FavoriteButton({
       const nextTarget = isSelected
         ? null
         : (payload.data?.selectedTargetId ?? targetId);
-      onChange?.(nextTarget);
+      onChange?.(nextTarget, scopeKey);
       setInternalSelected(Boolean(nextTarget));
       setMessage(
         isSelected
           ? `${targetName} was removed from your favorites.`
-          : `${targetName} is now your favorite ${category}.`,
+          : `${targetName} is now your favorite ${category}${category === "agent" ? ` for ${scopeKey}` : ""}.`,
       );
     } catch {
       setMessage("Your favorite could not be updated.");

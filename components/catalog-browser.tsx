@@ -16,6 +16,7 @@ export interface CatalogItem {
   group: string;
   variant?: "portrait" | "wide";
   imageFit?: "cover" | "contain";
+  favoriteScope?: string;
 }
 
 interface CatalogBrowserProps {
@@ -25,7 +26,7 @@ interface CatalogBrowserProps {
   perPage?: number;
   searchPlaceholder?: string;
   favoriteCategory?: FavoriteCategoryName;
-  initialFavoriteId?: string | null;
+  initialFavoriteIds?: Record<string, string>;
 }
 
 export function CatalogBrowser({
@@ -35,12 +36,12 @@ export function CatalogBrowser({
   perPage = 12,
   searchPlaceholder = "Search collection",
   favoriteCategory,
-  initialFavoriteId = null,
+  initialFavoriteIds = {},
 }: CatalogBrowserProps) {
   const [activeGroups, setActiveGroups] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [favoriteId, setFavoriteId] = useState(initialFavoriteId);
+  const [favoriteIds, setFavoriteIds] = useState(initialFavoriteIds);
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
 
@@ -79,6 +80,15 @@ export function CatalogBrowser({
         : [...current, group],
     );
     setPage(1);
+  }
+
+  function updateFavorite(targetId: string | null, scopeKey: string) {
+    setFavoriteIds((current) => {
+      const next = { ...current };
+      if (targetId) next[scopeKey] = targetId;
+      else delete next[scopeKey];
+      return next;
+    });
   }
 
   return (
@@ -149,10 +159,13 @@ export function CatalogBrowser({
                   favoriteCategory ? (
                     <FavoriteButton
                       category={favoriteCategory}
+                      scopeKey={item.favoriteScope}
                       targetId={item.id}
                       targetName={item.title}
-                      selected={favoriteId === item.id}
-                      onChange={setFavoriteId}
+                      selected={
+                        favoriteIds[item.favoriteScope ?? "default"] === item.id
+                      }
+                      onChange={updateFavorite}
                       appearance="compact"
                     />
                   ) : undefined

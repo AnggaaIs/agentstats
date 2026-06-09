@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
-import { getCurrentFavorites } from "@/lib/community";
+import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
 import { getAgents } from "@/lib/valorant-api";
 
 export const metadata: Metadata = {
@@ -31,12 +31,15 @@ export default async function AgentsPage() {
           title: agent.displayName,
           meta: agent.role?.displayName ?? "No role",
           group: agent.role?.displayName ?? "Other",
+          favoriteScope: toFavoriteScope(
+            agent.role?.displayName ?? "other",
+          ),
         }))}
         groups={[...new Set(agents.map((agent) => agent.role?.displayName ?? "Other"))]}
         perPage={12}
         searchPlaceholder="Search agents or roles"
         favoriteCategory="agent"
-        initialFavoriteId={favorites.agent}
+        initialFavoriteIds={favorites.agent}
       />
     </section>
   );

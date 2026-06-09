@@ -9,6 +9,7 @@ import { PageHeading } from "@/components/page-heading";
 import {
   getCommunityOverview,
   getCurrentFavorites,
+  toFavoriteScope,
   type CommunityCount,
   type FavoriteCategoryName,
 } from "@/lib/community";
@@ -28,16 +29,24 @@ function buildRows(
     name: string;
     image: string;
     meta: string;
+    scopeKey: string;
     href?: string;
   }>,
   counts: CommunityCount[],
 ): CommunityLeaderboardRow[] {
   const voteMap = new Map(counts.map((item) => [item.targetId, item.votes]));
-  const total = counts.reduce((sum, item) => sum + item.votes, 0);
+  const totalsByScope = new Map<string, number>();
+  for (const count of counts) {
+    totalsByScope.set(
+      count.scopeKey,
+      (totalsByScope.get(count.scopeKey) ?? 0) + count.votes,
+    );
+  }
 
   return items
     .map((item) => {
       const votes = voteMap.get(item.id) ?? 0;
+      const total = totalsByScope.get(item.scopeKey) ?? 0;
       return {
         ...item,
         votes,
@@ -68,6 +77,7 @@ export default async function CommunityPage() {
         name: agent.displayName,
         image: agent.displayIcon,
         meta: agent.role?.displayName ?? "Agent",
+        scopeKey: toFavoriteScope(agent.role?.displayName ?? "other"),
         href: `/agents/${agent.uuid}`,
       })),
       overview.counts.agent,
@@ -78,6 +88,7 @@ export default async function CommunityPage() {
         name: map.displayName,
         image: map.displayIcon ?? map.splash,
         meta: map.tacticalDescription ?? "Valorant map",
+        scopeKey: "default",
       })),
       overview.counts.map,
     ),
@@ -87,6 +98,7 @@ export default async function CommunityPage() {
         name: weapon.displayName,
         image: weapon.displayIcon,
         meta: weapon.shopData?.category ?? "Weapon",
+        scopeKey: "default",
         href: `/weapons/${weapon.uuid}`,
       })),
       overview.counts.weapon,
@@ -103,7 +115,7 @@ export default async function CommunityPage() {
       <PageHeading
         eyebrow="Community favorites"
         title="The community decides"
-        description="Choose one agent, one map, and one weapon. Rankings are built from verified anonymous choices and update as the community changes its mind."
+        description="Choose one agent for each role, plus one map and one weapon. Rankings are built from verified anonymous choices."
       />
 
       <div className="mt-10 grid border border-white/10 sm:grid-cols-2">
@@ -135,12 +147,13 @@ export default async function CommunityPage() {
         <div>
           <p className="eyebrow">Fair voting</p>
           <h2 className="mt-5 font-display text-4xl font-black uppercase tracking-[-0.05em]">
-            One active choice per category
+            One active choice per role
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)]">
             No account is required. AgentStats gives this browser an anonymous,
-            protected identifier. Changing a favorite moves the existing vote,
-            while unusual bursts and repeated changes are temporarily limited.
+            protected identifier. Each agent role has its own choice, while
+            maps and weapons keep one choice each. Unusual bursts and repeated
+            changes are temporarily limited.
           </p>
         </div>
         <ClearCommunityFavorites />

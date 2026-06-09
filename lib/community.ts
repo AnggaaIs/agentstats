@@ -10,10 +10,18 @@ import {
 
 export const FAVORITE_CATEGORIES = ["agent", "map", "weapon"] as const;
 export type FavoriteCategoryName = (typeof FAVORITE_CATEGORIES)[number];
+export const DEFAULT_FAVORITE_SCOPE = "default";
 
 export interface CommunityCount {
   targetId: string;
+  scopeKey: string;
   votes: number;
+}
+
+export interface CurrentFavorites {
+  agent: Record<string, string>;
+  map: string | null;
+  weapon: string | null;
 }
 
 const CATEGORY_TO_DATABASE = {
@@ -28,11 +36,16 @@ export function toDatabaseCategory(
   return CATEGORY_TO_DATABASE[category];
 }
 
+export function toFavoriteScope(value: string | null | undefined): string {
+  const normalized = value?.trim().toLocaleLowerCase().replace(/\s+/g, "-");
+  return normalized || DEFAULT_FAVORITE_SCOPE;
+}
+
 export async function getCommunityCounts(
   category: FavoriteCategoryName,
 ): Promise<CommunityCount[]> {
   const rows = await prisma.communityVote.groupBy({
-    by: ["targetId"],
+    by: ["targetId", "scopeKey"],
     where: { category: toDatabaseCategory(category) },
     _count: { _all: true },
     orderBy: { _count: { targetId: "desc" } },
@@ -40,6 +53,7 @@ export async function getCommunityCounts(
 
   return rows.map((row) => ({
     targetId: row.targetId,
+    scopeKey: row.scopeKey,
     votes: row._count._all,
   }));
 }
@@ -62,32 +76,30 @@ export async function getCommunityOverview() {
   };
 }
 
-export async function getCurrentFavorites(): Promise<
-  Record<FavoriteCategoryName, string | null>
-> {
+export async function getCurrentFavorites(): Promise<CurrentFavorites> {
   const cookieStore = await cookies();
   const token = verifyDeviceCredential(
     cookieStore.get(COMMUNITY_DEVICE_COOKIE)?.value,
   );
 
   if (!token) {
-    return { agent: null, map: null, weapon: null };
+    return { agent: {}, map: null, weapon: null };
   }
 
   const votes = await prisma.communityVote.findMany({
     where: { deviceHash: hashDeviceToken(token) },
-    select: { category: true, targetId: true },
+    select: { category: true, scopeKey: true, targetId: true },
   });
 
-  const favorites: Record<FavoriteCategoryName, string | null> = {
-    agent: null,
+  const favorites: CurrentFavorites = {
+    agent: {},
     map: null,
     weapon: null,
   };
 
   for (const vote of votes) {
     if (vote.category === FavoriteCategory.AGENT) {
-      favorites.agent = vote.targetId;
+      favorites.agent[vote.scopeKey] = vote.targetId;
     } else if (vote.category === FavoriteCategory.MAP) {
       favorites.map = vote.targetId;
     } else {

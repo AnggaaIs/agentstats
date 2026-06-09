@@ -10,10 +10,12 @@ The repository currently implements the public product foundation:
 - Agent, weapon, and map catalog routes backed by `valorant-api.com`
 - Flexible two-weapon comparison across economy, handling, damage ranges,
   penetration, ADS, and alternate fire
-- Anonymous community favorites for agents, maps, and weapons with protected
-  one-choice voting and live category leaderboards
+- Anonymous community favorites with one agent choice per role, plus one map
+  and weapon choice, protected voting, and live category leaderboards
 - Agent meta dashboard with live patch, roster distribution, Riot platform
   notices, and a direct link to official patch notes
+- Historical Act selection and exact Immortal/Radiant ladder distribution by
+  region on the competitive leaderboard
 - Dynamic agent and weapon detail routes
 - Player, match, and leaderboard route foundations
 - Consistent loading, error, and not-found states

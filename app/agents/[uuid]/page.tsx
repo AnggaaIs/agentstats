@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { FavoriteButton } from "@/components/favorite-button";
-import { getCurrentFavorites } from "@/lib/community";
+import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
 import { getAgent } from "@/lib/valorant-api";
 
 interface AgentPageProps {
@@ -37,6 +37,7 @@ export default async function AgentPage({ params }: AgentPageProps) {
   } catch {
     notFound();
   }
+  const favoriteScope = toFavoriteScope(agent.role?.displayName ?? "other");
 
   return (
     <article>
@@ -63,9 +64,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
             </p>
             <FavoriteButton
               category="agent"
+              scopeKey={favoriteScope}
               targetId={agent.uuid}
               targetName={agent.displayName}
-              selected={favorites.agent === agent.uuid}
+              selected={favorites.agent[favoriteScope] === agent.uuid}
               className="mt-7"
             />
           </div>
