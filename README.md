@@ -8,8 +8,8 @@ The repository currently implements the public product foundation:
 
 - Responsive home and player search experience
 - Agent, weapon, and map catalog routes backed by `valorant-api.com`
-- Agent meta dashboard with live patch, roster distribution, patch comparison,
-  and Riot platform notices
+- Agent meta dashboard with live patch, roster distribution, Riot platform
+  notices, and a direct link to official patch notes
 - Dynamic agent and weapon detail routes
 - Player, match, and leaderboard route foundations
 - Consistent loading, error, and not-found states

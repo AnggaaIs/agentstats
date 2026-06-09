@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
 import { REGIONS, type Region } from "@/lib/constants";
-import { getPatchComparison } from "@/lib/patch-notes";
 import { getPlatformStatus, getStatusText } from "@/lib/riot";
 import { getAgents, getValorantVersion } from "@/lib/valorant-api";
+
+const OFFICIAL_PATCH_NOTES_URL =
+  "https://playvalorant.com/en-us/news/tags/patch-notes/";
 
 export const metadata: Metadata = {
   title: "Agent Meta",
@@ -51,10 +52,6 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
       })),
   ]);
   const patchVersion = version.branch.replace("release-", "");
-  const comparison = await getPatchComparison(
-    patchVersion,
-    agents.map((agent) => agent.displayName),
-  );
   const roleCounts = agents.reduce<Record<string, number>>((counts, agent) => {
     const role = agent.role?.displayName ?? "Other";
     counts[role] = (counts[role] ?? 0) + 1;
@@ -72,8 +69,6 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
         })),
       ]
     : [];
-  const watchlist = comparison.current?.agentChanges ?? [];
-
   return (
     <main>
       <section className="grid-noise border-b border-white/8">
@@ -244,108 +239,26 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="grid gap-8 border border-white/10 bg-[var(--panel)] p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="eyebrow">
-              Patch comparison ·{" "}
-              {comparison.source === "official"
-                ? "Official live source"
-                : "Saved fallback"}
-            </p>
+            <p className="eyebrow">Official game updates</p>
             <h2 className="mt-4 font-display text-4xl font-black uppercase tracking-[-0.045em]">
-              {comparison.current
-                ? `${comparison.current.version} vs ${comparison.previous?.version ?? "previous"}`
-                : `Patch ${patchVersion}`}
+              Read patch {patchVersion} at Riot
             </h2>
-
-            {comparison.current ? (
-              <div className="mt-8 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">
-                {[comparison.current, comparison.previous]
-                  .filter((patch) => patch !== null)
-                  .map((patch) => (
-                    <article key={patch.version} className="bg-[var(--panel)] p-6">
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--accent)]">
-                        Patch {patch.version} · {formatDate(patch.publishedAt)}
-                      </p>
-                      <h3 className="mt-3 font-display text-2xl font-black uppercase">
-                        {patch.title}
-                      </h3>
-                      <ul className="mt-5 grid gap-3 text-sm leading-6 text-[var(--muted)]">
-                        {patch.highlights.map((highlight) => (
-                          <li key={highlight} className="border-l border-white/15 pl-4">
-                            {highlight}
-                          </li>
-                        ))}
-                      </ul>
-                      <a
-                        href={patch.url}
-                        className="mt-6 inline-flex text-xs font-black uppercase tracking-widest text-white underline decoration-[var(--accent)] underline-offset-4"
-                      >
-                        Official patch notes
-                      </a>
-                    </article>
-                  ))}
-              </div>
-            ) : (
-              <div className="mt-8 border border-white/10 bg-[var(--panel)] p-6">
-                <p className="text-sm leading-7 text-[var(--muted)]">
-                  AgentStats has detected a newer patch. Its comparison summary
-                  has not been reviewed yet, so no change claims are shown.
-                </p>
-              </div>
-            )}
+            <p className="mt-4 max-w-2xl leading-7 text-[var(--muted)]">
+              Balance changes, bug fixes, maps, weapons, and mode updates are
+              maintained by Riot Games. AgentStats links to the original source
+              instead of republishing or interpreting those notes.
+            </p>
           </div>
-
-          <aside>
-            <p className="eyebrow">Agent watchlist</p>
-            <div className="mt-8 grid gap-3">
-              {watchlist.length ? (
-                watchlist.map((change) => {
-                  const agent = agents.find(
-                    (item) =>
-                      item.displayName.toLocaleLowerCase() ===
-                      change.agent.toLocaleLowerCase(),
-                  );
-
-                  return (
-                    <article
-                      key={change.agent}
-                      className="grid grid-cols-[4rem_1fr] gap-4 border border-white/10 bg-[var(--panel)] p-4"
-                    >
-                      <div className="relative size-16 bg-white/5">
-                        {agent ? (
-                          <Image
-                            src={agent.displayIcon}
-                            alt=""
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
-                        ) : null}
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between gap-3">
-                          <h3 className="font-display text-xl font-black uppercase">
-                            {change.agent}
-                          </h3>
-                          <span className="text-xs font-black uppercase text-[var(--muted)]">
-                            {change.label}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                          {change.summary}
-                        </p>
-                      </div>
-                    </article>
-                  );
-                })
-              ) : (
-                <div className="border border-white/10 bg-[var(--panel)] p-6 text-sm text-[var(--muted)]">
-                  No reviewed agent changes are attached to this patch yet.
-                </div>
-              )}
-            </div>
-          </aside>
+          <a
+            href={OFFICIAL_PATCH_NOTES_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="valorant-action inline-flex min-h-12 items-center justify-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-sm font-black uppercase tracking-widest"
+          >
+            Open Riot patch notes
+          </a>
         </div>
       </section>
 
