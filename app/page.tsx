@@ -18,7 +18,7 @@ export default async function HomePage() {
   const agents = await getAgents();
   const metrics = [
     { value: agents.length.toString(), label: "Playable agents" },
-    { value: "18", label: "Competitive ranks" },
+    { value: "9", label: "Competitive ranks" },
     { value: "6", label: "Global regions" },
   ] as const;
 
