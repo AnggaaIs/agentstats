@@ -152,7 +152,7 @@ export default async function StatusPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+      <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16 overflow-x-hidden">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <p className="eyebrow">All regions</p>
@@ -185,7 +185,7 @@ export default async function StatusPage() {
             return (
               <article
                 key={status.region}
-                className="motion-card border border-white/10 bg-[var(--panel)]"
+                className="motion-card min-w-0 border border-white/10 bg-[var(--panel)]"
                 style={{ animationDelay: `${Math.min(index * 45, 180)}ms` }}
               >
                 <header className="flex items-start justify-between gap-5 border-b border-white/10 p-5 sm:p-6">
