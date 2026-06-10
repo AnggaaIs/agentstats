@@ -233,3 +233,6 @@ Creating turbopack project { dir: 'D:\\projects\\agentstats', testMode: true }
  GET /community 200 in 632ms (next.js: 4ms, application-code: 628ms)
  GET /maps 200 in 59ms (next.js: 4ms, application-code: 55ms)
  GET /leaderboard 200 in 70ms (next.js: 3ms, application-code: 66ms)
+✓ Compiled in 212ms
+ GET /leaderboard 200 in 406ms (next.js: 183ms, application-code: 223ms)
+ GET /leaderboard 200 in 96ms (next.js: 4ms, application-code: 92ms)

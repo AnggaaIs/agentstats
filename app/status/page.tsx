@@ -116,7 +116,7 @@ export default async function StatusPage() {
               href={OFFICIAL_RIOT_STATUS_URL}
               target="_blank"
               rel="noreferrer"
-              className="valorant-action inline-flex min-h-12 w-fit items-center justify-center border border-white/15 px-5 text-xs font-black uppercase tracking-[0.14em]"
+              className="valorant-action inline-flex min-h-12 max-w-full items-center justify-center border border-white/15 px-5 text-xs font-black uppercase tracking-[0.14em]"
             >
               Open official Riot status
               <svg
