@@ -3,12 +3,15 @@ import type { Metadata } from "next";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
 import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
+import { createMetadata } from "@/lib/seo";
 import { getAgents } from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Agents",
-  description: "Explore every playable Valorant agent, role, and ability.",
-};
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Agents, Roles & Abilities",
+  description:
+    "Explore every playable Valorant agent, role, ability kit, portrait, and combat style in the current roster.",
+  path: "/agents",
+});
 
 export default async function AgentsPage() {
   const [agents, favorites] = await Promise.all([

@@ -111,14 +111,14 @@ function MetricRow({
   const difference = comparable ? Math.abs(left - right) : null;
 
   return (
-    <div className="comparison-row grid grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)] items-stretch border-t border-white/8">
+    <div className="comparison-row grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,1fr)] items-stretch border-t border-white/8 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)]">
       <div
         className={`flex min-h-20 items-center px-4 py-4 sm:px-6 ${
           leftWins && !neutral ? "bg-emerald-400/[0.07]" : ""
         }`}
       >
         <p
-          className={`font-display text-2xl font-black ${
+          className={`responsive-text font-display text-[clamp(1rem,5vw,1.5rem)] font-black ${
             leftWins && !neutral ? "text-emerald-300" : ""
           }`}
         >
@@ -143,7 +143,7 @@ function MetricRow({
         }`}
       >
         <p
-          className={`font-display text-2xl font-black ${
+          className={`responsive-text font-display text-[clamp(1rem,5vw,1.5rem)] font-black ${
             rightWins && !neutral ? "text-emerald-300" : ""
           }`}
         >
@@ -164,14 +164,14 @@ function TextMetricRow({
   right: string;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)] items-stretch border-t border-white/8">
-      <p className="flex min-h-16 items-center px-4 py-3 text-sm font-black uppercase sm:px-6">
+    <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,1fr)] items-stretch border-t border-white/8 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)]">
+      <p className="responsive-text flex min-h-16 items-center px-3 py-3 text-xs font-black uppercase sm:px-6 sm:text-sm">
         {left}
       </p>
       <p className="grid place-items-center border-x border-white/8 px-2 text-center text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
         {label}
       </p>
-      <p className="flex min-h-16 items-center justify-end px-4 py-3 text-right text-sm font-black uppercase sm:px-6">
+      <p className="responsive-text flex min-h-16 items-center justify-end px-3 py-3 text-right text-xs font-black uppercase sm:px-6 sm:text-sm">
         {right}
       </p>
     </div>
@@ -208,11 +208,11 @@ function WeaponPicker({
   return (
     <details ref={detailsRef} className="group relative">
       <summary className="valorant-action flex min-h-12 cursor-pointer list-none items-center justify-between border border-white/15 bg-black/20 px-4 text-left [&::-webkit-details-marker]:hidden">
-        <span>
+        <span className="min-w-0">
           <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
             {label}
           </span>
-          <span className="mt-1 block text-sm font-black uppercase">
+          <span className="responsive-text mt-1 block text-sm font-black uppercase">
             {selected.name}
           </span>
         </span>
@@ -246,8 +246,8 @@ function WeaponPicker({
               }}
               className="flex min-h-12 w-full items-center justify-between border-b border-white/8 px-3 text-left text-xs font-black uppercase tracking-[0.1em] transition hover:bg-white/6 hover:text-white"
             >
-              <span>{weapon.name}</span>
-              <span className="text-[10px] text-[var(--muted)]">
+              <span className="responsive-text min-w-0">{weapon.name}</span>
+              <span className="ml-2 shrink-0 text-[10px] text-[var(--muted)]">
                 {weapon.category}
               </span>
             </button>
@@ -325,16 +325,16 @@ export function WeaponComparison({
                 className="object-contain p-3"
               />
             </div>
-            <div className="mt-4 flex items-end justify-between gap-5">
-              <div>
+            <div className="mt-4 flex flex-col gap-3 min-[400px]:flex-row min-[400px]:items-end min-[400px]:justify-between">
+              <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                   {weapon.category}
                 </p>
-                <h2 className="mt-1 font-display text-4xl font-black uppercase tracking-[-0.05em]">
+                <h2 className="responsive-text mt-1 font-display text-[clamp(2rem,11vw,2.25rem)] font-black uppercase leading-none tracking-[-0.05em]">
                   {weapon.name}
                 </h2>
               </div>
-              <p className="font-mono text-xs uppercase text-[var(--muted)]">
+              <p className="shrink-0 font-mono text-xs uppercase text-[var(--muted)]">
                 {weapon.cost === null ? "Standard" : `${weapon.cost} cr`}
               </p>
             </div>

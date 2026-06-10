@@ -1,4 +1,5 @@
 import type { Agent, ValorantMap } from "@/lib/valorant-api";
+import { formatQueueName } from "@/lib/match-context";
 import {
   getParticipantDamage,
   getParticipantHeadshotRate,
@@ -155,7 +156,7 @@ export function buildPlayerSummary(
     summaries.push({
       matchId: match.matchInfo.matchId,
       mapName,
-      queue: match.matchInfo.queueId || "custom",
+      queue: formatQueueName(match.matchInfo.queueId),
       playedAt: match.matchInfo.gameStartMillis,
       durationMillis: match.matchInfo.gameLengthMillis,
       agentName: agent?.displayName ?? "Unknown agent",

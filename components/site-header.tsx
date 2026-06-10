@@ -67,12 +67,12 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
             className="flex min-h-11 shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
           >
             <BrandMark />
-            <span className="hidden font-display text-lg font-black uppercase tracking-[-0.03em] min-[430px]:inline">
+            <span className="hidden font-display text-lg font-black uppercase tracking-[-0.03em] xl:inline">
               {APP_NAME}
             </span>
           </Link>
 
-          <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+          <nav aria-label="Main navigation" className="hidden items-center lg:flex">
             {NAV_ITEMS.map((item) => (
               <RouteLink
                 key={item.href}
@@ -82,7 +82,7 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
                   setMenuOpen(false);
                   setStatusOpen(false);
                 }}
-                className="valorant-action px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted)] transition hover:text-white focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                className="valorant-action px-2.5 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] transition hover:text-white focus-visible:outline-2 focus-visible:outline-[var(--accent)] xl:px-4 xl:text-xs xl:tracking-[0.16em]"
               >
                 {item.label}
               </RouteLink>

@@ -92,6 +92,8 @@ export interface RiotMatch {
     gameStartMillis: number;
     gameLengthMillis: number;
     queueId: string;
+    gameMode?: string;
+    seasonId?: string;
     isCompleted: boolean;
   };
   players: MatchParticipant[];

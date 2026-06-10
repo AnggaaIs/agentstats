@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorite-button";
-import { HorizontalScroller } from "@/components/horizontal-scroller";
 import type {
   CommunityLeaderboardCategory,
   CurrentFavorites,
@@ -153,10 +152,11 @@ export function CommunityLeaderboard({
       >
         {category === "agent" ? (
           <div className="border-b border-white/10 px-2 pt-2">
-            <HorizontalScroller
-              ariaLabel="Choose agent role leaderboard"
-              viewportRole="group"
-              viewportClassName="flex"
+            <div
+              role="group"
+              aria-label="Choose agent role leaderboard"
+              tabIndex={0}
+              className="tactical-scrollbar flex overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
               {agentRoles.map((role) => (
                 <button
@@ -185,7 +185,7 @@ export function CommunityLeaderboard({
                   </span>
                 </button>
               ))}
-            </HorizontalScroller>
+            </div>
           </div>
         ) : null}
 
@@ -194,11 +194,11 @@ export function CommunityLeaderboard({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
               Weapon collection
             </p>
-            <HorizontalScroller
-              ariaLabel="Choose weapon skin leaderboard"
-              viewportRole="group"
-              className="mt-3"
-              viewportClassName="flex gap-2"
+            <div
+              role="group"
+              aria-label="Choose weapon skin leaderboard"
+              tabIndex={0}
+              className="tactical-scrollbar mt-3 flex gap-2 overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
               {skinGroups.map((group) => (
                 <button
@@ -218,7 +218,7 @@ export function CommunityLeaderboard({
                   </span>
                 </button>
               ))}
-            </HorizontalScroller>
+            </div>
           </div>
         ) : null}
 
@@ -227,7 +227,7 @@ export function CommunityLeaderboard({
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
               Community ranking
             </p>
-            <h2 className="mt-1 font-display text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">
+            <h2 className="responsive-text mt-1 font-display text-[clamp(1.35rem,7vw,1.875rem)] font-black uppercase leading-none tracking-[-0.04em]">
               {category === "agent"
                 ? `Favorite ${activeRoleLabel}`
                 : category === "skin"
@@ -259,20 +259,20 @@ export function CommunityLeaderboard({
                     className="object-contain p-1.5 transition duration-300 group-hover:scale-[1.025]"
                   />
                 </div>
-                <div className="min-w-0">
+                <div className="responsive-text">
                   {row.href ? (
                     <Link
                       href={row.href}
-                      className="block truncate font-display text-base font-black uppercase tracking-[-0.025em] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] sm:text-2xl"
+                      className="responsive-text block font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] min-[360px]:text-base sm:text-2xl"
                     >
                       {row.name}
                     </Link>
                   ) : (
-                    <h3 className="truncate font-display text-base font-black uppercase tracking-[-0.025em] sm:text-2xl">
+                    <h3 className="responsive-text font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] min-[360px]:text-base sm:text-2xl">
                       {row.name}
                     </h3>
                   )}
-                  <span className="mt-0.5 flex items-center gap-1.5 truncate text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--muted)] sm:mt-1 sm:gap-2 sm:text-xs sm:tracking-[0.12em]">
+                  <span className="responsive-text mt-0.5 flex items-start gap-1.5 text-[9px] font-bold uppercase leading-4 tracking-[0.08em] text-[var(--muted)] sm:mt-1 sm:items-center sm:gap-2 sm:text-xs sm:tracking-[0.12em]">
                     {row.metaIcon ? (
                       <Image
                         src={row.metaIcon}
@@ -282,7 +282,7 @@ export function CommunityLeaderboard({
                         className="size-3.5 object-contain sm:size-[18px]"
                       />
                     ) : null}
-                    <span className="truncate">{row.meta}</span>
+                    <span className="responsive-text">{row.meta}</span>
                   </span>
                   <progress
                     value={row.percentage}

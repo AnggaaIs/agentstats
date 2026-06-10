@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Disclaimer",
   description:
     "Important information about AgentStats, Riot Games, and data accuracy.",
-};
+  path: "/disclaimer",
+});
 
 export default function DisclaimerPage() {
   return (
@@ -16,9 +18,11 @@ export default function DisclaimerPage() {
     >
       <h2>Independent project</h2>
       <p>
-        AgentStats was created under Riot Games&apos; “Legal Jibber Jabber”
-        policy using assets owned by Riot Games. Riot Games does not endorse or
-        sponsor this project.
+        AgentStats isn&apos;t endorsed by Riot Games and doesn&apos;t reflect
+        the views or opinions of Riot Games or anyone officially involved in
+        producing or managing Riot Games properties. Riot Games, and all
+        associated properties are trademarks or registered trademarks of Riot
+        Games, Inc.
       </p>
       <p>
         Valorant, Riot Games, and their associated logos, artwork, game content,
@@ -29,9 +33,19 @@ export default function DisclaimerPage() {
       <h2>Information and availability</h2>
       <p>
         Player statistics and game content may come from Riot Games,
-        valorant-api.com, cached responses, or public sources. Information can
-        be delayed, incomplete, unavailable, or different from what appears in
-        the game. AgentStats does not guarantee accuracy or continuous access.
+        valorant-api.com, cached responses, or other identified public sources.
+        valorant-api.com is an independent, unofficial content API and is not
+        Riot Games. Information can be delayed, incomplete, unavailable, or
+        different from what appears in the game. AgentStats does not guarantee
+        accuracy or continuous access.
+      </p>
+
+      <h2>Player permission</h2>
+      <p>
+        Riot requires player-specific statistics and match history to use an
+        approved opt-in flow through Riot Sign On. Until that integration is
+        approved and active, AgentStats must not present personal gameplay data
+        as publicly available merely because a Riot ID can be found.
       </p>
 
       <h2>No official or professional advice</h2>
@@ -58,8 +72,9 @@ export default function DisclaimerPage() {
         <a href="https://developer.riotgames.com/docs/valorant">
           Riot Games Valorant developer policies
         </a>
-        . Riot Games may change those policies or withdraw permissions
-        independently of AgentStats.
+        , including product registration and player opt-in requirements. Riot
+        Games may change those policies or withdraw permissions independently
+        of AgentStats.
       </p>
     </LegalPage>
   );

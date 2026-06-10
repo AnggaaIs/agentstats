@@ -13,13 +13,15 @@ import {
   type CommunityLeaderboardCategory,
   type CommunityCount,
 } from "@/lib/community";
+import { createMetadata } from "@/lib/seo";
 import { getAgents, getMaps, getWeapons } from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Community Favorites",
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Community Favorites",
   description:
-    "See the Valorant agents, maps, weapons, and skins chosen by the AgentStats community.",
-};
+    "See the Valorant agents, maps, weapons, and skins selected as favorites by the AgentStats community, with verified anonymous vote rankings.",
+  path: "/community",
+});
 
 export const dynamic = "force-dynamic";
 
@@ -118,7 +120,7 @@ export default async function CommunityPage() {
                   image: skin.displayIcon,
                   meta: `${weapon.displayName} skin`,
                   scopeKey: weapon.uuid,
-                  href: `/weapons/${weapon.uuid}`,
+                  href: `/weapons/${weapon.uuid}/skins/${skin.uuid}`,
                 },
               ]
             : [],

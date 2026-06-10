@@ -1,4 +1,5 @@
 import type { Leaderboard } from "@/lib/riot";
+import type { CompetitiveTier } from "@/lib/valorant-api";
 
 const COMPETITIVE_TIERS: Record<
   number,
@@ -15,16 +16,45 @@ export interface RankDistributionItem {
   name: string;
   shortName: string;
   color: string;
+  icon: string | null;
   count: number;
   percentage: number;
 }
 
-export function getCompetitiveTierName(tier: number): string {
-  return COMPETITIVE_TIERS[tier]?.name ?? `Tier ${tier}`;
+function normalizeTierColor(color: string | undefined): string | null {
+  return color && /^[0-9a-f]{8}$/i.test(color)
+    ? `#${color.slice(0, 6)}`
+    : null;
+}
+
+export function getCompetitiveTier(
+  tier: number,
+  tiers: CompetitiveTier[] = [],
+) {
+  const liveTier = tiers.find((item) => item.tier === tier);
+  const fallback = COMPETITIVE_TIERS[tier];
+
+  return {
+    name: liveTier?.tierName ?? fallback?.name ?? `Tier ${tier}`,
+    shortName:
+      liveTier?.tierName.replace(/ (\d)$/, " $1") ??
+      fallback?.shortName ??
+      `Tier ${tier}`,
+    color: normalizeTierColor(liveTier?.color) ?? fallback?.color ?? "#9aa6b4",
+    icon: liveTier?.smallIcon ?? liveTier?.largeIcon ?? null,
+  };
+}
+
+export function getCompetitiveTierName(
+  tier: number,
+  tiers: CompetitiveTier[] = [],
+): string {
+  return getCompetitiveTier(tier, tiers).name;
 }
 
 export function buildRankDistribution(
   leaderboard: Leaderboard,
+  tiers: CompetitiveTier[] = [],
 ): RankDistributionItem[] {
   const boundaries = Object.entries(leaderboard.tierDetails)
     .map(([tier, details]) => ({
@@ -44,11 +74,7 @@ export function buildRankDistribution(
     const count =
       (nextBoundary?.startingIndex ?? leaderboard.totalPlayers + 1) -
       boundary.startingIndex;
-    const tier = COMPETITIVE_TIERS[boundary.tier] ?? {
-      name: `Tier ${boundary.tier}`,
-      shortName: `Tier ${boundary.tier}`,
-      color: "#9aa6b4",
-    };
+    const tier = getCompetitiveTier(boundary.tier, tiers);
 
     return {
       tier: boundary.tier,

@@ -97,7 +97,7 @@ export function CatalogBrowser({
   return (
     <>
       <div className="motion-rise mt-12 grid gap-3 border-y border-white/8 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <label className="relative block">
+        <label className="relative block min-w-0">
           <span className="sr-only">{searchPlaceholder}</span>
           <svg
             aria-hidden="true"
@@ -149,9 +149,9 @@ export function CatalogBrowser({
       ) : null}
 
       {visible.length ? (
-        <div className={`motion-stagger mt-10 grid gap-5 ${gridClass}`}>
+        <div className={`motion-stagger mt-10 grid min-w-0 gap-5 ${gridClass}`}>
           {visible.map((item) => (
-            <div key={item.id} className="motion-card relative">
+            <div key={item.id} className="motion-card relative min-w-0">
               <CatalogCard
                 href={item.href}
                 image={item.image}

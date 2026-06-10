@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { ClearLocalData } from "@/components/clear-local-data";
 import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Privacy Policy",
   description:
-    "Learn what information AgentStats handles and the choices available to you.",
-};
+    "Learn what player, community voting, browser, and service information AgentStats handles and the privacy choices available to you.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (
@@ -18,15 +20,25 @@ export default function PrivacyPage() {
     >
       <h2>Information AgentStats handles</h2>
       <p>
-        When you search for a player, AgentStats receives the Riot ID, tagline,
-        and region you enter. It uses that information to request public game
-        information from Riot Games, which may include a player identifier,
-        account name, competitive standing, leaderboard placement, and match
-        information where Riot permits access.
+        When player lookup is available, AgentStats receives the Riot ID,
+        tagline, and region entered in the search form. It uses that
+        information to request account routing information from Riot Games.
+        Official leaderboard placement may be shown from Riot&apos;s public
+        ladder data.
+      </p>
+      <p>
+        Personal match history and derived player statistics may only be
+        displayed after the player has opted in through Riot Sign On and Riot
+        has approved the integration. AgentStats must not make a player&apos;s
+        personal gameplay data available to other people before that player
+        has linked their own account.
       </p>
       <p>
         AgentStats also displays public game content supplied by
-        valorant-api.com, such as agent, weapon, and map information.
+        valorant-api.com, an independent third-party content API, such as
+        agent, weapon, map, season, and cosmetic information. Requests for
+        this static content do not include your Riot ID. Platform incidents
+        and maintenance notices come from Riot&apos;s official status API.
       </p>
 
       <h3>Community favorites</h3>
@@ -48,8 +60,9 @@ export default function PrivacyPage() {
       <h3>Information kept on your device</h3>
       <p>
         Up to five recent player searches are kept in your browser so you can
-        return to them quickly. This list stays on that device unless you
-        search for one of those players again or clear the list.
+        return to them quickly. This list stays on that device until newer
+        searches replace it, you clear it, or the browser removes its stored
+        data.
       </p>
       <ClearLocalData />
 
@@ -81,11 +94,12 @@ export default function PrivacyPage() {
 
       <h2>Who receives information</h2>
       <p>
-        Search details are sent to Riot Games so the requested account and game
-        information can be found. Hosting, delivery, and security providers may
-        handle service records on behalf of AgentStats. Information may also be
-        disclosed when required by law or needed to protect people, rights, or
-        the service.
+        Player search details are sent to Riot Games so the requested account
+        can be routed and, where an approved opt-in is present, the requested
+        game information can be returned. Hosting, delivery, and security
+        providers may handle service records on behalf of AgentStats.
+        Information may also be disclosed when required by law or needed to
+        protect people, rights, or the service.
       </p>
       <p>
         AgentStats does not sell personal information or share it for targeted
@@ -141,9 +155,10 @@ export default function PrivacyPage() {
 
       <h2>Children</h2>
       <p>
-        AgentStats is not intended to collect personal information directly
-        from children. If you believe a child has provided information that
-        should be removed, contact the operator.
+        AgentStats is not directed to children below the minimum age required
+        to consent to an online service where they live. If you believe a
+        child has provided information that should be removed, contact the
+        operator.
       </p>
 
       <h2>Security</h2>

@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import {
   SiteHeader,
@@ -12,6 +13,7 @@ import {
   getStatusText,
   isActiveStatusNotice,
 } from "@/lib/riot";
+import { absoluteUrl, getSiteUrl } from "@/lib/seo";
 
 import "./globals.css";
 
@@ -26,31 +28,64 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${APP_NAME} | Valorant Stats`,
+    default: `${APP_NAME} - Valorant Stats, Agents, Skins & Leaderboards`,
     template: `%s | ${APP_NAME}`,
   },
   description:
-    "Find Valorant players and explore agents, weapons, maps, and leaderboards.",
+    "Explore Valorant agents, weapons, skins, bundles, maps, ranked leaderboards, service status, and player tools with AgentStats.",
   applicationName: APP_NAME,
+  category: "gaming",
+  keywords: [
+    "Valorant stats",
+    "Valorant agents",
+    "Valorant weapons",
+    "Valorant skins",
+    "Valorant bundles",
+    "Valorant leaderboard",
+    "Valorant service status",
+  ],
+  referrer: "origin-when-cross-origin",
+  alternates: {
+    canonical: "/",
+  },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   openGraph: {
     type: "website",
+    url: "/",
     siteName: APP_NAME,
-    title: `${APP_NAME} | Valorant Stats`,
+    locale: "en_US",
+    title: `${APP_NAME} - Valorant Stats, Agents, Skins & Leaderboards`,
     description:
-      "Explore Valorant agents, weapons, maps, official leaderboards, and player profiles with permission.",
+      "Explore Valorant agents, weapons, skins, bundles, maps, ranked leaderboards, and live Riot service status.",
+    images: [{ url: "/opengraph-image", alt: "AgentStats Valorant stats" }],
   },
   twitter: {
-    card: "summary",
-    title: `${APP_NAME} | Valorant Stats`,
+    card: "summary_large_image",
+    title: `${APP_NAME} - Valorant Stats, Agents, Skins & Leaderboards`,
     description:
-      "Explore Valorant agents, weapons, maps, official leaderboards, and player profiles with permission.",
+      "Explore Valorant agents, weapons, skins, bundles, maps, ranked leaderboards, and live Riot service status.",
+    images: ["/opengraph-image"],
   },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b1016",
+  colorScheme: "dark",
 };
 
 async function getHeaderStatus(): Promise<HeaderStatusNotice | null> {
@@ -109,6 +144,25 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const statusNotice = await getHeaderStatus();
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: APP_NAME,
+      url: getSiteUrl(),
+      logo: absoluteUrl("/brand/agentstats-mark-512.png"),
+      description:
+        "An independent Valorant statistics and game reference project.",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: APP_NAME,
+      url: getSiteUrl(),
+      description:
+        "Valorant agents, weapons, skins, bundles, maps, leaderboards, service status, and player tools.",
+    },
+  ];
 
   return (
     <html
@@ -116,6 +170,9 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <JsonLd data={structuredData} />
+      </head>
       <body className="flex min-h-full flex-col">
         <a
           href="#main-content"

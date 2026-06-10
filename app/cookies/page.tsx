@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { ClearLocalData } from "@/components/clear-local-data";
 import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Cookie Notice",
   description:
-    "Learn about cookies and browser storage used by AgentStats.",
-};
+    "Learn about the strictly necessary community voting cookie and local browser storage used by AgentStats.",
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (
@@ -23,7 +25,8 @@ export default function CookiesPage() {
         Community Favorites. It gives the browser a protected random
         identifier so one active agent choice can be maintained per role,
         alongside one map, one weapon, and one skin choice per weapon.
-        Repeated voting can be limited.
+        Repeated voting can be limited. The cookie is set for up to one year
+        and may be renewed when you participate again.
       </p>
       <p>
         The service uses browser storage, which is different from a cookie, to

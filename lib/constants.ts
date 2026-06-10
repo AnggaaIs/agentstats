@@ -9,6 +9,7 @@ export const NAV_ITEMS = [
   { href: "/community", label: "Community" },
   { href: "/agents", label: "Agents" },
   { href: "/weapons", label: "Weapons" },
+  { href: "/bundles", label: "Bundles" },
   { href: "/maps", label: "Maps" },
   { href: "/leaderboard", label: "Leaderboard" },
 ] as const;

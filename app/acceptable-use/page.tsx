@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 
 import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Acceptable Use Policy",
-  description: "Rules for fair and lawful use of AgentStats.",
-};
+  description:
+    "Review the rules for fair, lawful, and responsible use of AgentStats, its community features, APIs, and Valorant data.",
+  path: "/acceptable-use",
+});
 
 export default function AcceptableUsePage() {
   return (
@@ -42,6 +45,10 @@ export default function AcceptableUsePage() {
         <li>
           Build or support cheats, account theft, match manipulation, betting,
           gambling, or wagering.
+        </li>
+        <li>
+          Scout opponents, identify deliberately hidden players, or expose
+          player-specific gameplay data without the player&apos;s opt-in.
         </li>
         <li>
           Resell AgentStats data or present the service as an official Riot

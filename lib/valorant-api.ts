@@ -72,8 +72,30 @@ export interface Weapon {
   skins: Array<{
     uuid: string;
     displayName: string;
+    themeUuid: string;
+    contentTierUuid: string | null;
     displayIcon: string | null;
+    wallpaper: string | null;
+    chromas: WeaponSkinChroma[];
+    levels: WeaponSkinLevel[];
   }>;
+}
+
+export interface WeaponSkinChroma {
+  uuid: string;
+  displayName: string;
+  displayIcon: string | null;
+  fullRender: string;
+  swatch: string | null;
+  streamedVideo: string | null;
+}
+
+export interface WeaponSkinLevel {
+  uuid: string;
+  displayName: string;
+  levelItem: string | null;
+  displayIcon: string | null;
+  streamedVideo: string | null;
 }
 
 export interface ValorantMap {
@@ -111,6 +133,69 @@ export interface ValorantVersion {
   buildDate: string;
 }
 
+export interface CompetitiveTier {
+  tier: number;
+  tierName: string;
+  divisionName: string;
+  color: string;
+  backgroundColor: string;
+  smallIcon: string | null;
+  largeIcon: string | null;
+}
+
+interface CompetitiveTierCollection {
+  uuid: string;
+  assetObjectName: string;
+  tiers: CompetitiveTier[];
+}
+
+export interface ContentTier {
+  uuid: string;
+  displayName: string;
+  devName: string;
+  rank: number;
+  highlightColor: string;
+  displayIcon: string;
+}
+
+export interface ValorantBundle {
+  uuid: string;
+  displayName: string;
+  displayNameSubText: string | null;
+  description: string;
+  extraDescription: string | null;
+  promoDescription: string | null;
+  displayIcon: string;
+  displayIcon2: string;
+  displayIcon3: string | null;
+  logoIcon: string | null;
+  verticalPromoImage: string | null;
+}
+
+export interface ValorantGameMode {
+  uuid: string;
+  displayName: string;
+  description: string | null;
+  duration: string | null;
+  economyType: string | null;
+  allowsMatchTimeouts: boolean;
+  isTeamVoiceAllowed: boolean;
+  isMinimapHidden: boolean;
+  orbCount: number;
+  roundsPerHalf: number;
+  displayIcon: string | null;
+  listViewIconTall: string | null;
+  assetPath: string;
+}
+
+export interface ValorantEvent {
+  uuid: string;
+  displayName: string;
+  shortDisplayName: string;
+  startTime: string;
+  endTime: string;
+}
+
 async function getApiData<T>(path: string, cache = true): Promise<T> {
   const response = await fetch(
     `${API_URL}${path}`,
@@ -142,6 +227,22 @@ export async function getWeapons(): Promise<Weapon[]> {
 
 export async function getWeapon(uuid: string): Promise<Weapon> {
   return getApiData<Weapon>(`/weapons/${encodeURIComponent(uuid)}`);
+}
+
+export async function getWeaponSkinLevel(
+  uuid: string,
+): Promise<WeaponSkinLevel> {
+  return getApiData<WeaponSkinLevel>(
+    `/weapons/skinlevels/${encodeURIComponent(uuid)}`,
+  );
+}
+
+export async function getWeaponSkinChroma(
+  uuid: string,
+): Promise<WeaponSkinChroma> {
+  return getApiData<WeaponSkinChroma>(
+    `/weapons/skinchromas/${encodeURIComponent(uuid)}`,
+  );
 }
 
 export async function getMaps(): Promise<ValorantMap[]> {
@@ -229,4 +330,31 @@ export async function getCurrentAct(): Promise<CompetitiveAct> {
 
 export async function getValorantVersion(): Promise<ValorantVersion> {
   return getApiData<ValorantVersion>("/version");
+}
+
+export async function getCompetitiveTiers(): Promise<CompetitiveTier[]> {
+  const collections =
+    await getApiData<CompetitiveTierCollection[]>("/competitivetiers");
+  return collections.at(-1)?.tiers ?? [];
+}
+
+export async function getContentTiers(): Promise<ContentTier[]> {
+  const tiers = await getApiData<ContentTier[]>("/contenttiers");
+  return tiers.toSorted((left, right) => left.rank - right.rank);
+}
+
+export async function getBundles(): Promise<ValorantBundle[]> {
+  return getApiData<ValorantBundle[]>("/bundles");
+}
+
+export async function getBundle(uuid: string): Promise<ValorantBundle> {
+  return getApiData<ValorantBundle>(`/bundles/${encodeURIComponent(uuid)}`);
+}
+
+export async function getGameModes(): Promise<ValorantGameMode[]> {
+  return getApiData<ValorantGameMode[]>("/gamemodes");
+}
+
+export async function getEvents(): Promise<ValorantEvent[]> {
+  return getApiData<ValorantEvent[]>("/events");
 }

@@ -4,12 +4,15 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
 import { getCurrentFavorites } from "@/lib/community";
+import { createMetadata } from "@/lib/seo";
 import { getWeapons } from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Weapons",
-  description: "Explore Valorant weapon handling, damage, economy, and skins.",
-};
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Weapons, Damage Stats & Skins",
+  description:
+    "Compare Valorant weapons by damage, fire rate, price, magazine, penetration, handling, and available skin collections.",
+  path: "/weapons",
+});
 
 export default async function WeaponsPage() {
   const [weapons, favorites] = await Promise.all([
@@ -24,12 +27,20 @@ export default async function WeaponsPage() {
         title="Weapon vault"
         description="Compare price, firepower, magazine size, and available collections."
       />
-      <RouteLink
-        href="/weapons/compare"
-        className="valorant-action mt-8 inline-flex min-h-12 items-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-sm font-black uppercase tracking-[0.14em]"
-      >
-        Open weapon comparison
-      </RouteLink>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <RouteLink
+          href="/weapons/compare"
+          className="valorant-action inline-flex min-h-12 items-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-sm font-black uppercase tracking-[0.14em]"
+        >
+          Open weapon comparison
+        </RouteLink>
+        <RouteLink
+          href="/bundles"
+          className="valorant-action inline-flex min-h-12 items-center border border-white/15 px-6 text-sm font-black uppercase tracking-[0.14em]"
+        >
+          Browse bundle archive
+        </RouteLink>
+      </div>
       <CatalogBrowser
         items={weapons.map((weapon) => {
           const group =

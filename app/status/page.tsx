@@ -9,6 +9,7 @@ import {
   type RiotPlatformStatus,
   type RiotStatusNotice,
 } from "@/lib/riot";
+import { createMetadata } from "@/lib/seo";
 
 const OFFICIAL_RIOT_STATUS_URL = "https://status.riotgames.com/";
 
@@ -21,11 +22,12 @@ const REGION_NAMES: Record<Region, string> = {
   latam: "Latin America",
 };
 
-export const metadata: Metadata = {
-  title: "Valorant Service Status",
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Server Status & Incidents",
   description:
-    "Check current Riot Valorant incidents and maintenance across every supported AgentStats region.",
-};
+    "Check current Valorant server incidents and scheduled maintenance across Asia Pacific, North America, Europe, Korea, Brazil, and LATAM.",
+  path: "/status",
+});
 
 interface RegionStatus {
   region: Region;
@@ -152,7 +154,7 @@ export default async function StatusPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16 overflow-x-hidden">
+      <section className="mx-auto max-w-7xl overflow-x-hidden px-5 py-12 lg:px-8 lg:py-16">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <p className="eyebrow">All regions</p>
@@ -165,7 +167,7 @@ export default async function StatusPage() {
           </p>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3">
           {statuses.map((status, index) => {
             const isUnavailable = !status.value;
             const hasNotices = status.notices.length > 0;
@@ -183,13 +185,14 @@ export default async function StatusPage() {
                 : "text-emerald-300";
 
             return (
-              <article
+              <details
                 key={status.region}
-                className="motion-card min-w-0 border border-white/10 bg-[var(--panel)]"
+                open={isUnavailable || hasNotices}
+                className="group motion-card min-w-0 border border-white/10 bg-[var(--panel)] open:border-white/20"
                 style={{ animationDelay: `${Math.min(index * 45, 180)}ms` }}
               >
-                <header className="flex items-start justify-between gap-5 border-b border-white/10 p-5 sm:p-6">
-                  <div className="flex min-w-0 items-start gap-4">
+                <summary className="valorant-action flex cursor-pointer list-none flex-col gap-4 p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] group-open:border-b group-open:border-white/10 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-6 [&::-webkit-details-marker]:hidden">
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                     <span className="grid size-11 shrink-0 place-items-center border border-white/12 bg-white/[0.035] font-mono text-xs font-black uppercase text-[var(--accent)]">
                       {status.region}
                     </span>
@@ -197,21 +200,34 @@ export default async function StatusPage() {
                       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
                         Riot platform
                       </p>
-                      <h3 className="mt-1 truncate font-display text-2xl font-black uppercase tracking-[-0.035em]">
+                      <h3 className="responsive-text mt-1 font-display text-[clamp(1.25rem,7vw,1.5rem)] font-black uppercase leading-none tracking-[-0.035em]">
                         {status.value?.name ?? REGION_NAMES[status.region]}
                       </h3>
                     </div>
                   </div>
-                  <p
-                    className={`shrink-0 text-right text-[10px] font-black uppercase tracking-[0.14em] ${stateClass}`}
-                  >
+                  <div className="flex items-center justify-between gap-4 sm:shrink-0 sm:justify-end">
+                    <p
+                      className={`text-left text-[10px] font-black uppercase tracking-[0.14em] sm:text-right ${stateClass}`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="mr-2 inline-block size-1.5 bg-current align-middle"
+                      />
+                      {stateLabel}
+                    </p>
                     <span
                       aria-hidden="true"
-                      className="mr-2 inline-block size-1.5 bg-current align-middle"
-                    />
-                    {stateLabel}
-                  </p>
-                </header>
+                      className="grid size-9 shrink-0 place-items-center border border-white/12 text-[var(--muted)] transition duration-200 group-open:rotate-180 group-open:border-[var(--accent)] group-open:text-white"
+                    >
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="size-3 fill-none stroke-current stroke-2"
+                      >
+                        <path d="m3 6 5 5 5-5" />
+                      </svg>
+                    </span>
+                  </div>
+                </summary>
 
                 {isUnavailable ? (
                   <div className="p-5 sm:p-6">
@@ -250,7 +266,7 @@ export default async function StatusPage() {
                               {formatDate(notice.created_at)}
                             </time>
                           </div>
-                          <h4 className="mt-4 font-display text-xl font-black uppercase leading-tight sm:text-2xl">
+                          <h4 className="responsive-text mt-4 font-display text-xl font-black uppercase leading-tight sm:text-2xl">
                             {getStatusText(notice.titles)}
                           </h4>
                           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
@@ -284,7 +300,7 @@ export default async function StatusPage() {
                     </div>
                   </div>
                 )}
-              </article>
+              </details>
             );
           })}
         </div>

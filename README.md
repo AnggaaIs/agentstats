@@ -8,6 +8,8 @@ The repository currently implements the public product foundation:
 
 - Responsive home and player search experience
 - Agent, weapon, and map catalog routes backed by `valorant-api.com`
+- Competitive tier icons, skin rarity metadata, chroma and level detail pages,
+  a searchable bundle archive, and enriched game mode and event match context
 - Flexible two-weapon comparison across economy, handling, damage ranges,
   penetration, ADS, and alternate fire
 - Anonymous community favorites with one agent choice per role, one map,
@@ -29,9 +31,13 @@ Riot platform notices use the official `VAL-STATUS-V1` endpoint. AgentStats does
 not present fabricated pick or win rates: those metrics require an approved,
 opt-in match dataset and sufficient sample sizes.
 
-Riot account, match, ranked, authentication, favorites, and database-backed
-player features require approved Riot credentials. Community favorites use the
-configured PostgreSQL database and do not require a Riot account.
+Riot account, match, ranked, authentication, and player-specific statistics
+require an approved production application and Riot Sign On opt-in. A Riot ID
+lookup alone is not permission to publish that player's match history or
+derived statistics. Before public production, AgentStats must be registered in
+the Riot Developer Portal, its product description must match the deployed
+features, and the RSO flow must enforce player consent. Community favorites use
+the configured PostgreSQL database and do not require a Riot account.
 
 ## Local development
 

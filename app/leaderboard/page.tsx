@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ActSelector } from "@/components/act-selector";
-import { HorizontalScroller } from "@/components/horizontal-scroller";
 import { Pagination } from "@/components/pagination";
 import { PageHeading } from "@/components/page-heading";
 import { RankDistribution } from "@/components/rank-distribution";
@@ -8,14 +8,21 @@ import { RouteLink } from "@/components/route-link";
 import { REGIONS, type Region } from "@/lib/constants";
 import {
   buildRankDistribution,
-  getCompetitiveTierName,
+  getCompetitiveTier,
 } from "@/lib/rank-distribution";
 import { getLeaderboard } from "@/lib/riot";
-import { getCompetitiveActs } from "@/lib/valorant-api";
+import { createMetadata } from "@/lib/seo";
+import {
+  getCompetitiveActs,
+  getCompetitiveTiers,
+} from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Leaderboard",
-};
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Ranked Leaderboard",
+  description:
+    "Browse the official Valorant ranked leaderboard by region and Act, including competitive tier icons, rating, wins, and rank distribution.",
+  path: "/leaderboard",
+});
 
 interface LeaderboardPageProps {
   searchParams: Promise<{ region?: string; act?: string; page?: string }>;
@@ -32,7 +39,10 @@ export default async function LeaderboardPage({
   const selected = query.region;
   const region: Region = isRegion(selected) ? selected : "ap";
   const requestedPage = Number(query.page ?? "1");
-  const acts = await getCompetitiveActs();
+  const [acts, competitiveTiers] = await Promise.all([
+    getCompetitiveActs(),
+    getCompetitiveTiers(),
+  ]);
   const visibleActs = acts.slice(0, 12);
   const currentAct = acts.find((item) => item.isCurrent);
   const requestedAct = acts.find((item) => item.uuid === query.act);
@@ -43,7 +53,7 @@ export default async function LeaderboardPage({
   }
 
   const leaderboard = await getLeaderboard(region, act.uuid);
-  const distribution = buildRankDistribution(leaderboard);
+  const distribution = buildRankDistribution(leaderboard, competitiveTiers);
   const perPage = 25;
   const totalPages = Math.ceil(leaderboard.players.length / perPage);
   const page = Math.min(
@@ -88,9 +98,11 @@ export default async function LeaderboardPage({
         totalPlayers={leaderboard.totalPlayers}
         region={region}
       />
-      <HorizontalScroller
-        ariaLabel="Competitive leaderboard table"
-        className="mt-6 border border-white/8"
+      <div
+        role="region"
+        aria-label="Competitive leaderboard table"
+        tabIndex={0}
+        className="tactical-scrollbar mt-6 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         <table className="w-full min-w-[48rem] border-collapse text-left">
           <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
@@ -103,11 +115,17 @@ export default async function LeaderboardPage({
             </tr>
           </thead>
           <tbody>
-            {players.map((player) => (
-              <tr
-                key={player.puuid}
-                className="group border-t border-white/8 transition hover:bg-[var(--accent)]/10"
-              >
+            {players.map((player) => {
+              const tier = getCompetitiveTier(
+                player.competitiveTier,
+                competitiveTiers,
+              );
+
+              return (
+                <tr
+                  key={player.puuid}
+                  className="group border-t border-white/8 transition hover:bg-[var(--accent)]/10"
+                >
                 <td className="p-5 font-mono text-[var(--accent)]">
                   {String(player.leaderboardRank).padStart(3, "0")}
                 </td>
@@ -126,14 +144,26 @@ export default async function LeaderboardPage({
                 </td>
                 <td className="p-5 text-lg font-black">{player.rankedRating}</td>
                 <td className="p-5">{player.numberOfWins}</td>
-                <td className="p-5 font-mono text-sm">
-                  {getCompetitiveTierName(player.competitiveTier)}
+                <td className="p-5">
+                  <div className="flex items-center gap-3">
+                    {tier.icon ? (
+                      <Image
+                        src={tier.icon}
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="size-9 shrink-0 object-contain"
+                      />
+                    ) : null}
+                    <span className="font-mono text-sm">{tier.name}</span>
+                  </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
-      </HorizontalScroller>
+      </div>
       <Pagination
         page={page}
         totalPages={totalPages}

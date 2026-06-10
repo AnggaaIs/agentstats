@@ -4,7 +4,13 @@ import { notFound } from "next/navigation";
 
 import { AgentRoleLabel } from "@/components/agent-role-label";
 import { FavoriteButton } from "@/components/favorite-button";
+import { JsonLd } from "@/components/json-ld";
 import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  createMetadata,
+} from "@/lib/seo";
 import { getAgent } from "@/lib/valorant-api";
 
 interface AgentPageProps {
@@ -15,13 +21,22 @@ export async function generateMetadata({
   params,
 }: AgentPageProps): Promise<Metadata> {
   try {
-    const agent = await getAgent((await params).uuid);
-    return {
-      title: agent.displayName,
-      description: agent.description,
-    };
+    const { uuid } = await params;
+    const agent = await getAgent(uuid);
+    return createMetadata({
+      title: `${agent.displayName} - Abilities, Role & Agent Guide`,
+      description: `${agent.displayName} is a ${agent.role?.displayName ?? "Valorant agent"}. Explore their biography, role, abilities, icons, and official Valorant artwork.`,
+      path: `/agents/${uuid}`,
+      image: agent.fullPortrait ?? agent.displayIcon,
+      imageAlt: `${agent.displayName} Valorant agent`,
+      type: "profile",
+    });
   } catch {
-    return { title: "Agent not found" };
+    return createMetadata({
+      title: "Agent not found",
+      path: "/agents",
+      noIndex: true,
+    });
   }
 }
 
@@ -42,6 +57,27 @@ export default async function AgentPage({ params }: AgentPageProps) {
 
   return (
     <article>
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Valorant Agents", path: "/agents" },
+            { name: agent.displayName, path: `/agents/${agent.uuid}` },
+          ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "VideoGameCharacter",
+            name: agent.displayName,
+            description: agent.description,
+            image: agent.fullPortrait ?? agent.displayIcon,
+            url: absoluteUrl(`/agents/${agent.uuid}`),
+            game: {
+              "@type": "VideoGame",
+              name: "Valorant",
+            },
+          },
+        ]}
+      />
       <header className="relative isolate overflow-hidden border-b border-white/8 bg-[#111820]">
         {agent.background ? (
           <Image

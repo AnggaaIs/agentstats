@@ -1,4 +1,4 @@
-export const LEGAL_EFFECTIVE_DATE = "June 9, 2026";
+export const LEGAL_EFFECTIVE_DATE = "June 10, 2026";
 
 export const LEGAL_EMAIL = process.env.NEXT_PUBLIC_LEGAL_EMAIL?.trim() || null;
 

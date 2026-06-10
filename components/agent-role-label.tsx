@@ -16,17 +16,22 @@ export function AgentRoleLabel({
   iconClassName,
 }: AgentRoleLabelProps) {
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
+    <span
+      className={cn(
+        "inline-flex max-w-full min-w-0 items-center gap-2",
+        className,
+      )}
+    >
       {icon ? (
         <Image
           src={icon}
           alt=""
           width={20}
           height={20}
-          className={cn("size-5 object-contain", iconClassName)}
+          className={cn("size-5 shrink-0 object-contain", iconClassName)}
         />
       ) : null}
-      <span>{name}</span>
+      <span className="responsive-text min-w-0">{name}</span>
     </span>
   );
 }

@@ -5,13 +5,15 @@ import {
   type ComparisonWeapon,
 } from "@/components/weapon-comparison";
 import { PageHeading } from "@/components/page-heading";
+import { createMetadata } from "@/lib/seo";
 import { getWeapons } from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Weapon Comparison",
+export const metadata: Metadata = createMetadata({
+  title: "Compare Valorant Weapons",
   description:
-    "Compare any two Valorant weapons across damage, handling, economy, penetration, and alternate fire.",
-};
+    "Compare two Valorant weapons side by side across damage ranges, fire rate, handling, economy, penetration, accuracy, and alternate fire.",
+  path: "/weapons/compare",
+});
 
 interface WeaponComparisonPageProps {
   searchParams: Promise<{ a?: string; b?: string }>;

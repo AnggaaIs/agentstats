@@ -3,12 +3,15 @@ import type { Metadata } from "next";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
 import { getCurrentFavorites } from "@/lib/community";
+import { createMetadata } from "@/lib/seo";
 import { getMaps } from "@/lib/valorant-api";
 
-export const metadata: Metadata = {
-  title: "Maps",
-  description: "Explore the Valorant map pool and tactical layouts.",
-};
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Maps & Tactical Layouts",
+  description:
+    "Browse the Valorant map pool, locations, tactical descriptions, and layouts for standard, training, duel, and team deathmatch arenas.",
+  path: "/maps",
+});
 
 function getMapGroup(mapUrl: string): string {
   const normalized = mapUrl.toLocaleLowerCase();

@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 
 import { AgentRoleLabel } from "@/components/agent-role-label";
 import { PageHeading } from "@/components/page-heading";
+import { createMetadata } from "@/lib/seo";
 import { getAgents, getValorantVersion } from "@/lib/valorant-api";
 
 const OFFICIAL_PATCH_NOTES_URL =
   "https://playvalorant.com/en-us/news/tags/patch-notes/";
 
-export const metadata: Metadata = {
-  title: "Agent Meta",
+export const metadata: Metadata = createMetadata({
+  title: "Valorant Agent Meta & Current Patch",
   description:
-    "Track the current Valorant patch, agent roster structure, and upcoming opt-in competitive dataset.",
-};
+    "Track the current Valorant patch, playable agent roster, role distribution, and AgentStats competitive data methodology.",
+  path: "/meta",
+});
 
 export default async function MetaPage() {
   const [agents, version] = await Promise.all([

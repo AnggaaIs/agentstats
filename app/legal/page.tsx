@@ -4,12 +4,14 @@ import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
 import { RouteLink } from "@/components/route-link";
 import { LEGAL_LINKS } from "@/lib/legal";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Legal",
+export const metadata: Metadata = createMetadata({
+  title: "Legal Overview",
   description:
     "Legal information for AgentStats, including privacy, terms, cookies, acceptable use, and data requests.",
-};
+  path: "/legal",
+});
 
 export default function LegalOverviewPage() {
   return (

@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 
 import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Terms of Use",
-  description: "The terms that apply when you access or use AgentStats.",
-};
+  description:
+    "Read the terms that apply when accessing or using AgentStats, its Valorant reference content, community features, and player tools.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (
@@ -16,9 +19,10 @@ export default function TermsPage() {
     >
       <h2>The service</h2>
       <p>
-        AgentStats provides public Valorant game information, player lookup,
-        statistics, and reference content. Features may be added, changed,
-        limited, or removed at any time.
+        AgentStats provides Valorant reference content, official ladder and
+        platform status information, community favorites, and player features
+        where Riot permits them. Features may be added, changed, limited, or
+        removed at any time.
       </p>
       <p>
         AgentStats is an independent project. It is not Riot Games, is not
@@ -53,6 +57,12 @@ export default function TermsPage() {
         voting limits, or coordinate manipulation of a ranking.
       </p>
       <p>
+        Do not use player lookup to scout opponents, identify deliberately
+        hidden players, or access personal gameplay data without the
+        player&apos;s permission. Player-specific match history and derived
+        statistics require that player&apos;s opt-in through Riot Sign On.
+      </p>
+      <p>
         The separate <a href="/acceptable-use">Acceptable Use Policy</a> is part
         of these terms.
       </p>
@@ -60,9 +70,10 @@ export default function TermsPage() {
       <h2>Riot Games and other services</h2>
       <p>
         AgentStats relies on information and services supplied by Riot Games
-        and other providers. Your use of those services may also be governed by
-        their own terms and privacy notices. AgentStats cannot control their
-        availability, accuracy, policies, or decisions.
+        and independent providers including valorant-api.com. Your use of
+        linked services may also be governed by their own terms and privacy
+        notices. AgentStats cannot control their availability, accuracy,
+        policies, or decisions.
       </p>
 
       <h2>Ownership</h2>

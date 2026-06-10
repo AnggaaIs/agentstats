@@ -12,6 +12,7 @@ import {
   RiotApiError,
 } from "@/lib/riot";
 import { playerSearchSchema } from "@/lib/schemas";
+import { createMetadata } from "@/lib/seo";
 import {
   getAgents,
   getCurrentAct,
@@ -26,10 +27,14 @@ interface PlayerPageProps {
 export async function generateMetadata({
   params,
 }: PlayerPageProps): Promise<Metadata> {
-  const { name, tag } = await params;
-  return {
-    title: `${decodeURIComponent(name)}#${decodeURIComponent(tag)}`,
-  };
+  const { region, name, tag } = await params;
+  const riotId = `${decodeURIComponent(name)}#${decodeURIComponent(tag)}`;
+  return createMetadata({
+    title: `${riotId} Valorant Profile`,
+    description: `Private Valorant profile lookup for ${riotId}. Player data is shown only where Riot permits access.`,
+    path: `/player/${region}/${name}/${tag}`,
+    noIndex: true,
+  });
 }
 
 function formatNumber(value: number, digits = 0): string {
@@ -132,9 +137,9 @@ export default async function PlayerPage({
       <header className="grid-noise border-b border-white/8">
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+            <div className="min-w-0">
               <p className="eyebrow">Player profile / {region}</p>
-              <h1 className="mt-6 break-words font-display text-6xl font-black uppercase leading-[0.85] tracking-[-0.065em] sm:text-8xl">
+              <h1 className="responsive-text mt-6 font-display text-[clamp(3rem,16vw,6rem)] font-black uppercase leading-[0.85] tracking-[-0.065em]">
                 {account.gameName}
                 <span className="text-[var(--accent)]">#{account.tagLine}</span>
               </h1>
@@ -149,7 +154,7 @@ export default async function PlayerPage({
                 </span>
               </div>
             </div>
-            <div className="min-w-64 border border-white/10 bg-[var(--panel)] p-6">
+            <div className="w-full min-w-0 border border-white/10 bg-[var(--panel)] p-6 sm:w-auto sm:min-w-64">
               <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">
                 {currentActName || "Current act"}
               </p>
@@ -192,7 +197,7 @@ export default async function PlayerPage({
 
             <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_0.7fr]">
               <section>
-                <div className="flex items-end justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="eyebrow">Recent form</p>
                     <h2 className="mt-4 font-display text-4xl font-black uppercase tracking-[-0.05em]">
@@ -234,7 +239,7 @@ export default async function PlayerPage({
                           >
                             {match.result}
                           </span>
-                          <span className="text-sm text-[var(--muted)]">
+                          <span className="responsive-text text-sm text-[var(--muted)]">
                             {match.mapName} · {match.queue}
                           </span>
                         </div>
@@ -245,7 +250,7 @@ export default async function PlayerPage({
                           {formatDate(match.playedAt)}
                         </p>
                       </div>
-                      <div className="text-left sm:text-right">
+                      <div className="min-w-0 text-left sm:text-right">
                         <p className="font-display text-3xl font-black">{match.score}</p>
                         <p className="text-xs text-[var(--muted)]">
                           {formatNumber(match.acs)} score ·{" "}
@@ -284,8 +289,10 @@ export default async function PlayerPage({
                             />
                           ) : null}
                         </div>
-                        <div>
-                          <p className="font-black">{agent.name}</p>
+                        <div className="min-w-0">
+                          <p className="responsive-text font-black">
+                            {agent.name}
+                          </p>
                           <p className="text-xs text-[var(--muted)]">
                             {agent.kills}/{agent.deaths}/{agent.assists}
                           </p>

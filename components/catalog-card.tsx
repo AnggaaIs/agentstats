@@ -48,15 +48,15 @@ export function CatalogCard({
     </div>
   );
   const information = (
-    <div className="relative -mt-10 flex min-h-24 items-end justify-between gap-4 p-5">
-      <div className="min-w-0">
+    <div className="relative -mt-8 grid min-h-28 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-10 sm:p-5">
+      <div className="responsive-text">
         <AgentRoleLabel
           name={meta}
           icon={metaIcon}
-          className="max-w-full truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]"
+          className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
           iconClassName="size-4"
         />
-        <h2 className="mt-1 truncate font-display text-2xl font-black uppercase tracking-[-0.04em]">
+        <h2 className="responsive-text mt-1 font-display text-[clamp(1.25rem,6vw,1.5rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
           {title}
         </h2>
       </div>
@@ -82,18 +82,18 @@ export function CatalogCard({
       >
         {artwork}
       </RouteLink>
-      <div className="relative -mt-10 flex min-h-24 items-end justify-between gap-4 p-5">
+      <div className="relative -mt-8 grid min-h-28 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-10 sm:p-5">
         <RouteLink
           href={href}
-          className="min-w-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+          className="responsive-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
           <AgentRoleLabel
             name={meta}
             icon={metaIcon}
-            className="max-w-full truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]"
+            className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
             iconClassName="size-4"
           />
-          <h2 className="mt-1 truncate font-display text-2xl font-black uppercase tracking-[-0.04em]">
+          <h2 className="responsive-text mt-1 font-display text-[clamp(1.25rem,6vw,1.5rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
             {title}
           </h2>
         </RouteLink>

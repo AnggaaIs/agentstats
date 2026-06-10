@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { ClearLocalData } from "@/components/clear-local-data";
 import { LegalContact } from "@/components/legal-contact";
 import { LegalPage } from "@/components/legal-page";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
   title: "Data Requests",
   description:
     "Request access, correction, deletion, or information about data handled by AgentStats.",
-};
+  path: "/data-requests",
+});
 
 export default function DataRequestsPage() {
   return (

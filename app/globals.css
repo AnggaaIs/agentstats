@@ -78,12 +78,31 @@ body::-webkit-scrollbar-button {
   background: transparent !important;
 }
 
-.horizontal-scroll-viewport {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.tactical-scrollbar {
+  overscroll-behavior-inline: contain;
+  scrollbar-color: rgba(255, 70, 85, 0.86) rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
 }
 
-.horizontal-scroll-viewport::-webkit-scrollbar {
+.tactical-scrollbar::-webkit-scrollbar {
+  height: 7px;
+}
+
+.tactical-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tactical-scrollbar::-webkit-scrollbar-thumb {
+  border: 1px solid #10161d;
+  background: rgba(255, 70, 85, 0.86);
+}
+
+.tactical-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ff6571;
+}
+
+.tactical-scrollbar::-webkit-scrollbar-button,
+.tactical-scrollbar::-webkit-scrollbar-button:single-button {
   display: none;
   width: 0;
   height: 0;
@@ -102,6 +121,30 @@ body {
   color: var(--paper);
   font-family: var(--font-geist-sans), sans-serif;
   overflow-x: hidden;
+}
+
+main,
+article,
+section,
+header,
+footer,
+nav,
+aside {
+  min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+.responsive-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  word-break: normal;
 }
 
 button,

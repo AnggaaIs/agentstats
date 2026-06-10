@@ -4,6 +4,7 @@ import { LEGAL_LINKS } from "@/lib/legal";
 import { RouteLink } from "@/components/route-link";
 
 const FOOTER_LINKS = [
+  { href: "/bundles", label: "Bundles" },
   { href: "/status", label: "Status" },
   ...LEGAL_LINKS,
 ] as const;
@@ -15,9 +16,11 @@ export function SiteFooter() {
         <div className="max-w-2xl leading-6">
           <p className="font-bold text-white">{APP_NAME}</p>
           <p className="mt-2">
-            An independent project created under Riot Games&apos; Legal Jibber
-            Jabber policy using assets owned by Riot Games. Not endorsed by
-            Riot Games.
+            AgentStats isn&apos;t endorsed by Riot Games and doesn&apos;t
+            reflect the views or opinions of Riot Games or anyone officially
+            involved in producing or managing Riot Games properties. Riot
+            Games, and all associated properties are trademarks or registered
+            trademarks of Riot Games, Inc.
           </p>
         </div>
 

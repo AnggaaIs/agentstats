@@ -1,4 +1,3 @@
-import { HorizontalScroller } from "@/components/horizontal-scroller";
 import { RouteLink } from "@/components/route-link";
 import type { Region } from "@/lib/constants";
 import type { CompetitiveAct } from "@/lib/valorant-api";
@@ -29,9 +28,11 @@ export function ActSelector({
           {acts.length} acts
         </span>
       </div>
-      <HorizontalScroller
-        ariaLabel="Competitive Acts"
-        viewportClassName="flex snap-x gap-2"
+      <div
+        role="region"
+        aria-label="Competitive Acts"
+        tabIndex={0}
+        className="tactical-scrollbar flex snap-x gap-2 overflow-x-auto pb-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         {acts.map((act) => (
           <RouteLink
@@ -49,7 +50,7 @@ export function ActSelector({
             </span>
           </RouteLink>
         ))}
-      </HorizontalScroller>
+      </div>
     </nav>
   );
 }

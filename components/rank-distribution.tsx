@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { RankDistributionItem } from "@/lib/rank-distribution";
 
 interface RankDistributionProps {
@@ -43,10 +45,21 @@ export function RankDistribution({
         <div className="mt-8 space-y-5">
           {distribution.map((item) => (
             <div key={item.tier}>
-              <div className="mb-2 flex items-baseline justify-between gap-4">
-                <p className="text-xs font-black uppercase tracking-[0.12em]">
-                  {item.shortName}
-                </p>
+              <div className="mb-2 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+                <div className="flex min-w-0 items-center gap-2">
+                  {item.icon ? (
+                    <Image
+                      src={item.icon}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="size-7 shrink-0 object-contain"
+                    />
+                  ) : null}
+                  <p className="responsive-text text-xs font-black uppercase tracking-[0.12em]">
+                    {item.shortName}
+                  </p>
+                </div>
                 <p className="font-mono text-xs text-[var(--muted)]">
                   {numberFormatter.format(item.count)} players ·{" "}
                   {item.percentage.toFixed(1)}%

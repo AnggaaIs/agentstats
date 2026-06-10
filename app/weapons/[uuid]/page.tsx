@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { FavoriteButton } from "@/components/favorite-button";
-import { HorizontalScroller } from "@/components/horizontal-scroller";
+import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
 import { getCurrentFavorites } from "@/lib/community";
-import { getWeapon } from "@/lib/valorant-api";
+import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
+import { getContentTiers, getWeapon } from "@/lib/valorant-api";
 
 interface WeaponPageProps {
   params: Promise<{ uuid: string }>;
@@ -17,10 +18,22 @@ export async function generateMetadata({
   params,
 }: WeaponPageProps): Promise<Metadata> {
   try {
-    const weapon = await getWeapon((await params).uuid);
-    return { title: weapon.displayName };
+    const { uuid } = await params;
+    const weapon = await getWeapon(uuid);
+    const category = weapon.shopData?.category ?? "Valorant weapon";
+    return createMetadata({
+      title: `${weapon.displayName} - Damage Stats, Price & Skins`,
+      description: `Explore ${weapon.displayName} ${category.toLowerCase()} damage, fire rate, magazine, reload, price, handling, and every available Valorant skin.`,
+      path: `/weapons/${uuid}`,
+      image: weapon.displayIcon,
+      imageAlt: `${weapon.displayName} Valorant weapon`,
+    });
   } catch {
-    return { title: "Weapon not found" };
+    return createMetadata({
+      title: "Weapon not found",
+      path: "/weapons",
+      noIndex: true,
+    });
   }
 }
 
@@ -28,11 +41,13 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
   const { uuid } = await params;
   let weapon;
   let favorites;
+  let contentTiers;
 
   try {
-    [weapon, favorites] = await Promise.all([
+    [weapon, favorites, contentTiers] = await Promise.all([
       getWeapon(uuid),
       getCurrentFavorites(),
+      getContentTiers(),
     ]);
   } catch {
     notFound();
@@ -50,10 +65,17 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
 
   return (
     <article className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Valorant Weapons", path: "/weapons" },
+          { name: weapon.displayName, path: `/weapons/${weapon.uuid}` },
+        ])}
+      />
       <header className="grid items-center gap-12 lg:grid-cols-[0.75fr_1.25fr]">
         <div>
           <p className="eyebrow">{weapon.shopData?.category ?? "Weapon"}</p>
-          <h1 className="mt-6 font-display text-7xl font-black uppercase leading-[0.85] tracking-[-0.07em] sm:text-9xl">
+          <h1 className="responsive-text mt-6 font-display text-[clamp(3.5rem,20vw,8rem)] font-black uppercase leading-[0.85] tracking-[-0.07em]">
             {weapon.displayName}
           </h1>
           <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -102,9 +124,11 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
       {stats?.damageRanges.length ? (
         <section className="mt-20">
           <p className="eyebrow">Damage</p>
-          <HorizontalScroller
-            ariaLabel={`${weapon.displayName} damage table`}
-            className="mt-8 border border-white/8"
+          <div
+            role="region"
+            aria-label={`${weapon.displayName} damage table`}
+            tabIndex={0}
+            className="tactical-scrollbar mt-8 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             <table className="w-full min-w-[42rem] border-collapse text-left">
               <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
@@ -137,7 +161,7 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
                 ))}
               </tbody>
             </table>
-          </HorizontalScroller>
+          </div>
         </section>
       ) : null}
 
@@ -150,17 +174,38 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
         <CatalogBrowser
           items={weapon.skins
             .filter((skin) => skin.displayIcon)
-            .map((skin) => ({
-              id: skin.uuid,
-              image: skin.displayIcon ?? weapon.displayIcon,
-              title: skin.displayName,
-              meta: weapon.displayName,
-              group: "Collection",
-              variant: "wide" as const,
-              imageFit: "contain" as const,
-              favoriteScope: weapon.uuid,
-            }))}
-          groups={[]}
+            .map((skin) => {
+              const tier = contentTiers.find(
+                (item) => item.uuid === skin.contentTierUuid,
+              );
+              return {
+                id: skin.uuid,
+                href: `/weapons/${weapon.uuid}/skins/${skin.uuid}`,
+                image: skin.displayIcon ?? weapon.displayIcon,
+                title: skin.displayName,
+                meta: tier?.displayName ?? "Standard issue",
+                metaIcon: tier?.displayIcon,
+                group: tier?.displayName ?? "Standard issue",
+                variant: "wide" as const,
+                imageFit: "contain" as const,
+                favoriteScope: weapon.uuid,
+              };
+            })}
+          groups={[
+            ...contentTiers
+              .filter((tier) =>
+                weapon.skins.some(
+                  (skin) => skin.contentTierUuid === tier.uuid,
+                ),
+              )
+              .map((tier) => tier.displayName),
+            ...(weapon.skins.some((skin) => !skin.contentTierUuid)
+              ? ["Standard issue"]
+              : []),
+          ]}
+          groupIcons={Object.fromEntries(
+            contentTiers.map((tier) => [tier.displayName, tier.displayIcon]),
+          )}
           columns="three"
           perPage={9}
           searchPlaceholder="Search this skin collection"
