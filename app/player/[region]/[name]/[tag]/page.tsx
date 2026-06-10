@@ -62,8 +62,9 @@ export default async function PlayerPage({
 
   try {
     account = await getRiotAccount(name, tag, region);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof RiotApiError && error.status === 404) notFound();
+    throw error;
   }
 
   const [agentsResult, mapsResult, matchesResult, actResult] =

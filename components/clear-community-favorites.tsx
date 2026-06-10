@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import type { ApiResponse } from "@/lib/api-response";
+
 export function ClearCommunityFavorites() {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -14,9 +16,14 @@ export function ClearCommunityFavorites() {
       const response = await fetch("/api/community/favorites", {
         method: "DELETE",
       });
+      const payload = (await response.json()) as ApiResponse<{
+        removed: number;
+      }>;
 
       if (!response.ok) {
-        setMessage("Your favorites could not be cleared.");
+        setMessage(
+          payload.error ?? "Your favorites could not be cleared.",
+        );
         return;
       }
 
@@ -32,8 +39,8 @@ export function ClearCommunityFavorites() {
   return (
     <div className="border border-white/10 bg-[var(--panel)] p-5">
       <p className="text-sm leading-6 text-[var(--muted)]">
-        Remove all three anonymous choices and the device identifier used to
-        protect the vote.
+        Remove every anonymous role, map, and weapon choice together with the
+        device identifier used to protect the vote.
       </p>
       <button
         type="button"

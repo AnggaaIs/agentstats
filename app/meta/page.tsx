@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AgentRoleLabel } from "@/components/agent-role-label";
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
 import { REGIONS, type Region } from "@/lib/constants";
@@ -56,9 +57,16 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
       })),
   ]);
   const patchVersion = version.branch.replace("release-", "");
-  const roleCounts = agents.reduce<Record<string, number>>((counts, agent) => {
+  const roleCounts = agents.reduce<
+    Record<string, { count: number; icon: string | null }>
+  >((counts, agent) => {
     const role = agent.role?.displayName ?? "Other";
-    counts[role] = (counts[role] ?? 0) + 1;
+    const current = counts[role] ?? {
+      count: 0,
+      icon: agent.role?.displayIcon ?? null,
+    };
+    current.count += 1;
+    counts[role] = current;
     return counts;
   }, {});
   const notices = statusResult.value
@@ -211,28 +219,32 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
             <div className="grid gap-3 sm:grid-cols-2">
               {Object.entries(roleCounts)
                 .sort(([left], [right]) => left.localeCompare(right))
-                .map(([role, count]) => (
+                .map(([role, details]) => (
                   <div
                     key={role}
                     className="border border-white/10 bg-[var(--panel)] p-5"
                   >
                     <div className="flex items-end justify-between gap-5">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
-                          {role}
-                        </p>
+                        <AgentRoleLabel
+                          name={role}
+                          icon={details.icon}
+                          className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]"
+                        />
                         <p className="mt-2 font-display text-4xl font-black">
-                          {count}
+                          {details.count}
                         </p>
                       </div>
                       <p className="font-mono text-sm text-[var(--accent)]">
-                        {((count / agents.length) * 100).toFixed(1)}%
+                        {((details.count / agents.length) * 100).toFixed(1)}%
                       </p>
                     </div>
                     <div className="mt-4 h-1 bg-white/10">
                       <div
                         className="h-full bg-[var(--accent)]"
-                        style={{ width: `${(count / agents.length) * 100}%` }}
+                        style={{
+                          width: `${(details.count / agents.length) * 100}%`,
+                        }}
                       />
                     </div>
                   </div>

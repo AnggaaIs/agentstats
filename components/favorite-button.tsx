@@ -10,7 +10,12 @@ interface FavoriteButtonProps {
   targetId: string;
   targetName: string;
   selected: boolean;
-  onChange?: (targetId: string | null, scopeKey: string) => void;
+  selectedTargetId?: string | null;
+  onChange?: (
+    targetId: string | null,
+    scopeKey: string,
+    phase: "optimistic" | "confirmed" | "rollback",
+  ) => void;
   className?: string;
   appearance?: "standard" | "compact";
 }
@@ -28,6 +33,7 @@ export function FavoriteButton({
   targetId,
   targetName,
   selected,
+  selectedTargetId,
   onChange,
   className = "",
   appearance = "standard",
@@ -41,9 +47,19 @@ export function FavoriteButton({
   async function updateFavorite() {
     if (pending) return;
 
+    const previousTarget =
+      selectedTargetId === undefined
+        ? isSelected
+          ? targetId
+          : null
+        : selectedTargetId;
+    const optimisticTarget = isSelected ? null : targetId;
+
     setPending(true);
     setMessage("");
     setFailed(false);
+    onChange?.(optimisticTarget, scopeKey, "optimistic");
+    setInternalSelected(Boolean(optimisticTarget));
 
     try {
       const response = await fetch(
@@ -67,14 +83,16 @@ export function FavoriteButton({
       if (!response.ok) {
         setMessage(payload.error ?? "Your favorite could not be updated.");
         setFailed(true);
+        onChange?.(previousTarget, scopeKey, "rollback");
+        setInternalSelected(previousTarget === targetId);
         return;
       }
 
-      const nextTarget = isSelected
+      const confirmedTarget = isSelected
         ? null
         : (payload.data?.selectedTargetId ?? targetId);
-      onChange?.(nextTarget, scopeKey);
-      setInternalSelected(Boolean(nextTarget));
+      onChange?.(confirmedTarget, scopeKey, "confirmed");
+      setInternalSelected(confirmedTarget === targetId);
       setMessage(
         isSelected
           ? `${targetName} was removed from your favorites.`
@@ -83,6 +101,8 @@ export function FavoriteButton({
     } catch {
       setMessage("Your favorite could not be updated.");
       setFailed(true);
+      onChange?.(previousTarget, scopeKey, "rollback");
+      setInternalSelected(previousTarget === targetId);
     } finally {
       setPending(false);
     }
@@ -93,6 +113,7 @@ export function FavoriteButton({
       <button
         type="button"
         disabled={pending}
+        aria-busy={pending}
         aria-pressed={isSelected}
         aria-label={
           isSelected
@@ -140,11 +161,11 @@ export function FavoriteButton({
       <span
         className={
           failed
-            ? "absolute right-0 top-full z-30 mt-2 w-60 border border-[var(--accent)] bg-[#0b1016] px-3 py-2 text-xs normal-case tracking-normal text-white shadow-xl"
+            ? "fixed bottom-5 right-5 z-[100] w-[min(22rem,calc(100vw-2.5rem))] border border-[var(--accent)] bg-[#0b1016] px-4 py-3 text-sm normal-case tracking-normal text-white shadow-2xl shadow-black/60"
             : "sr-only"
         }
-        role="status"
-        aria-live="polite"
+        role={failed ? "alert" : "status"}
+        aria-live={failed ? "assertive" : "polite"}
       >
         {message}
       </span>

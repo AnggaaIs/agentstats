@@ -16,6 +16,7 @@ export interface CommunityLeaderboardRow {
   name: string;
   image: string;
   meta: string;
+  metaIcon?: string;
   scopeKey: string;
   votes: number;
   percentage: number;
@@ -25,6 +26,8 @@ export interface CommunityLeaderboardRow {
 interface CommunityLeaderboardProps {
   boards: Record<FavoriteCategoryName, CommunityLeaderboardRow[]>;
   totals: Record<FavoriteCategoryName, number>;
+  agentRoles: Array<{ scopeKey: string; label: string; icon?: string }>;
+  agentTotals: Record<string, number>;
   initialFavorites: CurrentFavorites;
 }
 
@@ -37,14 +40,30 @@ const CATEGORY_LABELS: Record<FavoriteCategoryName, string> = {
 export function CommunityLeaderboard({
   boards,
   totals,
+  agentRoles,
+  agentTotals,
   initialFavorites,
 }: CommunityLeaderboardProps) {
   const router = useRouter();
   const [category, setCategory] = useState<FavoriteCategoryName>("agent");
+  const [agentRole, setAgentRole] = useState(
+    agentRoles[0]?.scopeKey ?? "controller",
+  );
   const [favorites, setFavorites] = useState(initialFavorites);
-  const rows = boards[category];
+  const rows =
+    category === "agent"
+      ? boards.agent.filter((row) => row.scopeKey === agentRole).slice(0, 10)
+      : boards[category].slice(0, 10);
+  const activeTotal =
+    category === "agent" ? (agentTotals[agentRole] ?? 0) : totals[category];
+  const activeRoleLabel =
+    agentRoles.find((role) => role.scopeKey === agentRole)?.label ?? "Agent";
 
-  function updateFavorite(targetId: string | null, scopeKey: string) {
+  function updateFavorite(
+    targetId: string | null,
+    scopeKey: string,
+    phase: "optimistic" | "confirmed" | "rollback",
+  ) {
     setFavorites((current) => {
       if (category !== "agent") {
         return { ...current, [category]: targetId };
@@ -55,7 +74,7 @@ export function CommunityLeaderboard({
       else delete agents[scopeKey];
       return { ...current, agent: agents };
     });
-    router.refresh();
+    if (phase === "confirmed") router.refresh();
   }
 
   return (
@@ -89,18 +108,55 @@ export function CommunityLeaderboard({
         role="tabpanel"
         className="border-x border-b border-white/12 bg-[#10161d]"
       >
+        {category === "agent" ? (
+          <div
+            className="grid grid-cols-2 border-b border-white/10 sm:grid-cols-4"
+            role="group"
+            aria-label="Choose agent role leaderboard"
+          >
+            {agentRoles.map((role) => (
+              <button
+                key={role.scopeKey}
+                type="button"
+                aria-pressed={agentRole === role.scopeKey}
+                onClick={() => setAgentRole(role.scopeKey)}
+                className={`valorant-action min-h-12 border-b border-r border-white/10 px-3 text-[11px] font-black uppercase tracking-[0.12em] sm:border-b-0 ${
+                  agentRole === role.scopeKey
+                    ? "bg-white/[0.07] text-white outline outline-1 -outline-offset-1 outline-[var(--accent)]"
+                    : "text-[var(--muted)]"
+                }`}
+              >
+                {role.label}
+                {role.icon ? (
+                  <Image
+                    src={role.icon}
+                    alt=""
+                    width={18}
+                    height={18}
+                    className="ml-2 inline-block size-[18px] object-contain align-middle"
+                  />
+                ) : null}
+                <span className="ml-2 font-mono text-[10px] opacity-60">
+                  {agentTotals[role.scopeKey] ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
               Community ranking
             </p>
             <h2 className="mt-1 font-display text-3xl font-black uppercase tracking-[-0.04em]">
-              Favorite {CATEGORY_LABELS[category]}
+              {category === "agent"
+                ? `Favorite ${activeRoleLabel}`
+                : `Favorite ${CATEGORY_LABELS[category]}`}
             </h2>
           </div>
           <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-            {totals[category]} verified{" "}
-            {totals[category] === 1 ? "vote" : "votes"}
+            {activeTotal} verified {activeTotal === 1 ? "vote" : "votes"}
           </p>
         </div>
 
@@ -136,13 +192,24 @@ export function CommunityLeaderboard({
                       {row.name}
                     </h3>
                   )}
-                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+                  <span className="mt-1 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+                    {row.metaIcon ? (
+                      <Image
+                        src={row.metaIcon}
+                        alt=""
+                        width={18}
+                        height={18}
+                        className="size-[18px] object-contain"
+                      />
+                    ) : null}
                     {row.meta}
-                  </p>
+                  </span>
                   <progress
                     value={row.percentage}
                     max={100}
-                    aria-label={`${row.percentage}% of ${category} votes`}
+                    aria-label={`${row.percentage}% of ${
+                      category === "agent" ? activeRoleLabel : category
+                    } votes`}
                     className="community-progress mt-4 block h-1.5 w-full"
                   />
                 </div>
@@ -165,6 +232,11 @@ export function CommunityLeaderboard({
                         ? favorites.agent[row.scopeKey] === row.id
                         : favorites[category] === row.id
                     }
+                    selectedTargetId={
+                      category === "agent"
+                        ? (favorites.agent[row.scopeKey] ?? null)
+                        : favorites[category]
+                    }
                     onChange={updateFavorite}
                   />
                 </div>
@@ -177,7 +249,8 @@ export function CommunityLeaderboard({
               The board is waiting
             </p>
             <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-[var(--muted)]">
-              No verified favorite has been recorded in this category yet.
+              No verified favorite has been recorded
+              {category === "agent" ? ` for ${activeRoleLabel}` : ""} yet.
               Choose yours from the catalog to set the first ranking.
             </p>
             <Link

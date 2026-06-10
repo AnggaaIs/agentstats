@@ -29,7 +29,15 @@ const DEVICE_CHANGES_PER_DAY = 8;
 const NETWORK_VOTES_PER_HOUR = 120;
 const NETWORK_DEVICES_PER_HOUR = 60;
 
-class VoteLimitError extends Error {}
+class VoteLimitError extends Error {
+  constructor(
+    message: string,
+    public readonly retryAfterSeconds: number,
+  ) {
+    super(message);
+    this.name = "VoteLimitError";
+  }
+}
 
 function setDeviceCookie(response: NextResponse, credential: string) {
   response.cookies.set({
@@ -202,12 +210,21 @@ export async function POST(request: NextRequest) {
             }),
           ]);
 
+        if (deviceChanges >= DEVICE_CHANGES_PER_DAY) {
+          throw new VoteLimitError(
+            "You reached the daily favorite change limit. Try again later.",
+            86_400,
+          );
+        }
+
         if (
-          deviceChanges >= DEVICE_CHANGES_PER_DAY ||
           networkVotes >= NETWORK_VOTES_PER_HOUR ||
           networkDevices.length >= NETWORK_DEVICES_PER_HOUR
         ) {
-          throw new VoteLimitError();
+          throw new VoteLimitError(
+            "Favorite voting is busy on this network. Try again in about an hour.",
+            3_600,
+          );
         }
 
         const updated = await transaction.communityVote.upsert({
@@ -262,9 +279,10 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     if (error instanceof VoteLimitError) {
-      const response = apiError(
-        "Too many favorite changes were made recently. Please try again later.",
-        429,
+      const response = apiError(error.message, 429);
+      response.headers.set(
+        "Retry-After",
+        error.retryAfterSeconds.toString(),
       );
       setDeviceCookie(response, credential);
       return response;

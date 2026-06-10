@@ -1,12 +1,15 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils/cn";
 
 interface ChoiceChipProps {
   label: string;
+  icon?: string;
   checked: boolean;
   onChange: () => void;
 }
 
-export function ChoiceChip({ label, checked, onChange }: ChoiceChipProps) {
+export function ChoiceChip({ label, icon, checked, onChange }: ChoiceChipProps) {
   return (
     <label
       className={cn(
@@ -31,6 +34,15 @@ export function ChoiceChip({ label, checked, onChange }: ChoiceChipProps) {
       >
         {checked ? <span className="size-2 bg-[var(--accent)]" /> : null}
       </span>
+      {icon ? (
+        <Image
+          src={icon}
+          alt=""
+          width={18}
+          height={18}
+          className="size-[18px] object-contain"
+        />
+      ) : null}
       {label}
     </label>
   );

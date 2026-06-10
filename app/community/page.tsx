@@ -29,6 +29,7 @@ function buildRows(
     name: string;
     image: string;
     meta: string;
+    metaIcon?: string;
     scopeKey: string;
     href?: string;
   }>,
@@ -57,8 +58,7 @@ function buildRows(
     .sort(
       (left, right) =>
         right.votes - left.votes || left.name.localeCompare(right.name),
-    )
-    .slice(0, 10);
+    );
 }
 
 export default async function CommunityPage() {
@@ -77,6 +77,7 @@ export default async function CommunityPage() {
         name: agent.displayName,
         image: agent.displayIcon,
         meta: agent.role?.displayName ?? "Agent",
+        metaIcon: agent.role?.displayIcon,
         scopeKey: toFavoriteScope(agent.role?.displayName ?? "other"),
         href: `/agents/${agent.uuid}`,
       })),
@@ -109,6 +110,22 @@ export default async function CommunityPage() {
     map: overview.counts.map.reduce((sum, item) => sum + item.votes, 0),
     weapon: overview.counts.weapon.reduce((sum, item) => sum + item.votes, 0),
   };
+  const agentRoles = ["Controller", "Duelist", "Initiator", "Sentinel"].map(
+    (label) => ({
+      label,
+      scopeKey: toFavoriteScope(label),
+      icon: agents.find((agent) => agent.role?.displayName === label)?.role
+        ?.displayIcon,
+    }),
+  );
+  const agentTotals = Object.fromEntries(
+    agentRoles.map((role) => [
+      role.scopeKey,
+      overview.counts.agent
+        .filter((count) => count.scopeKey === role.scopeKey)
+        .reduce((sum, count) => sum + count.votes, 0),
+    ]),
+  );
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
@@ -140,6 +157,8 @@ export default async function CommunityPage() {
       <CommunityLeaderboard
         boards={boards}
         totals={totals}
+        agentRoles={agentRoles}
+        agentTotals={agentTotals}
         initialFavorites={favorites}
       />
 

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 
 import { REGIONS, type Region } from "@/lib/constants";
+import type { ApiResponse } from "@/lib/api-response";
+import type { RiotAccount } from "@/lib/riot";
 import { playerSearchSchema } from "@/lib/schemas";
 
 interface PlayerSearchProps {
@@ -27,33 +29,57 @@ export function PlayerSearch({
   const inputId = `${idPrefix}-riot-id`;
   const errorId = `${idPrefix}-search-error`;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const separator = riotId.lastIndexOf("#");
+    const normalizedRiotId = riotId.trim();
+    const separator = normalizedRiotId.lastIndexOf("#");
     const result = playerSearchSchema.safeParse({
-      name: separator > 0 ? riotId.slice(0, separator) : "",
-      tag: separator > 0 ? riotId.slice(separator + 1) : "",
+      name: separator > 0 ? normalizedRiotId.slice(0, separator) : "",
+      tag: separator > 0 ? normalizedRiotId.slice(separator + 1) : "",
       region,
     });
 
     if (!result.success) {
-      setError("Enter a Riot ID like PlayerName#TAG.");
+      setError(
+        result.error.issues[0]?.message ??
+          "Enter a Riot ID like PlayerName#TAG.",
+      );
       return;
     }
 
     setError("");
-    const recent = JSON.parse(localStorage.getItem("agentstats:recent") ?? "[]") as unknown[];
-    localStorage.setItem(
-      "agentstats:recent",
-      JSON.stringify(
-        [{ ...result.data, searchedAt: Date.now() }, ...recent].slice(0, 5),
-      ),
-    );
-    onSubmitted?.();
-    startTransition(() => {
-      router.push(
-        `/player/${result.data.region}/${encodeURIComponent(result.data.name)}/${encodeURIComponent(result.data.tag)}`,
-      );
+    startTransition(async () => {
+      try {
+        const search = new URLSearchParams(result.data);
+        const response = await fetch(`/api/player?${search}`);
+        const payload = (await response.json()) as ApiResponse<RiotAccount>;
+
+        if (!response.ok || !payload.data) {
+          setError(payload.error ?? "Player search is unavailable.");
+          return;
+        }
+
+        const recent = JSON.parse(
+          localStorage.getItem("agentstats:recent") ?? "[]",
+        ) as unknown[];
+        const player = {
+          name: payload.data.gameName,
+          tag: payload.data.tagLine,
+          region: result.data.region,
+        };
+        localStorage.setItem(
+          "agentstats:recent",
+          JSON.stringify(
+            [{ ...player, searchedAt: Date.now() }, ...recent].slice(0, 5),
+          ),
+        );
+        onSubmitted?.();
+        router.push(
+          `/player/${player.region}/${encodeURIComponent(player.name)}/${encodeURIComponent(player.tag)}`,
+        );
+      } catch {
+        setError("Player search is unavailable. Please try again.");
+      }
     });
   }
 

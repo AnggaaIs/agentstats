@@ -205,13 +205,23 @@ export async function getRiotAccount(
   region: Region,
 ): Promise<RiotAccount> {
   const routingRegion = ROUTING_REGIONS[region];
-  return riotRequest<RiotAccount>(
-    `https://${routingRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
-    {
-      revalidate: 300,
-      tag: `player:${region}:${name}:${tag}`,
-    },
-  );
+  try {
+    return await riotRequest<RiotAccount>(
+      `https://${routingRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
+      {
+        revalidate: 300,
+        tag: `player:${region}:${name}:${tag}`,
+      },
+    );
+  } catch (error) {
+    if (error instanceof RiotApiError && error.status === 404) {
+      throw new RiotApiError(
+        `Riot ID ${name}#${tag} was not found. Check the spelling and selected region.`,
+        404,
+      );
+    }
+    throw error;
+  }
 }
 
 export async function getMatchList(

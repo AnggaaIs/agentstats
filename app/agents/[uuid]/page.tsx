@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
+import { AgentRoleLabel } from "@/components/agent-role-label";
 import { FavoriteButton } from "@/components/favorite-button";
 import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
 import { getAgent } from "@/lib/valorant-api";
@@ -55,7 +56,12 @@ export default async function AgentPage({ params }: AgentPageProps) {
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1016] via-[#0b1016]/80 to-transparent" />
         <div className="mx-auto grid max-w-7xl items-end gap-0 px-5 pt-10 lg:min-h-[42rem] lg:grid-cols-[0.8fr_1.2fr] lg:gap-10 lg:px-8 lg:pt-16">
           <div className="motion-rise pb-4 lg:pb-16">
-            <p className="eyebrow">{agent.role?.displayName ?? "Agent"}</p>
+            <p className="eyebrow">
+              <AgentRoleLabel
+                name={agent.role?.displayName ?? "Agent"}
+                icon={agent.role?.displayIcon}
+              />
+            </p>
             <h1 className="mt-5 font-display text-6xl font-black uppercase leading-[0.82] tracking-[-0.075em] sm:text-8xl lg:mt-6 lg:text-9xl">
               {agent.displayName}
             </h1>

@@ -9,7 +9,10 @@ export const playerSearchSchema = z.object({
     .trim()
     .min(2, "Tag must contain at least 2 characters.")
     .max(16, "Tag is too long.")
-    .regex(/^[a-zA-Z0-9]+$/, "Tag must be alphanumeric."),
+    .regex(
+      /^[\p{L}\p{N}_]+$/u,
+      "Tag may contain letters, numbers, and underscores.",
+    ),
   region: z.enum(REGIONS),
 });
 

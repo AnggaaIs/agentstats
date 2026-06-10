@@ -13,6 +13,7 @@ export interface CatalogItem {
   image: string;
   title: string;
   meta: string;
+  metaIcon?: string;
   group: string;
   variant?: "portrait" | "wide";
   imageFit?: "cover" | "contain";
@@ -22,6 +23,7 @@ export interface CatalogItem {
 interface CatalogBrowserProps {
   items: CatalogItem[];
   groups: string[];
+  groupIcons?: Record<string, string>;
   columns?: "three" | "four" | "two";
   perPage?: number;
   searchPlaceholder?: string;
@@ -32,6 +34,7 @@ interface CatalogBrowserProps {
 export function CatalogBrowser({
   items,
   groups,
+  groupIcons = {},
   columns = "four",
   perPage = 12,
   searchPlaceholder = "Search collection",
@@ -136,6 +139,7 @@ export function CatalogBrowser({
               <ChoiceChip
                 key={group}
                 label={group}
+                icon={groupIcons[group]}
                 checked={activeGroups.includes(group)}
                 onChange={() => toggleGroup(group)}
               />
@@ -153,6 +157,7 @@ export function CatalogBrowser({
                 image={item.image}
                 title={item.title}
                 meta={item.meta}
+                metaIcon={item.metaIcon}
                 variant={item.variant}
                 imageFit={item.imageFit}
                 action={
@@ -164,6 +169,9 @@ export function CatalogBrowser({
                       targetName={item.title}
                       selected={
                         favoriteIds[item.favoriteScope ?? "default"] === item.id
+                      }
+                      selectedTargetId={
+                        favoriteIds[item.favoriteScope ?? "default"] ?? null
                       }
                       onChange={updateFavorite}
                       appearance="compact"

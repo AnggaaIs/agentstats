@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 
+import { AgentRoleLabel } from "@/components/agent-role-label";
 import { RouteLink } from "@/components/route-link";
 
 interface CatalogCardProps {
@@ -8,6 +9,7 @@ interface CatalogCardProps {
   image: string;
   title: string;
   meta: string;
+  metaIcon?: string;
   variant?: "portrait" | "wide";
   imageFit?: "cover" | "contain";
   action?: ReactNode;
@@ -18,6 +20,7 @@ export function CatalogCard({
   image,
   title,
   meta,
+  metaIcon,
   variant = "portrait",
   imageFit = "cover",
   action,
@@ -47,9 +50,12 @@ export function CatalogCard({
   const information = (
     <div className="relative -mt-10 flex min-h-24 items-end justify-between gap-4 p-5">
       <div className="min-w-0">
-        <p className="truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">
-          {meta}
-        </p>
+        <AgentRoleLabel
+          name={meta}
+          icon={metaIcon}
+          className="max-w-full truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]"
+          iconClassName="size-4"
+        />
         <h2 className="mt-1 truncate font-display text-2xl font-black uppercase tracking-[-0.04em]">
           {title}
         </h2>
@@ -81,9 +87,12 @@ export function CatalogCard({
           href={href}
           className="min-w-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
-          <p className="truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">
-            {meta}
-          </p>
+          <AgentRoleLabel
+            name={meta}
+            icon={metaIcon}
+            className="max-w-full truncate text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]"
+            iconClassName="size-4"
+          />
           <h2 className="mt-1 truncate font-display text-2xl font-black uppercase tracking-[-0.04em]">
             {title}
           </h2>
