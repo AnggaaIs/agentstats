@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ActSelector } from "@/components/act-selector";
+import { HorizontalScroller } from "@/components/horizontal-scroller";
 import { Pagination } from "@/components/pagination";
 import { PageHeading } from "@/components/page-heading";
 import { RankDistribution } from "@/components/rank-distribution";
@@ -87,7 +88,10 @@ export default async function LeaderboardPage({
         totalPlayers={leaderboard.totalPlayers}
         region={region}
       />
-      <div className="mt-6 overflow-x-auto border border-white/8">
+      <HorizontalScroller
+        ariaLabel="Competitive leaderboard table"
+        className="mt-6 border border-white/8"
+      >
         <table className="w-full min-w-[48rem] border-collapse text-left">
           <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
             <tr>
@@ -129,7 +133,7 @@ export default async function LeaderboardPage({
             ))}
           </tbody>
         </table>
-      </div>
+      </HorizontalScroller>
       <Pagination
         page={page}
         totalPages={totalPages}

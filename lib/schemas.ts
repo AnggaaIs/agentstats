@@ -18,7 +18,18 @@ export const playerSearchSchema = z.object({
 
 export type PlayerSearchInput = z.infer<typeof playerSearchSchema>;
 
-export const favoriteCategorySchema = z.enum(["agent", "map", "weapon"]);
+export const playerLookupSchema = playerSearchSchema.extend({
+  region: z.enum(["auto", ...REGIONS]),
+});
+
+export type PlayerLookupInput = z.infer<typeof playerLookupSchema>;
+
+export const favoriteCategorySchema = z.enum([
+  "agent",
+  "map",
+  "weapon",
+  "skin",
+]);
 
 export const communityVoteSchema = z.object({
   category: favoriteCategorySchema,

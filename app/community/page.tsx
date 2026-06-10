@@ -10,15 +10,15 @@ import {
   getCommunityOverview,
   getCurrentFavorites,
   toFavoriteScope,
+  type CommunityLeaderboardCategory,
   type CommunityCount,
-  type FavoriteCategoryName,
 } from "@/lib/community";
 import { getAgents, getMaps, getWeapons } from "@/lib/valorant-api";
 
 export const metadata: Metadata = {
   title: "Community Favorites",
   description:
-    "See the Valorant agents, maps, and weapons chosen by the AgentStats community.",
+    "See the Valorant agents, maps, weapons, and skins chosen by the AgentStats community.",
 };
 
 export const dynamic = "force-dynamic";
@@ -70,7 +70,10 @@ export default async function CommunityPage() {
     getCurrentFavorites(),
   ]);
 
-  const boards: Record<FavoriteCategoryName, CommunityLeaderboardRow[]> = {
+  const boards: Record<
+    CommunityLeaderboardCategory,
+    CommunityLeaderboardRow[]
+  > = {
     agent: buildRows(
       agents.map((agent) => ({
         id: agent.uuid,
@@ -104,11 +107,31 @@ export default async function CommunityPage() {
       })),
       overview.counts.weapon,
     ),
+    skin: buildRows(
+      weapons.flatMap((weapon) =>
+        weapon.skins.flatMap((skin) =>
+          skin.displayIcon
+            ? [
+                {
+                  id: skin.uuid,
+                  name: skin.displayName,
+                  image: skin.displayIcon,
+                  meta: `${weapon.displayName} skin`,
+                  scopeKey: weapon.uuid,
+                  href: `/weapons/${weapon.uuid}`,
+                },
+              ]
+            : [],
+        ),
+      ),
+      overview.counts.skin,
+    ),
   };
   const totals = {
     agent: overview.counts.agent.reduce((sum, item) => sum + item.votes, 0),
     map: overview.counts.map.reduce((sum, item) => sum + item.votes, 0),
     weapon: overview.counts.weapon.reduce((sum, item) => sum + item.votes, 0),
+    skin: overview.counts.skin.reduce((sum, item) => sum + item.votes, 0),
   };
   const agentRoles = ["Controller", "Duelist", "Initiator", "Sentinel"].map(
     (label) => ({
@@ -126,53 +149,51 @@ export default async function CommunityPage() {
         .reduce((sum, count) => sum + count.votes, 0),
     ]),
   );
+  const skinGroups = weapons
+    .map((weapon) => ({
+      label: weapon.displayName,
+      scopeKey: weapon.uuid,
+      total: overview.counts.skin
+        .filter((count) => count.scopeKey === weapon.uuid)
+        .reduce((sum, count) => sum + count.votes, 0),
+    }))
+    .filter((weapon) => weapon.total > 0)
+    .sort(
+      (left, right) =>
+        right.total - left.total || left.label.localeCompare(right.label),
+    );
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
       <PageHeading
         eyebrow="Community favorites"
         title="The community decides"
-        description="Choose one agent for each role, plus one map and one weapon. Rankings are built from verified anonymous choices."
+        description="Choose one agent for each role, one map, one weapon, and one skin per weapon. Rankings are built from verified anonymous choices."
       />
-
-      <div className="mt-10 grid border border-white/10 sm:grid-cols-2">
-        <div className="border-b border-white/10 p-6 sm:border-b-0 sm:border-r">
-          <p className="text-xs font-black uppercase tracking-[0.15em] text-[var(--muted)]">
-            Participants
-          </p>
-          <p className="mt-2 font-display text-5xl font-black">
-            {overview.participants}
-          </p>
-        </div>
-        <div className="p-6">
-          <p className="text-xs font-black uppercase tracking-[0.15em] text-[var(--muted)]">
-            Active choices
-          </p>
-          <p className="mt-2 font-display text-5xl font-black">
-            {overview.totalVotes}
-          </p>
-        </div>
-      </div>
 
       <CommunityLeaderboard
         boards={boards}
         totals={totals}
         agentRoles={agentRoles}
         agentTotals={agentTotals}
+        skinGroups={skinGroups}
         initialFavorites={favorites}
+        participants={overview.participants}
+        totalChoices={overview.totalVotes}
       />
 
       <section className="mt-16 grid gap-6 lg:grid-cols-[1fr_0.8fr]">
         <div>
           <p className="eyebrow">Fair voting</p>
           <h2 className="mt-5 font-display text-4xl font-black uppercase tracking-[-0.05em]">
-            One active choice per role
+            One active choice per category
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)]">
             No account is required. AgentStats gives this browser an anonymous,
             protected identifier. Each agent role has its own choice, while
-            maps and weapons keep one choice each. Unusual bursts and repeated
-            changes are temporarily limited.
+            maps and weapons keep one choice each, and every weapon has its own
+            favorite skin slot. Unusual bursts and repeated changes are
+            temporarily limited.
           </p>
         </div>
         <ClearCommunityFavorites />

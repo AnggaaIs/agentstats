@@ -1,10 +1,10 @@
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { getRiotAccount, RiotApiError } from "@/lib/riot";
-import { playerSearchSchema } from "@/lib/schemas";
+import { findRiotAccount, getRiotAccount, RiotApiError } from "@/lib/riot";
+import { playerLookupSchema } from "@/lib/schemas";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const input = playerSearchSchema.safeParse({
+  const input = playerLookupSchema.safeParse({
     name: url.searchParams.get("name"),
     tag: url.searchParams.get("tag"),
     region: url.searchParams.get("region"),
@@ -15,12 +15,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    if (input.data.region === "auto") {
+      return apiSuccess(
+        await findRiotAccount(input.data.name, input.data.tag),
+      );
+    }
+
     const account = await getRiotAccount(
       input.data.name,
       input.data.tag,
       input.data.region,
     );
-    return apiSuccess(account);
+    return apiSuccess({ account, region: input.data.region });
   } catch (error) {
     if (error instanceof RiotApiError) {
       return apiError(error.message, error.status);

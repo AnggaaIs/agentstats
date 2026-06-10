@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 
-import { REGIONS, type Region } from "@/lib/constants";
+import { REGIONS } from "@/lib/constants";
 import type { ApiResponse } from "@/lib/api-response";
-import type { RiotAccount } from "@/lib/riot";
-import { playerSearchSchema } from "@/lib/schemas";
+import type { RiotAccountLookup } from "@/lib/riot";
+import {
+  playerLookupSchema,
+  type PlayerLookupInput,
+} from "@/lib/schemas";
 
 interface PlayerSearchProps {
   autoFocus?: boolean;
@@ -23,7 +26,8 @@ export function PlayerSearch({
 }: PlayerSearchProps = {}) {
   const router = useRouter();
   const [riotId, setRiotId] = useState("");
-  const [region, setRegion] = useState<Region>("ap");
+  const [region, setRegion] =
+    useState<PlayerLookupInput["region"]>("auto");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const inputId = `${idPrefix}-riot-id`;
@@ -33,7 +37,7 @@ export function PlayerSearch({
     event.preventDefault();
     const normalizedRiotId = riotId.trim();
     const separator = normalizedRiotId.lastIndexOf("#");
-    const result = playerSearchSchema.safeParse({
+    const result = playerLookupSchema.safeParse({
       name: separator > 0 ? normalizedRiotId.slice(0, separator) : "",
       tag: separator > 0 ? normalizedRiotId.slice(separator + 1) : "",
       region,
@@ -52,7 +56,7 @@ export function PlayerSearch({
       try {
         const search = new URLSearchParams(result.data);
         const response = await fetch(`/api/player?${search}`);
-        const payload = (await response.json()) as ApiResponse<RiotAccount>;
+        const payload = (await response.json()) as ApiResponse<RiotAccountLookup>;
 
         if (!response.ok || !payload.data) {
           setError(payload.error ?? "Player search is unavailable.");
@@ -63,9 +67,9 @@ export function PlayerSearch({
           localStorage.getItem("agentstats:recent") ?? "[]",
         ) as unknown[];
         const player = {
-          name: payload.data.gameName,
-          tag: payload.data.tagLine,
-          region: result.data.region,
+          name: payload.data.account.gameName,
+          tag: payload.data.account.tagLine,
+          region: payload.data.region,
         };
         localStorage.setItem(
           "agentstats:recent",
@@ -115,8 +119,8 @@ export function PlayerSearch({
         {isPending ? "Opening..." : "Find player"}
       </button>
       <fieldset className="flex flex-wrap gap-2 sm:col-span-2">
-        <legend className="sr-only">Choose region</legend>
-        {REGIONS.map((value) => (
+        <legend className="sr-only">Choose a region or detect it automatically</legend>
+        {(["auto", ...REGIONS] as const).map((value) => (
           <label
             key={value}
             className={
@@ -137,6 +141,10 @@ export function PlayerSearch({
           </label>
         ))}
       </fieldset>
+      <p className="text-xs leading-5 text-[var(--muted)] sm:col-span-2">
+        Auto checks Asia, Americas, and Europe. Choose KR, BR, or LATAM
+        manually when you need that exact match-history shard.
+      </p>
       {error ? (
         <p id={errorId} role="alert" className="text-sm text-[#ff9aa2] sm:col-span-2">
           {error}

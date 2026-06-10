@@ -1,0 +1,327 @@
+⚠ Fast Refresh had to perform a full reload when ./node_modules/.pnpm/next@16.2.7_@babel+core@7.2_3247453681e4b667be63d531593a3358/node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+⨯ TypeError: Invalid option : option
+    at new DateTimeFormat (<anonymous>)
+    at formatDate (app\status\page.tsx:38:10)
+    at <unknown> (app\status\page.tsx:240:32)
+    at Array.map (<anonymous>)
+    at <unknown> (app\status\page.tsx:217:37)
+    at Array.map (<anonymous>)
+    at StatusPage (app\status\page.tsx:159:21)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     dateStyle: "medium",
+  40 |     timeStyle: "short",
+  41 |     timeZone: "Asia/Jakarta", {
+  digest: '425545437'
+}
+[browser] Uncaught Error: Switched to client rendering because the server rendering errored:
+
+Invalid option : option
+    at new DateTimeFormat (<anonymous>:1:27)
+    at formatDate (app\status\page.tsx:38:10)
+    at <anonymous> (app\status\page.tsx:233:27)
+    at Array.map (<anonymous>:1:18)
+    at <anonymous> (about://React/Server/D:%5Cprojects%5Cagentstats%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__1olkoyb._.js?180:445:66)
+    at Array.map (<anonymous>:1:18)
+    at StatusPage (about://React/Server/D:%5Cprojects%5Cagentstats%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__1olkoyb._.js?181:339:44)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     day: "2-digit",
+  40 |     month: "short",
+  41 |     year: "numeric",
+[browser] Uncaught Error: Switched to client rendering because the server rendering errored:
+
+Invalid option : option
+    at new DateTimeFormat (<anonymous>:1:27)
+    at formatDate (app\status\page.tsx:38:10)
+    at <anonymous> (app\status\page.tsx:233:27)
+    at Array.map (<anonymous>:1:18)
+    at <anonymous> (about://React/Server/D:%5Cprojects%5Cagentstats%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__1olkoyb._.js?180:445:66)
+    at Array.map (<anonymous>:1:18)
+    at StatusPage (about://React/Server/D:%5Cprojects%5Cagentstats%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C%5Broot-of-the-server%5D__1olkoyb._.js?181:339:44)
+  36 |
+  37 | function formatDate(value: string): string {
+> 38 |   return new Intl.DateTimeFormat("en-GB", {
+     |          ^
+  39 |     day: "2-digit",
+  40 |     month: "short",
+  41 |     year: "numeric",
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <tbody>. See https://react.dev/link/warning-keys for more information. 

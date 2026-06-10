@@ -145,7 +145,7 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
                       </p>
                     </>
                     <RouteLink
-                      href="/meta"
+                      href="/status"
                       onClick={() => setStatusOpen(false)}
                       className="mt-8 flex min-h-11 items-center justify-center bg-[#e8e6e4] px-5 text-xs font-black uppercase tracking-[0.14em] text-[#343438] transition hover:bg-[#ddd9d6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                     >

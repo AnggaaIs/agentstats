@@ -8,8 +8,9 @@ import {
   verifyDeviceCredential,
 } from "@/lib/community-security";
 
-export const FAVORITE_CATEGORIES = ["agent", "map", "weapon"] as const;
+export const FAVORITE_CATEGORIES = ["agent", "map", "weapon", "skin"] as const;
 export type FavoriteCategoryName = (typeof FAVORITE_CATEGORIES)[number];
+export type CommunityLeaderboardCategory = FavoriteCategoryName;
 export const DEFAULT_FAVORITE_SCOPE = "default";
 
 export interface CommunityCount {
@@ -22,12 +23,14 @@ export interface CurrentFavorites {
   agent: Record<string, string>;
   map: string | null;
   weapon: string | null;
+  skin: Record<string, string>;
 }
 
 const CATEGORY_TO_DATABASE = {
   agent: FavoriteCategory.AGENT,
   map: FavoriteCategory.MAP,
   weapon: FavoriteCategory.WEAPON,
+  skin: FavoriteCategory.SKIN,
 } satisfies Record<FavoriteCategoryName, FavoriteCategory>;
 
 export function toDatabaseCategory(
@@ -59,20 +62,22 @@ export async function getCommunityCounts(
 }
 
 export async function getCommunityOverview() {
-  const [agent, map, weapon, devices] = await Promise.all([
+  const [agent, map, weapon, skin, devices] = await Promise.all([
     getCommunityCounts("agent"),
     getCommunityCounts("map"),
     getCommunityCounts("weapon"),
+    getCommunityCounts("skin"),
     prisma.communityVote.groupBy({ by: ["deviceHash"] }),
   ]);
 
   return {
-    counts: { agent, map, weapon },
+    counts: { agent, map, weapon, skin },
     participants: devices.length,
     totalVotes:
       agent.reduce((sum, item) => sum + item.votes, 0) +
       map.reduce((sum, item) => sum + item.votes, 0) +
-      weapon.reduce((sum, item) => sum + item.votes, 0),
+      weapon.reduce((sum, item) => sum + item.votes, 0) +
+      skin.reduce((sum, item) => sum + item.votes, 0),
   };
 }
 
@@ -83,7 +88,7 @@ export async function getCurrentFavorites(): Promise<CurrentFavorites> {
   );
 
   if (!token) {
-    return { agent: {}, map: null, weapon: null };
+    return { agent: {}, map: null, weapon: null, skin: {} };
   }
 
   const votes = await prisma.communityVote.findMany({
@@ -95,6 +100,7 @@ export async function getCurrentFavorites(): Promise<CurrentFavorites> {
     agent: {},
     map: null,
     weapon: null,
+    skin: {},
   };
 
   for (const vote of votes) {
@@ -102,8 +108,10 @@ export async function getCurrentFavorites(): Promise<CurrentFavorites> {
       favorites.agent[vote.scopeKey] = vote.targetId;
     } else if (vote.category === FavoriteCategory.MAP) {
       favorites.map = vote.targetId;
-    } else {
+    } else if (vote.category === FavoriteCategory.WEAPON) {
       favorites.weapon = vote.targetId;
+    } else {
+      favorites.skin[vote.scopeKey] = vote.targetId;
     }
   }
 

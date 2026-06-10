@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
+import { HorizontalScroller } from "@/components/horizontal-scroller";
 import { REGIONS, type Region } from "@/lib/constants";
 import { getMatch, getParticipantHeadshotRate } from "@/lib/riot";
 import { getAgents, getMaps } from "@/lib/valorant-api";
@@ -69,7 +70,10 @@ export default async function MatchPage({
 
       <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
         <p className="eyebrow">Full scoreboard</p>
-        <div className="mt-7 overflow-x-auto border border-white/8">
+        <HorizontalScroller
+          ariaLabel="Match scoreboard table"
+          className="mt-7 border border-white/8"
+        >
           <table className="w-full min-w-[62rem] border-collapse text-left">
             <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
               <tr>
@@ -131,7 +135,7 @@ export default async function MatchPage({
               })}
             </tbody>
           </table>
-        </div>
+        </HorizontalScroller>
 
         <section className="mt-16">
           <p className="eyebrow">Round timeline</p>

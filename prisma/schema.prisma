@@ -11,6 +11,7 @@ enum FavoriteCategory {
   AGENT
   MAP
   WEAPON
+  SKIN
 }
 
 enum VoteAction {

@@ -3,6 +3,11 @@ import { LEGAL_LINKS } from "@/lib/legal";
 
 import { RouteLink } from "@/components/route-link";
 
+const FOOTER_LINKS = [
+  { href: "/status", label: "Status" },
+  ...LEGAL_LINKS,
+] as const;
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/8">
@@ -17,10 +22,10 @@ export function SiteFooter() {
         </div>
 
         <nav
-          aria-label="Legal"
+          aria-label="Footer navigation"
           className="flex max-w-xl flex-wrap gap-x-5 gap-y-3 lg:justify-end"
         >
-          {LEGAL_LINKS.map((item) => (
+          {FOOTER_LINKS.map((item) => (
             <RouteLink
               key={item.href}
               href={item.href}

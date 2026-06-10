@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { FavoriteButton } from "@/components/favorite-button";
+import { HorizontalScroller } from "@/components/horizontal-scroller";
 import { RouteLink } from "@/components/route-link";
 import { getCurrentFavorites } from "@/lib/community";
 import { getWeapon } from "@/lib/valorant-api";
@@ -101,7 +102,10 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
       {stats?.damageRanges.length ? (
         <section className="mt-20">
           <p className="eyebrow">Damage</p>
-          <div className="mt-8 overflow-x-auto border border-white/8">
+          <HorizontalScroller
+            ariaLabel={`${weapon.displayName} damage table`}
+            className="mt-8 border border-white/8"
+          >
             <table className="w-full min-w-[42rem] border-collapse text-left">
               <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
                 <tr>
@@ -133,12 +137,16 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </HorizontalScroller>
         </section>
       ) : null}
 
       <section className="mt-20">
         <p className="eyebrow">Skin collection</p>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)]">
+          Pick one favorite skin for this weapon. Choosing another skin
+          replaces the current choice instantly.
+        </p>
         <CatalogBrowser
           items={weapon.skins
             .filter((skin) => skin.displayIcon)
@@ -150,11 +158,14 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
               group: "Collection",
               variant: "wide" as const,
               imageFit: "contain" as const,
+              favoriteScope: weapon.uuid,
             }))}
           groups={[]}
           columns="three"
           perPage={9}
           searchPlaceholder="Search this skin collection"
+          favoriteCategory="skin"
+          initialFavoriteIds={favorites.skin}
         />
       </section>
     </article>

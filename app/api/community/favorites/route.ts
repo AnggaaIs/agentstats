@@ -25,7 +25,7 @@ import {
 } from "@/lib/schemas";
 import { getAgent, getMap, getWeapon } from "@/lib/valorant-api";
 
-const DEVICE_CHANGES_PER_DAY = 8;
+const DEVICE_CHANGES_PER_DAY = 40;
 const NETWORK_VOTES_PER_HOUR = 120;
 const NETWORK_DEVICES_PER_HOUR = 60;
 
@@ -54,6 +54,7 @@ function setDeviceCookie(response: NextResponse, credential: string) {
 async function resolveTargetScope(
   category: FavoriteCategoryName,
   targetId: string,
+  requestedScope?: string,
 ): Promise<string | null> {
   try {
     if (category === "agent") {
@@ -64,6 +65,15 @@ async function resolveTargetScope(
     if (category === "weapon") {
       await getWeapon(targetId);
       return DEFAULT_FAVORITE_SCOPE;
+    }
+
+    if (category === "skin") {
+      if (!requestedScope) return null;
+
+      const weapon = await getWeapon(requestedScope);
+      return weapon.skins.some((skin) => skin.uuid === targetId)
+        ? weapon.uuid
+        : null;
     }
 
     const map = await getMap(targetId);
@@ -161,12 +171,16 @@ export async function POST(request: NextRequest) {
   }
 
   const { category, targetId } = parsed.data;
-  const scopeKey = await resolveTargetScope(category, targetId);
+  const scopeKey = await resolveTargetScope(
+    category,
+    targetId,
+    parsed.data.scopeKey,
+  );
   if (!scopeKey) {
     return apiError("That item is not available for community voting.", 404);
   }
   if (parsed.data.scopeKey && parsed.data.scopeKey !== scopeKey) {
-    return apiError("That favorite role does not match the selected agent.", 400);
+    return apiError("That favorite does not match its selected group.", 400);
   }
 
   const { credential, token } = getCredential(request);

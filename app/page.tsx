@@ -1,21 +1,15 @@
+import Image from "next/image";
+
 import { PlayerSearch } from "@/components/player-search";
 import { RouteLink } from "@/components/route-link";
 import { getAgents } from "@/lib/valorant-api";
 
-const signalBars = [
-  ["h-20", "h-4"],
-  ["h-32", "h-12"],
-  ["h-24", "h-8"],
-  ["h-40", "h-24"],
-  ["h-28", "h-12"],
-  ["h-48", "h-32"],
-  ["h-36", "h-20"],
-  ["h-52", "h-40"],
-  ["h-40", "h-28"],
-] as const;
-
 export default async function HomePage() {
   const agents = await getAgents();
+  const featuredAgent =
+    agents.find((agent) => agent.displayName === "Jett") ?? agents[0];
+  const featuredPortrait =
+    featuredAgent.fullPortrait ?? featuredAgent.displayIcon;
   const metrics = [
     { value: agents.length.toString(), label: "Playable agents" },
     { value: "9", label: "Competitive ranks" },
@@ -48,26 +42,72 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <aside className="relative hidden min-h-[30rem] border-l border-white/10 pl-10 lg:block">
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#687482]">
-              Signal / 01
-            </p>
-            <div className="mt-20">
-              <div className="flex items-end gap-3">
-                {signalBars.map(([barHeight, signalHeight], index) => (
-                  <span
-                    key={`${barHeight}-${index}`}
-                    className={`flex w-full items-end bg-white/10 ${barHeight}`}
-                  >
-                    <span className={`block w-full bg-[var(--accent)] ${signalHeight}`} />
+          <aside className="relative hidden min-h-[34rem] border-l border-white/10 pl-10 lg:block">
+            <RouteLink
+              href={`/agents/${featuredAgent.uuid}`}
+              className="group relative block min-h-[34rem] overflow-hidden border border-white/10 bg-[#111820] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,70,85,0.18),transparent_38%),linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:auto,40px_40px,40px_40px]" />
+              <div className="absolute -right-8 top-14 font-display text-[8rem] font-black uppercase leading-none tracking-[-0.08em] text-white/[0.035] [writing-mode:vertical-rl]">
+                Valorant
+              </div>
+
+              <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between border-b border-white/10 p-5">
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-[var(--accent)]">
+                    Agent archive / 01
+                  </p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    Valorant protocol
+                  </p>
+                </div>
+                <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.15em] text-[#aeb8c3]">
+                  <span className="size-1.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  Roster online
+                </span>
+              </div>
+
+              <Image
+                src={featuredPortrait}
+                alt={`${featuredAgent.displayName}, a Valorant agent`}
+                fill
+                priority
+                sizes="(min-width: 1024px) 38vw, 0px"
+                className="object-contain object-bottom transition duration-500 ease-out group-hover:scale-[1.025]"
+              />
+
+              <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#0b1016] via-[#0b1016]/95 to-transparent px-6 pb-6 pt-28">
+                <div className="flex items-end justify-between gap-5">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)]">
+                      Featured agent
+                    </p>
+                    <h2 className="mt-2 font-display text-6xl font-black uppercase leading-none tracking-[-0.065em]">
+                      {featuredAgent.displayName}
+                    </h2>
+                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+                      {featuredAgent.role?.displayName ?? "Valorant agent"}
+                    </p>
+                  </div>
+                  {featuredAgent.role ? (
+                    <Image
+                      src={featuredAgent.role.displayIcon}
+                      alt=""
+                      width={38}
+                      height={38}
+                      aria-hidden="true"
+                      className="mb-1 size-9 opacity-70"
+                    />
+                  ) : null}
+                </div>
+                <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] font-black uppercase tracking-[0.16em]">
+                  <span className="text-[var(--muted)]">Open agent dossier</span>
+                  <span className="text-white transition-transform group-hover:translate-x-1">
+                    View profile →
                   </span>
-                ))}
+                </div>
               </div>
-              <div className="mt-5 flex justify-between border-t border-white/10 pt-4 font-mono text-[10px] uppercase tracking-widest text-[#687482]">
-                <span>Score trend</span>
-                <span className="text-white">+18.4%</span>
-              </div>
-            </div>
+            </RouteLink>
           </aside>
         </div>
       </section>

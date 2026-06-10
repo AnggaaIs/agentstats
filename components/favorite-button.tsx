@@ -17,7 +17,7 @@ interface FavoriteButtonProps {
     phase: "optimistic" | "confirmed" | "rollback",
   ) => void;
   className?: string;
-  appearance?: "standard" | "compact";
+  appearance?: "standard" | "compact" | "responsive";
 }
 
 interface VoteResponse {
@@ -124,6 +124,8 @@ export function FavoriteButton({
         className={`favorite-action valorant-action inline-flex items-center justify-center border font-black uppercase disabled:cursor-wait disabled:opacity-60 ${
           appearance === "compact"
             ? "size-11 p-0"
+            : appearance === "responsive"
+              ? "size-10 p-0 sm:min-h-11 sm:w-auto sm:gap-2 sm:px-4 sm:text-[11px] sm:tracking-[0.13em]"
             : "min-h-11 gap-2 px-4 text-[11px] tracking-[0.13em]"
         } ${
           isSelected
@@ -148,6 +150,16 @@ export function FavoriteButton({
                 ? "Your favorite"
                 : "Set as favorite"}
           </span>
+        ) : appearance === "responsive" ? (
+          <>
+            <span className="sr-only sm:not-sr-only">
+              {pending
+                ? "Saving"
+                : isSelected
+                  ? "Your favorite"
+                  : "Set as favorite"}
+            </span>
+          </>
         ) : (
           <span>
             {pending

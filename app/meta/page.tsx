@@ -2,13 +2,6 @@ import type { Metadata } from "next";
 
 import { AgentRoleLabel } from "@/components/agent-role-label";
 import { PageHeading } from "@/components/page-heading";
-import { RouteLink } from "@/components/route-link";
-import { REGIONS, type Region } from "@/lib/constants";
-import {
-  getPlatformStatus,
-  getStatusText,
-  isActiveStatusNotice,
-} from "@/lib/riot";
 import { getAgents, getValorantVersion } from "@/lib/valorant-api";
 
 const OFFICIAL_PATCH_NOTES_URL =
@@ -17,44 +10,13 @@ const OFFICIAL_PATCH_NOTES_URL =
 export const metadata: Metadata = {
   title: "Agent Meta",
   description:
-    "Track the current Valorant patch, agent roster, patch impact, and Riot service status.",
+    "Track the current Valorant patch, agent roster structure, and upcoming opt-in competitive dataset.",
 };
 
-interface MetaPageProps {
-  searchParams: Promise<{ region?: string }>;
-}
-
-function isRegion(value: string | undefined): value is Region {
-  return REGIONS.some((region) => region === value);
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-function getSeverityClass(severity: string | null): string {
-  if (severity === "critical") return "text-[var(--accent)]";
-  if (severity === "warning") return "text-amber-300";
-  return "text-emerald-300";
-}
-
-export default async function MetaPage({ searchParams }: MetaPageProps) {
-  const requestedRegion = (await searchParams).region;
-  const region: Region = isRegion(requestedRegion) ? requestedRegion : "ap";
-  const [agents, version, statusResult] = await Promise.all([
+export default async function MetaPage() {
+  const [agents, version] = await Promise.all([
     getAgents(),
     getValorantVersion(),
-    getPlatformStatus(region)
-      .then((value) => ({ value, error: null }))
-      .catch((error: unknown) => ({
-        value: null,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Riot service status could not be loaded.",
-      })),
   ]);
   const patchVersion = version.branch.replace("release-", "");
   const roleCounts = agents.reduce<
@@ -69,18 +31,6 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
     counts[role] = current;
     return counts;
   }, {});
-  const notices = statusResult.value
-    ? [
-        ...statusResult.value.incidents.map((notice) => ({
-          ...notice,
-          kind: "Incident" as const,
-        })),
-        ...statusResult.value.maintenances.map((notice) => ({
-          ...notice,
-          kind: "Maintenance" as const,
-        })),
-      ].filter((notice) => isActiveStatusNotice(notice))
-    : [];
   return (
     <main>
       <section className="grid-noise border-b border-white/8">
@@ -88,18 +38,14 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
           <PageHeading
             eyebrow={`Live patch ${patchVersion}`}
             title="Agent meta"
-            description="Patch impact, roster structure, and live Riot service notices in one operational view."
+            description="Patch context, roster structure, and the path toward trustworthy opt-in competitive insights."
           />
 
-          <div className="mt-12 grid border border-white/10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid border border-white/10 sm:grid-cols-3">
             {[
               ["Current patch", patchVersion],
               ["Playable agents", agents.length.toString()],
               ["Roles", Object.keys(roleCounts).length.toString()],
-              [
-                "Service notices",
-                statusResult.value ? notices.length.toString() : "Unavailable",
-              ],
             ].map(([label, value]) => (
               <div
                 key={label}
@@ -115,92 +61,6 @@ export default async function MetaPage({ searchParams }: MetaPageProps) {
             ))}
           </div>
         </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
-        <div className="flex flex-col gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="eyebrow">Riot platform status</p>
-            <h2 className="mt-4 font-display text-4xl font-black uppercase tracking-[-0.045em]">
-              {statusResult.value?.name ?? region.toUpperCase()}
-            </h2>
-          </div>
-          <nav aria-label="Choose status region" className="flex flex-wrap gap-2">
-            {REGIONS.map((item) => (
-              <RouteLink
-                key={item}
-                href={`/meta?region=${item}`}
-                current={item === region}
-                className="valorant-action grid min-h-11 min-w-12 place-items-center border border-white/15 px-3 text-xs font-black uppercase tracking-widest"
-              >
-                {item}
-              </RouteLink>
-            ))}
-          </nav>
-        </div>
-
-        {statusResult.value ? (
-          notices.length ? (
-            <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              {notices.map((notice) => {
-                const latestUpdate = notice.updates
-                  .filter((update) => update.publish)
-                  .at(-1);
-
-                return (
-                  <article
-                    key={`${notice.kind}-${notice.id}`}
-                    className="border-l-2 border-[var(--accent)] bg-[var(--panel)] p-6"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p
-                        className={`text-xs font-black uppercase tracking-[0.16em] ${getSeverityClass(
-                          notice.incident_severity,
-                        )}`}
-                      >
-                        {notice.kind} ·{" "}
-                        {notice.incident_severity ?? "scheduled"}
-                      </p>
-                      <p className="text-xs text-[var(--muted)]">
-                        {formatDate(notice.created_at)}
-                      </p>
-                    </div>
-                    <h3 className="mt-4 font-display text-2xl font-black uppercase">
-                      {getStatusText(notice.titles)}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-                      {latestUpdate
-                        ? getStatusText(latestUpdate.translations)
-                        : "Riot has not published an additional update."}
-                    </p>
-                    <p className="mt-5 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
-                      {notice.platforms.join(" · ") || "All platforms"}
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="mt-8 border-l-2 border-emerald-400 bg-emerald-400/5 p-6">
-              <p className="font-display text-2xl font-black uppercase">
-                No active notices
-              </p>
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                Riot currently reports no incidents or scheduled maintenance
-                for this region.
-              </p>
-            </div>
-          )
-        ) : (
-          <div className="mt-8 border-l-2 border-amber-300 bg-amber-300/5 p-6">
-            <p className="font-display text-2xl font-black uppercase">
-              Status unavailable
-            </p>
-            <p className="mt-2 text-sm text-[var(--muted)]">
-              {statusResult.error}
-            </p>
-          </div>
-        )}
       </section>
 
       <section className="border-y border-white/8 bg-[#0e141b]">

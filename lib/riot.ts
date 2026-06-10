@@ -9,6 +9,15 @@ const ROUTING_REGIONS: Record<Region, string> = {
   latam: "americas",
 };
 
+const AUTO_ROUTING_REGIONS = [
+  { routingRegion: "asia", region: "ap" },
+  { routingRegion: "americas", region: "na" },
+  { routingRegion: "europe", region: "eu" },
+] as const satisfies ReadonlyArray<{
+  routingRegion: string;
+  region: Region;
+}>;
+
 const PLATFORM_REGIONS: Record<Region, string> = {
   ap: "ap",
   na: "na",
@@ -32,6 +41,11 @@ export interface RiotAccount {
   puuid: string;
   gameName: string;
   tagLine: string;
+}
+
+export interface RiotAccountLookup {
+  account: RiotAccount;
+  region: Region;
 }
 
 export interface MatchReference {
@@ -206,13 +220,7 @@ export async function getRiotAccount(
 ): Promise<RiotAccount> {
   const routingRegion = ROUTING_REGIONS[region];
   try {
-    return await riotRequest<RiotAccount>(
-      `https://${routingRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
-      {
-        revalidate: 300,
-        tag: `player:${region}:${name}:${tag}`,
-      },
-    );
+    return await getRiotAccountFromRouting(name, tag, routingRegion, region);
   } catch (error) {
     if (error instanceof RiotApiError && error.status === 404) {
       throw new RiotApiError(
@@ -222,6 +230,46 @@ export async function getRiotAccount(
     }
     throw error;
   }
+}
+
+async function getRiotAccountFromRouting(
+  name: string,
+  tag: string,
+  routingRegion: string,
+  cacheRegion: Region,
+): Promise<RiotAccount> {
+  return riotRequest<RiotAccount>(
+    `https://${routingRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
+    {
+      revalidate: 300,
+      tag: `player:${cacheRegion}:${name}:${tag}`,
+    },
+  );
+}
+
+export async function findRiotAccount(
+  name: string,
+  tag: string,
+): Promise<RiotAccountLookup> {
+  for (const candidate of AUTO_ROUTING_REGIONS) {
+    try {
+      const account = await getRiotAccountFromRouting(
+        name,
+        tag,
+        candidate.routingRegion,
+        candidate.region,
+      );
+      return { account, region: candidate.region };
+    } catch (error) {
+      if (error instanceof RiotApiError && error.status === 404) continue;
+      throw error;
+    }
+  }
+
+  throw new RiotApiError(
+    `Riot ID ${name}#${tag} was not found in Asia, Americas, or Europe. Check the spelling or choose a region manually.`,
+    404,
+  );
 }
 
 export async function getMatchList(

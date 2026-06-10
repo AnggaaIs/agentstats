@@ -22,8 +22,8 @@ export default function CookiesPage() {
         strictly necessary cookie is used only when you participate in
         Community Favorites. It gives the browser a protected random
         identifier so one active agent choice can be maintained per role,
-        alongside one map and weapon choice, and repeated voting can be
-        limited.
+        alongside one map, one weapon, and one skin choice per weapon.
+        Repeated voting can be limited.
       </p>
       <p>
         The service uses browser storage, which is different from a cookie, to

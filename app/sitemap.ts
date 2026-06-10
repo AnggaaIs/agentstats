@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 const ROUTES = [
   "",
   "/meta",
+  "/status",
   "/community",
   "/agents",
   "/weapons",
