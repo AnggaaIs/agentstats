@@ -36,8 +36,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </h1>
           <p className="mt-5 max-w-xl text-sm leading-6 text-[var(--muted)] sm:text-base">
             AgentStats uses Riot&apos;s official sign-in flow. Your Riot
-            password is entered only on Riot&apos;s website and is never seen
-            or stored by AgentStats.
+            password is entered only on Riot&apos;s website and is never seen or
+            stored by AgentStats.
           </p>
         </section>
 
@@ -79,10 +79,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   className="mt-1 size-4 shrink-0 accent-[var(--accent)]"
                 />
                 <span>
-                  I have read and agree to the AgentStats Terms, Privacy
-                  Policy, Cookie Notice, and Disclaimer. I understand that
-                  continuing will record this consent in AgentStats&apos; database
-                  before Riot sign-in.
+                  I have read and agree to the AgentStats Terms, Privacy Policy,
+                  Cookie Notice, and Disclaimer. I understand that continuing
+                  will record this consent in AgentStats&apos; database before
+                  Riot sign-in.
                 </span>
               </label>
               <button
@@ -106,8 +106,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           )}
 
           <p className="mt-5 text-xs leading-5 text-white/50">
-            By continuing, you agree to the AgentStats terms and acknowledge
-            the privacy policy. Linking alone does not publish your profile.
+            By continuing, you agree to the AgentStats terms and acknowledge the
+            privacy policy. Linking alone does not publish your profile.
           </p>
         </section>
       </div>

@@ -206,7 +206,10 @@ export interface ValorantEvent {
   endTime: string;
 }
 
-async function getApiData<T>(path: string, cache: number | false = CACHE_TTL_DAY): Promise<T> {
+async function getApiData<T>(
+  path: string,
+  cache: number | false = CACHE_TTL_DAY,
+): Promise<T> {
   const response = await fetch(
     `${API_URL}${path}`,
     cache === false
@@ -215,7 +218,9 @@ async function getApiData<T>(path: string, cache: number | false = CACHE_TTL_DAY
   );
 
   if (!response.ok) {
-    throw new Error(`Valorant API request failed with status ${response.status}`);
+    throw new Error(
+      `Valorant API request failed with status ${response.status}`,
+    );
   }
 
   const payload = (await response.json()) as ApiEnvelope<T>;
@@ -321,8 +326,7 @@ export async function getCompetitiveActs(): Promise<CompetitiveAct[]> {
         Date.parse(season.startTime) <= now,
     )
     .sort(
-      (left, right) =>
-        Date.parse(right.startTime) - Date.parse(left.startTime),
+      (left, right) => Date.parse(right.startTime) - Date.parse(left.startTime),
     )
     .map((act) => enrichAct(act, seasons, now));
 }

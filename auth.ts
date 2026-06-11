@@ -55,11 +55,7 @@ function riotProvider(): OAuthConfig<RiotProfile> {
       token_endpoint_auth_method: "client_secret_basic",
     },
     userinfo: {
-      async request({
-        tokens,
-      }: {
-        tokens: { access_token?: string };
-      }) {
+      async request({ tokens }: { tokens: { access_token?: string } }) {
         if (!tokens.access_token) {
           throw new Error("Riot did not return an access token.");
         }

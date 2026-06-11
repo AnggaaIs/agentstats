@@ -50,10 +50,10 @@ model User {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  accounts Account[]
-  sessions Session[]
+  accounts               Account[]
+  sessions               Session[]
   agentMatchObservations AgentMatchObservation[]
-  legalConsents LegalConsent[]
+  legalConsents          LegalConsent[]
 
   @@index([gameName, tagLine])
   @@index([visibility, publishedAt])
@@ -61,11 +61,11 @@ model User {
 }
 
 model LegalConsent {
-  id             String   @id @default(cuid())
-  token          String   @unique
+  id             String    @id @default(cuid())
+  token          String    @unique
   userId         String?
   consentVersion String
-  acceptedAt     DateTime @default(now())
+  acceptedAt     DateTime  @default(now())
   linkedAt       DateTime?
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)

@@ -7,10 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { signIn } from "@/auth";
-import {
-  LEGAL_CONSENT_COOKIE,
-  LEGAL_CONSENT_VERSION,
-} from "@/lib/legal";
+import { LEGAL_CONSENT_COOKIE, LEGAL_CONSENT_VERSION } from "@/lib/legal";
 import { isRsoConfigured } from "@/lib/auth-config";
 import { prisma } from "@/lib/db";
 

@@ -424,59 +424,53 @@ export async function getAgentMetaDataset(
   filters: AgentMetaFilters = {},
 ): Promise<AgentMetaDataset> {
   const where = buildAgentMetaWhere(actId, filters);
-  const [
-    groups,
-    resultGroups,
-    totalPicks,
-    matchGroups,
-    playerGroups,
-    latest,
-  ] = await Promise.all([
-    prisma.agentMatchObservation.groupBy({
-      by: ["agentId"],
-      where,
-      _count: { _all: true },
-      _sum: {
-        roundsPlayed: true,
-        roundsWon: true,
-        score: true,
-        kills: true,
-        deaths: true,
-        assists: true,
-        damage: true,
-        damageReceived: true,
-        headshots: true,
-        bodyshots: true,
-        legshots: true,
-        kastRounds: true,
-        firstBloods: true,
-      },
-    }),
-    prisma.agentMatchObservation.groupBy({
-      by: ["agentId", "result"],
-      where,
-      _count: { _all: true },
-    }),
-    prisma.agentMatchObservation.count({ where }),
-    prisma.agentMatchObservation.groupBy({ by: ["matchId"], where }),
-    prisma.agentMatchObservation.groupBy({
-      by: ["participantHash"],
-      where,
-    }),
-    prisma.agentMatchObservation.findFirst({
-      where,
-      orderBy: { observedAt: "desc" },
-      select: { observedAt: true },
-    }),
-  ]);
+  const [groups, resultGroups, totalPicks, matchGroups, playerGroups, latest] =
+    await Promise.all([
+      prisma.agentMatchObservation.groupBy({
+        by: ["agentId"],
+        where,
+        _count: { _all: true },
+        _sum: {
+          roundsPlayed: true,
+          roundsWon: true,
+          score: true,
+          kills: true,
+          deaths: true,
+          assists: true,
+          damage: true,
+          damageReceived: true,
+          headshots: true,
+          bodyshots: true,
+          legshots: true,
+          kastRounds: true,
+          firstBloods: true,
+        },
+      }),
+      prisma.agentMatchObservation.groupBy({
+        by: ["agentId", "result"],
+        where,
+        _count: { _all: true },
+      }),
+      prisma.agentMatchObservation.count({ where }),
+      prisma.agentMatchObservation.groupBy({ by: ["matchId"], where }),
+      prisma.agentMatchObservation.groupBy({
+        by: ["participantHash"],
+        where,
+      }),
+      prisma.agentMatchObservation.findFirst({
+        where,
+        orderBy: { observedAt: "desc" },
+        select: { observedAt: true },
+      }),
+    ]);
   const groupByAgent = new Map(groups.map((group) => [group.agentId, group]));
   const winsByAgent = new Map(
     resultGroups
       .filter((group) => group.result === MatchResult.WIN)
       .map((group) => [group.agentId, group._count._all]),
   );
-  const rows = buildEmptyAgentMetaDataset(agents).rows
-    .map((agent) => {
+  const rows = buildEmptyAgentMetaDataset(agents)
+    .rows.map((agent) => {
       const group = groupByAgent.get(agent.agentId);
       const picks = group?._count._all ?? 0;
       const sums = group?._sum;
@@ -512,7 +506,8 @@ export async function getAgentMetaDataset(
       } satisfies AgentMetaRow;
     })
     .sort((left, right) => {
-      if (right.pickRate !== left.pickRate) return right.pickRate - left.pickRate;
+      if (right.pickRate !== left.pickRate)
+        return right.pickRate - left.pickRate;
       if (right.picks !== left.picks) return right.picks - left.picks;
       return left.name.localeCompare(right.name);
     });
@@ -611,7 +606,9 @@ function isMetaEligibleMap(map: ValorantMap): boolean {
 function buildMetaEligibleMaps(maps: ValorantMap[]): ValorantMap[] {
   return maps
     .filter(isMetaEligibleMap)
-    .toSorted((left, right) => left.displayName.localeCompare(right.displayName));
+    .toSorted((left, right) =>
+      left.displayName.localeCompare(right.displayName),
+    );
 }
 
 function buildMapLookup(maps: ValorantMap[]): Map<string, ValorantMap> {
@@ -632,12 +629,7 @@ export async function getMapMetaDataset(
   const where = {
     ...(actId ? { actId } : {}),
   };
-  const [
-    matchMapGroups,
-    matchGroups,
-    modeGroups,
-    latest,
-  ] = await Promise.all([
+  const [matchMapGroups, matchGroups, modeGroups, latest] = await Promise.all([
     prisma.agentMatchObservation.groupBy({
       by: ["mapId", "queueId", "matchId"],
       where,
@@ -712,14 +704,14 @@ export async function getMapMetaDataset(
   for (const row of observedRows) {
     baseRows.set(`${row.modeId}:${row.mapId}`, row);
   }
-  const rows = Array.from(baseRows.values())
-    .sort((left, right) => {
-      if (left.modeId !== right.modeId) return left.mode.localeCompare(right.mode);
-      if (right.appearances !== left.appearances) {
-        return right.appearances - left.appearances;
-      }
-      return left.name.localeCompare(right.name);
-    });
+  const rows = Array.from(baseRows.values()).sort((left, right) => {
+    if (left.modeId !== right.modeId)
+      return left.mode.localeCompare(right.mode);
+    if (right.appearances !== left.appearances) {
+      return right.appearances - left.appearances;
+    }
+    return left.name.localeCompare(right.name);
+  });
 
   return {
     rows,
