@@ -16,7 +16,7 @@ export default async function BundlesPage() {
   const bundles = await getBundles();
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-20">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow={`${bundles.length} archive entries`}
         title="Bundle archive"

@@ -29,6 +29,15 @@ export default function CookiesPage() {
         and may be renewed when you participate again.
       </p>
       <p>
+        If you connect a Riot account, a strictly necessary, HTTP-only session
+        cookie identifies the active AgentStats login. It cannot be read by
+        page scripts and is used for authentication, authorization, and
+        account security. The session can last for up to 30 days and is
+        removed when you sign out, disconnect the account, or it expires.
+        Short-lived security cookies are also used during Riot Sign On to
+        protect the authorization callback.
+      </p>
+      <p>
         The service uses browser storage, which is different from a cookie, to
         keep up to five recent player searches on your device. This helps you
         return to a previous search. The list is not used for advertising or

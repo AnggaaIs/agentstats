@@ -1,4 +1,6 @@
-export const LEGAL_EFFECTIVE_DATE = "June 10, 2026";
+export const LEGAL_EFFECTIVE_DATE = "June 11, 2026";
+export const LEGAL_CONSENT_VERSION = LEGAL_EFFECTIVE_DATE;
+export const LEGAL_CONSENT_COOKIE = "agentstats_legal_consent";
 
 export const LEGAL_EMAIL = process.env.NEXT_PUBLIC_LEGAL_EMAIL?.trim() || null;
 

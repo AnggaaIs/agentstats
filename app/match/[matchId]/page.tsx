@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
 import { REGIONS, type Region } from "@/lib/constants";
 import {
@@ -7,6 +8,7 @@ import {
   getEventAt,
   resolveGameMode,
 } from "@/lib/match-context";
+import { getMatchAccess } from "@/lib/player-access";
 import { getMatch, getParticipantHeadshotRate } from "@/lib/riot";
 import {
   getAgents,
@@ -64,6 +66,8 @@ export default async function MatchPage({
     getGameModes(),
     getEvents(),
   ]);
+  const access = await getMatchAccess(match);
+  if (!access.canView) notFound();
   const agentById = new Map(
     agents.map((agent) => [agent.uuid.toLowerCase(), agent]),
   );
@@ -96,17 +100,17 @@ export default async function MatchPage({
           />
         ) : null}
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1016] via-[#0b1016]/85 to-[#0b1016]/55" />
-        <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
           <p className="eyebrow">{queueName}</p>
-          <h1 className="responsive-text mt-5 font-display text-[clamp(3rem,14vw,6rem)] font-black uppercase leading-[0.9] tracking-[-0.06em]">
+          <h1 className="responsive-text mt-4 font-display text-[clamp(2.4rem,10vw,4rem)] font-black uppercase leading-[0.9] tracking-[-0.055em]">
             {map?.displayName ?? "Match details"}
           </h1>
-          <p className="mt-6 font-display text-5xl font-black">
+          <p className="mt-4 font-display text-4xl font-black">
             {teams[0]?.roundsWon ?? 0}
             <span className="mx-4 text-[var(--muted)]">—</span>
             {teams[1]?.roundsWon ?? 0}
           </p>
-          <div className="mt-9 grid max-w-4xl border border-white/10 bg-[#0b1016]/55 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid max-w-4xl border border-white/10 bg-[#0b1016]/55 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex min-w-0 items-center gap-3 border-b border-white/10 p-4 sm:border-r lg:border-b-0">
               {gameMode?.displayIcon ? (
                 <Image
@@ -159,7 +163,7 @@ export default async function MatchPage({
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+      <section className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
         <p className="eyebrow">Full scoreboard</p>
         <div
           role="region"
@@ -182,6 +186,7 @@ export default async function MatchPage({
             <tbody>
               {players.map((player) => {
                 const agent = agentById.get(player.characterId.toLowerCase());
+
                 return (
                   <tr key={player.puuid} className="border-t border-white/8">
                     <td className="p-4">
@@ -227,7 +232,7 @@ export default async function MatchPage({
           </table>
         </div>
 
-        <section className="mt-16">
+        <section className="mt-10">
           <p className="eyebrow">Round timeline</p>
           <div className="mt-7 flex flex-wrap gap-2">
             {match.roundResults.map((round) => (

@@ -66,7 +66,7 @@ export default async function LeaderboardPage({
   );
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow={`${act.displayLabel} / ${region}`}
         title="Leaderboard"
@@ -85,8 +85,8 @@ export default async function LeaderboardPage({
             current={item === region}
             className={
               item === region
-                ? "min-h-11 border border-[var(--accent)] bg-[var(--accent)] px-5 py-3 text-xs font-black uppercase tracking-widest"
-                : "valorant-action min-h-11 border border-white/10 px-5 py-3 text-xs font-black uppercase tracking-widest hover:border-white/30"
+                ? "min-h-10 border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-widest"
+                : "valorant-action min-h-10 border border-white/10 px-4 text-[11px] font-black uppercase tracking-widest hover:border-white/30"
             }
           >
             {item}

@@ -14,12 +14,12 @@ export function PageHeading({
   className,
 }: PageHeadingProps) {
   return (
-    <div className={cn("motion-rise max-w-3xl", className)}>
+    <div className={cn("motion-rise max-w-4xl", className)}>
       <p className="eyebrow">{eyebrow}</p>
-      <h1 className="mt-4 break-words font-display text-[clamp(2.4rem,12vw,4.5rem)] font-black uppercase leading-[0.88] tracking-[-0.06em]">
+      <h1 className="mt-3 break-words font-display text-[clamp(2.35rem,7vw,3.75rem)] font-black uppercase leading-[0.9] tracking-[-0.055em]">
         {title}
       </h1>
-      <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-lg">
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--muted)] sm:text-base">
         {description}
       </p>
     </div>

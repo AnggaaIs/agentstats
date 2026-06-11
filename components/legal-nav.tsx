@@ -21,7 +21,7 @@ export function LegalNav() {
             key={item.href}
             href={item.href}
             current={current}
-            className="valorant-action flex min-h-12 items-center border-b border-r border-white/10 px-4 text-xs font-black uppercase tracking-[0.08em] text-[var(--muted)] hover:text-white lg:min-h-14"
+            className="valorant-action flex min-h-11 items-center border-b border-r border-white/10 px-3 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--muted)] hover:text-white"
           >
             <span
               aria-hidden="true"

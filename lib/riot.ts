@@ -65,6 +65,10 @@ export interface MatchParticipant {
   tagLine: string;
   teamId: string;
   characterId: string;
+  playerCard?: string;
+  playerTitle?: string;
+  accountLevel?: number;
+  competitiveTier?: number;
   stats: {
     score: number;
     roundsPlayed: number;
@@ -75,14 +79,36 @@ export interface MatchParticipant {
   } | null;
 }
 
-interface RoundPlayerStats {
+interface RoundKill {
+  timeSinceGameStartMillis?: number;
+  timeSinceRoundStartMillis?: number;
+  killer: string;
+  victim: string;
+  assistants: string[];
+  finishingDamage?: {
+    damageType: string;
+    damageItem: string;
+    isSecondaryFireMode: boolean;
+  };
+}
+
+export interface RoundPlayerStats {
   puuid: string;
+  kills?: RoundKill[];
   damage: Array<{
+    receiver?: string;
     headshots: number;
     bodyshots: number;
     legshots: number;
     damage: number;
   }>;
+  economy?: {
+    loadoutValue: number;
+    weapon: string;
+    armor: string;
+    remaining: number;
+    spent: number;
+  };
 }
 
 export interface RiotMatch {
@@ -109,6 +135,8 @@ export interface RiotMatch {
     winningTeam: string;
     roundResult: string;
     roundCeremony: string;
+    bombPlanter?: string;
+    bombDefuser?: string;
     playerStats: RoundPlayerStats[];
   }>;
 }

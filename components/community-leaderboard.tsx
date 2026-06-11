@@ -106,7 +106,7 @@ export function CommunityLeaderboard({
   }
 
   return (
-    <div className="mt-10">
+    <div className="mt-7">
       <p className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-xs">
         <span>
           <span className="text-white">{participants}</span>{" "}
@@ -122,7 +122,7 @@ export function CommunityLeaderboard({
       </p>
 
       <div
-        className="grid grid-cols-4 border border-white/12"
+        className="grid max-w-2xl grid-cols-4 border border-white/12"
         role="tablist"
         aria-label="Community favorite categories"
       >
@@ -134,7 +134,7 @@ export function CommunityLeaderboard({
               role="tab"
               aria-selected={category === item}
               onClick={() => setCategory(item)}
-              className={`valorant-action min-h-14 border-r border-white/12 px-2 text-[10px] font-black uppercase tracking-[0.08em] last:border-r-0 sm:px-4 sm:text-xs sm:tracking-[0.12em] ${
+              className={`valorant-action min-h-10 border-r border-white/12 px-2 text-[10px] font-black uppercase tracking-[0.08em] last:border-r-0 sm:px-4 sm:text-[11px] sm:tracking-[0.11em] ${
                 category === item
                   ? "bg-[var(--accent)] text-white"
                   : "text-[var(--muted)]"
@@ -151,12 +151,11 @@ export function CommunityLeaderboard({
         className="border-x border-b border-white/12 bg-[#10161d]"
       >
         {category === "agent" ? (
-          <div className="border-b border-white/10 px-2 pt-2">
+          <div className="border-b border-white/10 px-3 py-3">
             <div
               role="group"
               aria-label="Choose agent role leaderboard"
-              tabIndex={0}
-              className="tactical-scrollbar flex overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+              className="flex flex-wrap gap-2"
             >
               {agentRoles.map((role) => (
                 <button
@@ -164,7 +163,7 @@ export function CommunityLeaderboard({
                   type="button"
                   aria-pressed={agentRole === role.scopeKey}
                   onClick={() => setAgentRole(role.scopeKey)}
-                  className={`valorant-action min-h-12 min-w-[9.5rem] flex-1 border border-r-0 border-white/10 px-3 text-[11px] font-black uppercase tracking-[0.12em] last:border-r ${
+                  className={`valorant-action min-h-10 min-w-0 border border-white/10 px-3 text-[10px] font-black uppercase tracking-[0.08em] sm:text-[11px] sm:tracking-[0.1em] ${
                     agentRole === role.scopeKey
                       ? "bg-white/[0.07] text-white outline outline-1 -outline-offset-1 outline-[var(--accent)]"
                       : "text-[var(--muted)]"
@@ -190,7 +189,7 @@ export function CommunityLeaderboard({
         ) : null}
 
         {category === "skin" ? (
-          <div className="border-b border-white/10 px-4 py-4 sm:px-7">
+          <div className="border-b border-white/10 px-4 py-3 sm:px-5">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
               Weapon collection
             </p>
@@ -222,12 +221,12 @@ export function CommunityLeaderboard({
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
+        <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
               Community ranking
             </p>
-            <h2 className="responsive-text mt-1 font-display text-[clamp(1.35rem,7vw,1.875rem)] font-black uppercase leading-none tracking-[-0.04em]">
+            <h2 className="responsive-text mt-1 font-display text-[clamp(1.35rem,5vw,1.75rem)] font-black uppercase leading-none tracking-[-0.04em]">
               {category === "agent"
                 ? `Favorite ${activeRoleLabel}`
                 : category === "skin"
@@ -245,12 +244,12 @@ export function CommunityLeaderboard({
             {rows.map((row, index) => (
               <li
                 key={row.id}
-                className="group grid grid-cols-[2rem_4.25rem_minmax(0,1fr)_2.5rem] items-center gap-3 px-4 py-4 transition-colors hover:bg-white/[0.035] sm:grid-cols-[3rem_5rem_minmax(0,1fr)_6rem_auto] sm:gap-5 sm:px-7 sm:py-5"
+                className="group grid grid-cols-[2rem_4rem_minmax(0,1fr)_2.5rem] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.035] sm:grid-cols-[2.5rem_4.25rem_minmax(0,1fr)_5rem_auto] sm:gap-4 sm:px-5 sm:py-3.5"
               >
                 <p className="font-display text-xl font-black text-white/30 sm:text-3xl">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <div className="relative h-14 w-[4.25rem] overflow-hidden bg-[#202832] sm:size-20">
+                <div className="relative h-14 w-16 overflow-hidden bg-[#202832] sm:size-[4.25rem]">
                   <Image
                     src={row.image}
                     alt=""
@@ -263,12 +262,12 @@ export function CommunityLeaderboard({
                   {row.href ? (
                     <Link
                       href={row.href}
-                      className="responsive-text block font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] min-[360px]:text-base sm:text-2xl"
+                      className="responsive-text block font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] min-[360px]:text-base sm:text-xl"
                     >
                       {row.name}
                     </Link>
                   ) : (
-                    <h3 className="responsive-text font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] min-[360px]:text-base sm:text-2xl">
+                    <h3 className="responsive-text font-display text-sm font-black uppercase leading-tight tracking-[-0.025em] min-[360px]:text-base sm:text-xl">
                       {row.name}
                     </h3>
                   )}
@@ -294,7 +293,7 @@ export function CommunityLeaderboard({
                           ? activeSkinGroup
                           : category
                     } votes`}
-                    className="community-progress mt-2 block h-1 w-full sm:mt-4 sm:h-1.5"
+                    className="community-progress mt-2 block h-1 w-full sm:mt-3 sm:h-1.5"
                   />
                   <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--muted)] sm:hidden">
                     {row.percentage}% · {row.votes}{" "}
@@ -302,7 +301,7 @@ export function CommunityLeaderboard({
                   </p>
                 </div>
                 <div className="hidden text-right sm:block">
-                  <p className="font-display text-3xl font-black">
+                  <p className="font-display text-2xl font-black">
                     {row.percentage}%
                   </p>
                   <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -337,11 +336,11 @@ export function CommunityLeaderboard({
             ))}
           </ol>
         ) : (
-          <div className="px-6 py-16 text-center">
-            <p className="font-display text-3xl font-black uppercase tracking-[-0.04em]">
+          <div className="max-w-2xl px-5 py-7 sm:px-6">
+            <p className="font-display text-2xl font-black uppercase tracking-[-0.04em]">
               The board is waiting
             </p>
-            <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-[var(--muted)]">
+            <p className="mt-3 max-w-lg text-sm leading-6 text-[var(--muted)]">
               No verified favorite has been recorded
               {category === "agent"
                 ? ` for ${activeRoleLabel}`
@@ -359,7 +358,7 @@ export function CommunityLeaderboard({
                     ? "/weapons"
                     : `/${category}s`
               }
-              className="valorant-action mt-7 inline-flex min-h-12 items-center border border-[var(--accent)] px-6 text-xs font-black uppercase tracking-[0.14em]"
+              className="valorant-action mt-5 inline-flex min-h-10 items-center border border-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
             >
               Browse {CATEGORY_LABELS[category]}
             </Link>

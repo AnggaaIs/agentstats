@@ -90,7 +90,7 @@ export default async function SkinPage({ params }: SkinPageProps) {
         ])}
       />
       <header className="grid-noise border-b border-white/8">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8 lg:py-20">
+        <div className="mx-auto grid max-w-[86rem] gap-7 px-4 py-9 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8 lg:py-11">
           <div className="min-w-0">
             <RouteLink
               href={`/weapons/${weapon.uuid}`}
@@ -98,7 +98,7 @@ export default async function SkinPage({ params }: SkinPageProps) {
             >
               Back to {weapon.displayName}
             </RouteLink>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               {tier ? (
                 <Image
                   src={tier.displayIcon}
@@ -115,15 +115,15 @@ export default async function SkinPage({ params }: SkinPageProps) {
                 {tier?.displayName ?? "Standard issue"}
               </p>
             </div>
-            <h1 className="mt-5 break-words font-display text-[clamp(2.1rem,10.5vw,6.5rem)] font-black uppercase leading-[0.88] tracking-[-0.055em]">
+            <h1 className="mt-4 break-words font-display text-[clamp(2rem,8vw,4.25rem)] font-black uppercase leading-[0.9] tracking-[-0.05em]">
               {cleanName(skin.displayName)}
             </h1>
-            <p className="mt-5 font-mono text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.16em] text-[var(--muted)]">
               {skin.chromas.length} chroma
               {skin.chromas.length === 1 ? "" : "s"} / {skin.levels.length}{" "}
               upgrade level{skin.levels.length === 1 ? "" : "s"}
             </p>
-            <div className="mt-7">
+            <div className="mt-5">
               <FavoriteButton
                 category="skin"
                 scopeKey={weapon.uuid}
@@ -146,19 +146,19 @@ export default async function SkinPage({ params }: SkinPageProps) {
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 58vw"
-              className="object-contain p-5 sm:p-10"
+              className="object-contain p-5 sm:p-7"
             />
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20">
+      <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
         <section>
           <p className="eyebrow">Color variants</p>
-          <h2 className="mt-5 font-display text-3xl font-black uppercase tracking-[-0.04em] sm:text-5xl">
+          <h2 className="mt-4 font-display text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">
             Chroma archive
           </h2>
-          <div className="mt-8 grid min-w-0 gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2">
             {skin.chromas.map((chroma, index) => (
               <article
                 key={chroma.uuid}
@@ -211,18 +211,18 @@ export default async function SkinPage({ params }: SkinPageProps) {
           </div>
         </section>
 
-        <section className="mt-20">
+        <section className="mt-11">
           <p className="eyebrow">Upgrade path</p>
-          <h2 className="mt-5 font-display text-3xl font-black uppercase tracking-[-0.04em] sm:text-5xl">
+          <h2 className="mt-4 font-display text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">
             Skin levels
           </h2>
-          <ol className="mt-8 grid gap-px border border-white/10 bg-white/10">
+          <ol className="mt-6 grid gap-px border border-white/10 bg-white/10">
             {skin.levels.map((level, index) => (
               <li
                 key={level.uuid}
-                className="grid min-w-0 gap-4 bg-[var(--panel)] p-5 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center sm:p-6"
+                className="grid min-w-0 gap-4 bg-[var(--panel)] p-4 sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:items-center sm:p-5"
               >
-                <span className="font-display text-3xl font-black text-white/25">
+                <span className="font-display text-2xl font-black text-white/25">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0">

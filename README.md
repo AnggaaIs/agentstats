@@ -15,13 +15,23 @@ The repository currently implements the public product foundation:
 - Anonymous community favorites with one agent choice per role, one map,
   one weapon, and one skin per weapon, with protected voting and live category
   leaderboards
-- Agent meta dashboard with live patch, roster distribution, and a direct link
-  to official patch notes
+- Landing-page patch context and a complete opt-in agent meta table covering
+  pick rate, win rate, K/D, ACS, ADR, HS%, KAST, DDΔ, and first bloods from
+  eligible match observations
+- Full agent meta and map-frequency pages, including tracked player counts and
+  per-mode map appearance rates from the same opt-in match sample pipeline
 - Dedicated Riot platform status page covering every supported region
 - Historical Act selection and exact Immortal/Radiant ladder distribution by
   region on the competitive leaderboard
 - Dynamic agent and weapon detail routes
 - Player, match, and leaderboard route foundations
+- Riot Sign On foundation with Auth.js database sessions, explicit player
+  consent, private-by-default profiles, public visibility controls, and
+  self-service disconnection
+- Expanded opt-in player profiles with recent rank observation, account level,
+  ACS trend, KAST, KAD, damage delta, hit distribution, round and economy
+  detail, first bloods, multi-kills, match filters, recurring encounters,
+  personal review cues, and agent, map, and finishing-weapon reports
 - Consistent loading, error, and not-found states
 - Server-side Riot API client boundary and validated route handlers
 - Accessible navigation, form controls, focus states, and reduced-motion support
@@ -38,6 +48,39 @@ derived statistics. Before public production, AgentStats must be registered in
 the Riot Developer Portal, its product description must match the deployed
 features, and the RSO flow must enforce player consent. Community favorites use
 the configured PostgreSQL database and do not require a Riot account.
+Agent meta is aggregated from matches shared by consenting public profiles; all
+participants in those matches can contribute to agent-level statistics, but the
+landing-page meta table does not expose those participants' Riot IDs.
+
+## Riot Sign On
+
+The RSO implementation stays disabled until the production application is
+approved and all required environment values are present:
+
+```bash
+AUTH_SECRET=a-long-random-secret
+AUTH_URL=https://your-production-domain.example
+RIOT_CLIENT_ID=approved-client-id
+RIOT_CLIENT_SECRET=approved-client-secret
+NEXT_PUBLIC_FEATURE_AUTH=true
+```
+
+Register this callback URL in the Riot Developer Portal:
+
+```text
+https://your-production-domain.example/api/auth/callback/riot
+```
+
+For local testing, the equivalent callback is
+`http://localhost:3000/api/auth/callback/riot`, but Riot must explicitly allow
+every redirect URI. The app uses Riot's official authorization and token
+endpoints and resolves the authenticated identity through
+`RIOT-ACCOUNT-V1 /accounts/me`. Profiles remain private until the player
+separately confirms public visibility on `/account`.
+
+The OAuth access and refresh tokens are discarded after identity verification.
+AgentStats stores only the linked Riot identity, consent and visibility state,
+and an opaque database session.
 
 ## Local development
 

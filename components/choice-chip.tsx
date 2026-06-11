@@ -13,7 +13,7 @@ export function ChoiceChip({ label, icon, checked, onChange }: ChoiceChipProps) 
   return (
     <label
       className={cn(
-        "flex min-h-11 cursor-pointer items-center gap-3 border px-4 text-xs font-black uppercase tracking-[0.16em] transition",
+        "flex min-h-10 cursor-pointer items-center gap-2.5 border px-3.5 text-[11px] font-black uppercase tracking-[0.13em] transition",
         checked
           ? "border-[var(--accent)] bg-[var(--accent)] text-white"
           : "border-white/12 bg-white/[0.035] text-[var(--muted)] hover:border-white/40 hover:text-white",
@@ -28,7 +28,7 @@ export function ChoiceChip({ label, icon, checked, onChange }: ChoiceChipProps) 
       <span
         aria-hidden="true"
         className={cn(
-          "grid size-4 place-items-center border",
+          "grid size-3.5 place-items-center border",
           checked ? "border-white bg-white text-[var(--accent)]" : "border-white/30",
         )}
       >
@@ -38,9 +38,9 @@ export function ChoiceChip({ label, icon, checked, onChange }: ChoiceChipProps) 
         <Image
           src={icon}
           alt=""
-          width={18}
-          height={18}
-          className="size-[18px] object-contain"
+          width={16}
+          height={16}
+          className="size-4 object-contain"
         />
       ) : null}
       {label}

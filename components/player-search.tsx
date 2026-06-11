@@ -92,7 +92,7 @@ export function PlayerSearch({
       onSubmit={handleSubmit}
       className={
         surface === "panel"
-          ? "valorant-panel relative grid min-w-0 gap-3 p-3 shadow-xl shadow-black/20 sm:grid-cols-[minmax(0,1fr)_auto]"
+          ? "valorant-panel relative grid min-w-0 gap-2.5 p-2.5 shadow-xl shadow-black/20 sm:grid-cols-[minmax(0,1fr)_auto]"
           : "grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
       }
       noValidate
@@ -109,12 +109,12 @@ export function PlayerSearch({
         autoFocus={autoFocus}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errorId : undefined}
-        className="min-h-14 min-w-0 w-full border border-white/12 bg-black/20 px-4 text-lg font-bold text-white outline-none placeholder:text-[#65707e] focus-visible:border-[var(--accent)]"
+        className="min-h-11 min-w-0 w-full border border-white/12 bg-black/20 px-4 text-sm font-bold text-white outline-none placeholder:text-[#65707e] focus-visible:border-[var(--accent)] sm:text-base"
       />
       <button
         type="submit"
         disabled={isPending}
-        className="min-h-14 border border-[var(--accent)] bg-[var(--accent)] px-7 text-sm font-black uppercase tracking-[0.14em] transition hover:bg-[#e63e4c] disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="min-h-11 border border-[var(--accent)] bg-[var(--accent)] px-6 text-xs font-black uppercase tracking-[0.14em] transition hover:bg-[#e63e4c] disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         {isPending ? "Opening..." : "Find player"}
       </button>

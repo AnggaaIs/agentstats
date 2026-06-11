@@ -166,7 +166,7 @@ export default async function CommunityPage() {
     );
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow="Community favorites"
         title="The community decides"
@@ -184,10 +184,10 @@ export default async function CommunityPage() {
         totalChoices={overview.totalVotes}
       />
 
-      <section className="mt-16 grid gap-6 lg:grid-cols-[1fr_0.8fr]">
+      <section className="mt-9 grid gap-5 border-t border-white/8 pt-8 lg:grid-cols-[1fr_0.7fr]">
         <div>
           <p className="eyebrow">Fair voting</p>
-          <h2 className="mt-5 font-display text-4xl font-black uppercase tracking-[-0.05em]">
+          <h2 className="mt-4 font-display text-3xl font-black uppercase tracking-[-0.05em]">
             One active choice per category
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)]">

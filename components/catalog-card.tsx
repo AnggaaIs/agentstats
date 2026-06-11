@@ -40,7 +40,7 @@ export function CatalogCard({
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         className={
           imageFit === "contain"
-            ? "object-contain p-6 transition duration-300 group-hover:scale-[1.012] group-hover:saturate-105 sm:p-8"
+            ? "object-contain p-4 transition duration-300 group-hover:scale-[1.012] group-hover:saturate-105 sm:p-5"
             : "object-cover transition duration-300 group-hover:scale-[1.012] group-hover:saturate-105"
         }
       />
@@ -48,7 +48,7 @@ export function CatalogCard({
     </div>
   );
   const information = (
-    <div className="relative -mt-8 grid min-h-28 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-10 sm:p-5">
+    <div className="relative -mt-7 grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-8">
       <div className="responsive-text">
         <AgentRoleLabel
           name={meta}
@@ -56,7 +56,7 @@ export function CatalogCard({
           className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
           iconClassName="size-4"
         />
-        <h2 className="responsive-text mt-1 font-display text-[clamp(1.25rem,6vw,1.5rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
+        <h2 className="responsive-text mt-1 font-display text-[clamp(1.1rem,5vw,1.35rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
           {title}
         </h2>
       </div>
@@ -82,7 +82,7 @@ export function CatalogCard({
       >
         {artwork}
       </RouteLink>
-      <div className="relative -mt-8 grid min-h-28 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-10 sm:p-5">
+      <div className="relative -mt-7 grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-8">
         <RouteLink
           href={href}
           className="responsive-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
@@ -93,7 +93,7 @@ export function CatalogCard({
             className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
             iconClassName="size-4"
           />
-          <h2 className="responsive-text mt-1 font-display text-[clamp(1.25rem,6vw,1.5rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
+          <h2 className="responsive-text mt-1 font-display text-[clamp(1.1rem,5vw,1.35rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
             {title}
           </h2>
         </RouteLink>

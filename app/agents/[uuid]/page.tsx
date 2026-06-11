@@ -90,18 +90,18 @@ export default async function AgentPage({ params }: AgentPageProps) {
           />
         ) : null}
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1016] via-[#0b1016]/80 to-transparent" />
-        <div className="mx-auto grid max-w-7xl items-end gap-0 px-5 pt-10 lg:min-h-[42rem] lg:grid-cols-[0.8fr_1.2fr] lg:gap-10 lg:px-8 lg:pt-16">
-          <div className="motion-rise pb-4 lg:pb-16">
+        <div className="mx-auto grid max-w-[86rem] items-end gap-0 px-4 pt-8 sm:px-6 lg:min-h-[31rem] lg:grid-cols-[0.82fr_1.18fr] lg:gap-8 lg:px-8 lg:pt-10">
+          <div className="motion-rise pb-4 lg:pb-10">
             <p className="eyebrow">
               <AgentRoleLabel
                 name={agent.role?.displayName ?? "Agent"}
                 icon={agent.role?.displayIcon}
               />
             </p>
-            <h1 className="mt-5 font-display text-6xl font-black uppercase leading-[0.82] tracking-[-0.075em] sm:text-8xl lg:mt-6 lg:text-9xl">
+            <h1 className="mt-4 font-display text-5xl font-black uppercase leading-[0.84] tracking-[-0.065em] sm:text-6xl lg:text-7xl">
               {agent.displayName}
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-[var(--muted)] sm:text-lg sm:leading-8 lg:mt-7">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--muted)] sm:text-base lg:mt-5">
               {agent.description}
             </p>
             <FavoriteButton
@@ -110,10 +110,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
               targetId={agent.uuid}
               targetName={agent.displayName}
               selected={favorites.agent[favoriteScope] === agent.uuid}
-              className="mt-7"
+              className="mt-5"
             />
           </div>
-          <div className="motion-agent relative h-[25rem] sm:h-[31rem] lg:h-auto lg:min-h-[36rem]">
+          <div className="motion-agent relative h-[21rem] sm:h-[25rem] lg:h-auto lg:min-h-[28rem]">
             <Image
               src={agent.fullPortrait ?? agent.displayIcon}
               alt={`${agent.displayName} full portrait`}
@@ -126,15 +126,15 @@ export default async function AgentPage({ params }: AgentPageProps) {
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <section className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
         <p className="eyebrow">Abilities</p>
-        <div className="motion-stagger mt-8 grid gap-4 md:grid-cols-2">
+        <div className="motion-stagger mt-6 grid gap-3 md:grid-cols-2">
           {agent.abilities.map((ability) => (
             <div
               key={`${ability.slot}-${ability.displayName}`}
-              className="ability-card valorant-panel motion-card group p-7"
+              className="ability-card valorant-panel motion-card group p-5"
             >
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4">
                 {ability.displayIcon ? (
                   <Image
                     src={ability.displayIcon}
@@ -152,12 +152,12 @@ export default async function AgentPage({ params }: AgentPageProps) {
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)]">
                     {ability.slot}
                   </p>
-                  <h2 className="font-display text-2xl font-black uppercase">
+                  <h2 className="font-display text-xl font-black uppercase">
                     {ability.displayName}
                   </h2>
                 </div>
               </div>
-              <p className="mt-5 text-sm leading-7 text-[var(--muted)]">
+              <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
                 {ability.description}
               </p>
             </div>

@@ -34,6 +34,14 @@ export default function PrivacyPage() {
         has linked their own account.
       </p>
       <p>
+        When you connect through Riot Sign On, AgentStats stores a user
+        record containing your Riot PUUID, current Riot ID, selected region,
+        profile visibility, consent status, and account timestamps. A random
+        database session identifier keeps you signed in. AgentStats does not
+        receive your Riot password and does not retain Riot OAuth access or
+        refresh tokens after account verification.
+      </p>
+      <p>
         AgentStats also displays public game content supplied by
         valorant-api.com, an independent third-party content API, such as
         agent, weapon, map, season, and cosmetic information. Requests for
@@ -74,8 +82,8 @@ export default function PrivacyPage() {
         service secure, reliable, and available.
       </p>
       <p>
-        AgentStats does not currently provide user accounts, accept payments,
-        display advertising, or use audience-tracking tools.
+        AgentStats does not accept payments, display advertising, or use
+        audience-tracking tools.
       </p>
 
       <h2>Why information is used</h2>
@@ -121,6 +129,13 @@ export default function PrivacyPage() {
         Community page provides a control to remove all choices associated
         with the current browser. Anonymous security activity may be retained
         for up to about 30 days to investigate voting abuse.
+      </p>
+      <p>
+        A linked account remains until you disconnect it. Disconnecting from
+        the account page deletes the AgentStats user record, Riot connection,
+        consent record, and active sessions. Making a profile private
+        immediately withdraws permission for other visitors to view its
+        personal match statistics.
       </p>
       <p>
         Hosting and security records are retained according to the provider

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 
+import { downloadWeaponComparisonCard } from "@/lib/weapon-comparison-card";
+
 export interface ComparisonWeapon {
   uuid: string;
   name: string;
@@ -113,7 +115,7 @@ function MetricRow({
   return (
     <div className="comparison-row grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,1fr)] items-stretch border-t border-white/8 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)]">
       <div
-        className={`flex min-h-20 items-center px-4 py-4 sm:px-6 ${
+        className={`flex min-h-16 items-center px-4 py-3 sm:px-5 ${
           leftWins && !neutral ? "bg-emerald-400/[0.07]" : ""
         }`}
       >
@@ -138,7 +140,7 @@ function MetricRow({
         </div>
       </div>
       <div
-        className={`flex min-h-20 items-center justify-end px-4 py-4 text-right sm:px-6 ${
+        className={`flex min-h-16 items-center justify-end px-4 py-3 text-right sm:px-5 ${
           rightWins && !neutral ? "bg-emerald-400/[0.07]" : ""
         }`}
       >
@@ -165,13 +167,13 @@ function TextMetricRow({
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,1fr)] items-stretch border-t border-white/8 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)]">
-      <p className="responsive-text flex min-h-16 items-center px-3 py-3 text-xs font-black uppercase sm:px-6 sm:text-sm">
+      <p className="responsive-text flex min-h-14 items-center px-3 py-2.5 text-xs font-black uppercase sm:px-5 sm:text-sm">
         {left}
       </p>
       <p className="grid place-items-center border-x border-white/8 px-2 text-center text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
         {label}
       </p>
-      <p className="responsive-text flex min-h-16 items-center justify-end px-3 py-3 text-right text-xs font-black uppercase sm:px-6 sm:text-sm">
+      <p className="responsive-text flex min-h-14 items-center justify-end px-3 py-2.5 text-right text-xs font-black uppercase sm:px-5 sm:text-sm">
         {right}
       </p>
     </div>
@@ -207,7 +209,7 @@ function WeaponPicker({
 
   return (
     <details ref={detailsRef} className="group relative">
-      <summary className="valorant-action flex min-h-12 cursor-pointer list-none items-center justify-between border border-white/15 bg-black/20 px-4 text-left [&::-webkit-details-marker]:hidden">
+      <summary className="valorant-action flex min-h-10 cursor-pointer list-none items-center justify-between border border-white/15 bg-black/20 px-3 text-left [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
           <span className="block text-[9px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
             {label}
@@ -244,7 +246,7 @@ function WeaponPicker({
                 setQuery("");
                 detailsRef.current?.removeAttribute("open");
               }}
-              className="flex min-h-12 w-full items-center justify-between border-b border-white/8 px-3 text-left text-xs font-black uppercase tracking-[0.1em] transition hover:bg-white/6 hover:text-white"
+              className="flex min-h-10 w-full items-center justify-between border-b border-white/8 px-3 text-left text-[11px] font-black uppercase tracking-[0.1em] transition hover:bg-white/6 hover:text-white"
             >
               <span className="responsive-text min-w-0">{weapon.name}</span>
               <span className="ml-2 shrink-0 text-[10px] text-[var(--muted)]">
@@ -271,6 +273,8 @@ export function WeaponComparison({
   const [rightId, setRightId] = useState(initialRightId);
   const [distance, setDistance] =
     useState<(typeof DISTANCES)[number]>(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadMessage, setDownloadMessage] = useState("");
   const left = weaponMap.get(leftId) ?? weapons[0];
   const right = weaponMap.get(rightId) ?? weapons[1] ?? weapons[0];
 
@@ -293,13 +297,51 @@ export function WeaponComparison({
   const leftPellets = left.stats?.shotgunPelletCount ?? 1;
   const rightPellets = right.stats?.shotgunPelletCount ?? 1;
 
+  async function downloadComparison() {
+    setIsDownloading(true);
+    setDownloadMessage("");
+
+    try {
+      await downloadWeaponComparisonCard({
+        left: {
+          name: left.name,
+          category: left.category,
+          image: left.image,
+          cost: left.cost,
+          fireRate: left.stats?.fireRate ?? null,
+          magazineSize: left.stats?.magazineSize ?? null,
+          headDamage: leftDamage?.head ?? null,
+          bodyDamage: leftDamage?.body ?? null,
+        },
+        right: {
+          name: right.name,
+          category: right.category,
+          image: right.image,
+          cost: right.cost,
+          fireRate: right.stats?.fireRate ?? null,
+          magazineSize: right.stats?.magazineSize ?? null,
+          headDamage: rightDamage?.head ?? null,
+          bodyDamage: rightDamage?.body ?? null,
+        },
+        distance,
+      });
+      setDownloadMessage("Comparison card downloaded.");
+    } catch {
+      setDownloadMessage(
+        "The image could not be created. Please try another browser.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   return (
-    <div className="mt-12">
+    <div className="mt-7">
       <div className="grid gap-px border border-white/10 bg-white/10 lg:grid-cols-[1fr_auto_1fr]">
         {[left, right].map((weapon, index) => (
           <article
             key={`${weapon.uuid}-${index}`}
-            className={`relative bg-[var(--panel)] p-5 sm:p-7 ${
+            className={`relative bg-[var(--panel)] p-4 sm:p-5 ${
               index === 1
                 ? "order-3 lg:order-none lg:col-start-3"
                 : "order-1 lg:order-none"
@@ -345,12 +387,56 @@ export function WeaponComparison({
             type="button"
             onClick={swapWeapons}
             aria-label="Swap compared weapons"
-            className="valorant-action grid size-12 place-items-center border border-white/15 text-xl font-black text-[var(--accent)]"
+            className="valorant-action grid size-10 place-items-center border border-white/15 text-lg font-black text-[var(--accent)]"
           >
             ⇄
           </button>
         </div>
       </div>
+
+      <section className="relative mt-6 overflow-hidden border border-white/12 bg-[#10161d]">
+        <div
+          aria-hidden="true"
+          className="absolute inset-y-0 right-0 w-2/5 bg-[linear-gradient(135deg,transparent,rgba(255,70,85,0.1))]"
+        />
+        <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
+              Share comparison
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-black uppercase tracking-[-0.035em] sm:text-3xl">
+              Turn this matchup into a card
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Download a 1200 × 630 PNG with both weapons, key stats, and
+              damage at the selected distance.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={isDownloading}
+            onClick={downloadComparison}
+            className="valorant-action inline-flex min-h-10 shrink-0 items-center justify-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em] disabled:cursor-wait disabled:opacity-65"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-4 fill-none stroke-current stroke-2"
+            >
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" />
+            </svg>
+            {isDownloading ? "Creating PNG" : "Download PNG"}
+          </button>
+        </div>
+        <p
+          role="status"
+          aria-live="polite"
+          className="relative min-h-6 border-t border-white/8 px-5 py-2 text-xs text-[var(--muted)] sm:px-6"
+        >
+          {downloadMessage ||
+            `${left.name} vs ${right.name} · ${distance}m damage`}
+        </p>
+      </section>
 
       {!left.stats || !right.stats ? (
         <div className="mt-6 border-l-2 border-amber-300 bg-amber-300/5 p-5 text-sm leading-6 text-[var(--muted)]">
@@ -363,7 +449,7 @@ export function WeaponComparison({
         reload time, equip time, and shot spread.
       </p>
 
-      <section className="mt-14">
+      <section className="mt-9">
         <p className="eyebrow">Economy and handling</p>
         <div className="mt-7 border border-white/8 bg-[var(--panel)]">
           <MetricRow
@@ -435,11 +521,11 @@ export function WeaponComparison({
         </div>
       </section>
 
-      <section className="mt-14">
+      <section className="mt-9">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Damage comparison</p>
-            <h2 className="mt-4 font-display text-4xl font-black uppercase tracking-[-0.045em]">
+            <h2 className="mt-3 font-display text-3xl font-black uppercase tracking-[-0.045em]">
               At {distance} meters
             </h2>
           </div>
@@ -457,7 +543,7 @@ export function WeaponComparison({
             ))}
           </div>
         </div>
-        <div className="mt-7 border border-white/8 bg-[var(--panel)]">
+        <div className="mt-5 border border-white/8 bg-[var(--panel)]">
           <MetricRow
             label="Head"
             left={leftDamage?.head ?? null}
@@ -497,9 +583,9 @@ export function WeaponComparison({
         </p>
       </section>
 
-      <section className="mt-14">
+      <section className="mt-9">
         <p className="eyebrow">Alternate fire and ADS</p>
-        <div className="mt-7 border border-white/8 bg-[var(--panel)]">
+        <div className="mt-5 border border-white/8 bg-[var(--panel)]">
           <TextMetricRow
             label="Alt fire"
             left={cleanEnum(left.stats?.altFireType ?? null)}

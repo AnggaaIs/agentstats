@@ -59,7 +59,7 @@ export default async function BundlePage({ params }: BundlePageProps) {
           { name: bundle.displayName, path: `/bundles/${bundle.uuid}` },
         ])}
       />
-      <header className="relative isolate min-h-[34rem] overflow-hidden border-b border-white/8">
+      <header className="relative isolate min-h-[25rem] overflow-hidden border-b border-white/8">
         <Image
           src={bundle.displayIcon2 || bundle.displayIcon}
           alt=""
@@ -69,7 +69,7 @@ export default async function BundlePage({ params }: BundlePageProps) {
           className="-z-20 object-cover opacity-45"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1016] via-[#0b1016]/90 to-[#0b1016]/35" />
-        <div className="mx-auto flex min-h-[34rem] max-w-7xl items-end px-5 py-14 lg:px-8 lg:py-20">
+        <div className="mx-auto flex min-h-[25rem] max-w-[86rem] items-end px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
           <div className="min-w-0 max-w-4xl">
             <RouteLink
               href="/bundles"
@@ -77,12 +77,12 @@ export default async function BundlePage({ params }: BundlePageProps) {
             >
               Back to bundle archive
             </RouteLink>
-            <p className="eyebrow mt-8">Store collection</p>
-            <h1 className="responsive-text mt-5 font-display text-[clamp(3.2rem,15vw,7.5rem)] font-black uppercase leading-[0.82] tracking-[-0.07em]">
+            <p className="eyebrow mt-6">Store collection</p>
+            <h1 className="responsive-text mt-4 font-display text-[clamp(2.6rem,12vw,5rem)] font-black uppercase leading-[0.85] tracking-[-0.06em]">
               {bundle.displayName}
             </h1>
             {bundle.displayNameSubText ? (
-              <p className="mt-5 text-lg font-bold uppercase tracking-[0.12em] text-white/75">
+              <p className="mt-4 text-sm font-bold uppercase tracking-[0.12em] text-white/75">
                 {bundle.displayNameSubText}
               </p>
             ) : null}
@@ -90,7 +90,7 @@ export default async function BundlePage({ params }: BundlePageProps) {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-5 py-14 lg:grid-cols-[0.65fr_1.35fr] lg:px-8 lg:py-20">
+      <section className="mx-auto grid max-w-[86rem] gap-6 px-4 py-9 sm:px-6 lg:grid-cols-[0.55fr_1.45fr] lg:px-8 lg:py-11">
         <div className="relative aspect-[4/5] min-w-0 overflow-hidden border border-white/10 bg-[var(--panel)]">
           <Image
             src={bundle.verticalPromoImage || bundle.displayIcon}
@@ -102,15 +102,15 @@ export default async function BundlePage({ params }: BundlePageProps) {
         </div>
         <div className="min-w-0 self-center">
           <p className="eyebrow">Archive notes</p>
-          <h2 className="responsive-text mt-5 font-display text-4xl font-black uppercase tracking-[-0.045em] sm:text-6xl">
+          <h2 className="responsive-text mt-4 font-display text-3xl font-black uppercase tracking-[-0.045em] sm:text-4xl">
             Collection record
           </h2>
           {descriptions.length ? (
-            <div className="mt-8 grid gap-4">
+            <div className="mt-6 grid gap-3">
               {descriptions.map((description) => (
                 <p
                   key={description}
-                  className="responsive-text border-l-2 border-[var(--accent)] pl-5 text-base leading-8 text-[var(--muted)]"
+                  className="responsive-text border-l-2 border-[var(--accent)] pl-4 text-sm leading-6 text-[var(--muted)]"
                 >
                   {description}
                 </p>
@@ -122,7 +122,7 @@ export default async function BundlePage({ params }: BundlePageProps) {
               content for this bundle.
             </p>
           )}
-          <p className="mt-8 font-mono text-[10px] uppercase leading-5 tracking-[0.14em] text-white/40">
+          <p className="mt-6 font-mono text-[10px] uppercase leading-5 tracking-[0.14em] text-white/40">
             Archive ID / {bundle.uuid}
           </p>
         </div>

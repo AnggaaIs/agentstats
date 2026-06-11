@@ -37,7 +37,7 @@ export function ClearCommunityFavorites() {
   }
 
   return (
-    <div className="border border-white/10 bg-[var(--panel)] p-5">
+    <div className="border border-white/10 bg-[var(--panel)] p-4">
       <p className="text-sm leading-6 text-[var(--muted)]">
         Remove every anonymous role, map, and weapon choice together with the
         device identifier used to protect the vote.
@@ -46,7 +46,7 @@ export function ClearCommunityFavorites() {
         type="button"
         disabled={pending}
         onClick={clearFavorites}
-        className="valorant-action mt-4 min-h-11 border border-white/15 px-5 text-xs font-black uppercase tracking-[0.13em] disabled:cursor-wait disabled:opacity-60"
+        className="valorant-action mt-4 min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-[0.12em] disabled:cursor-wait disabled:opacity-60"
       >
         {pending ? "Clearing" : "Clear my favorites"}
       </button>

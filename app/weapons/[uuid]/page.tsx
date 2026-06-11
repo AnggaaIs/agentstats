@@ -64,7 +64,7 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
     : [];
 
   return (
-    <article className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <article className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Home", path: "/" },
@@ -72,19 +72,19 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
           { name: weapon.displayName, path: `/weapons/${weapon.uuid}` },
         ])}
       />
-      <header className="grid items-center gap-12 lg:grid-cols-[0.75fr_1.25fr]">
+      <header className="grid items-center gap-7 lg:grid-cols-[0.75fr_1.25fr]">
         <div>
           <p className="eyebrow">{weapon.shopData?.category ?? "Weapon"}</p>
-          <h1 className="responsive-text mt-6 font-display text-[clamp(3.5rem,20vw,8rem)] font-black uppercase leading-[0.85] tracking-[-0.07em]">
+          <h1 className="responsive-text mt-4 font-display text-[clamp(2.6rem,14vw,5rem)] font-black uppercase leading-[0.87] tracking-[-0.06em]">
             {weapon.displayName}
           </h1>
-          <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+          <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             {weapon.shopData ? `${weapon.shopData.cost} credits` : "Standard weapon"}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-2">
             <RouteLink
               href={`/weapons/compare?a=${weapon.uuid}`}
-              className="valorant-action inline-flex min-h-12 items-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-xs font-black uppercase tracking-[0.14em]"
+              className="valorant-action inline-flex min-h-10 items-center border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
             >
               Compare this weapon
             </RouteLink>
@@ -103,40 +103,40 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 60vw"
-            className="object-contain p-10"
+            className="object-contain p-6"
           />
         </div>
       </header>
 
       {metrics.length ? (
-        <section className="mt-16 grid border border-white/8 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mt-9 grid border border-white/8 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map(([label, value]) => (
-            <div key={label} className="border-b border-white/8 p-6 last:border-b-0 sm:border-r">
+            <div key={label} className="border-b border-white/8 p-4 last:border-b-0 sm:border-r">
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
                 {label}
               </p>
-              <p className="mt-2 font-display text-4xl font-black">{value}</p>
+              <p className="mt-1 font-display text-3xl font-black">{value}</p>
             </div>
           ))}
         </section>
       ) : null}
 
       {stats?.damageRanges.length ? (
-        <section className="mt-20">
+        <section className="mt-11">
           <p className="eyebrow">Damage</p>
           <div
             role="region"
             aria-label={`${weapon.displayName} damage table`}
             tabIndex={0}
-            className="tactical-scrollbar mt-8 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="tactical-scrollbar mt-5 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             <table className="w-full min-w-[42rem] border-collapse text-left">
               <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">
                 <tr>
-                  <th className="p-5">Range</th>
-                  <th className="p-5">Head</th>
-                  <th className="p-5">Body</th>
-                  <th className="p-5">Leg</th>
+                  <th className="p-4">Range</th>
+                  <th className="p-4">Head</th>
+                  <th className="p-4">Body</th>
+                  <th className="p-4">Leg</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,16 +145,16 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
                     key={`${range.rangeStartMeters}-${range.rangeEndMeters}`}
                     className="border-t border-white/8"
                   >
-                    <th className="p-5 font-mono text-sm">
+                    <th className="p-4 font-mono text-sm">
                       {range.rangeStartMeters}–{range.rangeEndMeters}m
                     </th>
-                    <td className="p-5 text-2xl font-black text-[var(--accent)]">
+                    <td className="p-4 text-xl font-black text-[var(--accent)]">
                       {Math.round(range.headDamage)}
                     </td>
-                    <td className="p-5 text-2xl font-black">
+                    <td className="p-4 text-xl font-black">
                       {Math.round(range.bodyDamage)}
                     </td>
-                    <td className="p-5 text-2xl font-black text-[var(--muted)]">
+                    <td className="p-4 text-xl font-black text-[var(--muted)]">
                       {Math.round(range.legDamage)}
                     </td>
                   </tr>
@@ -165,7 +165,7 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
         </section>
       ) : null}
 
-      <section className="mt-20">
+      <section className="mt-11">
         <p className="eyebrow">Skin collection</p>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--muted)]">
           Pick one favorite skin for this weapon. Choosing another skin

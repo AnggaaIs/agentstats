@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { REGIONS, type Region } from "@/lib/constants";
+import { getPlayerAccess } from "@/lib/player-access";
 import { getRecentMatches, RiotApiError } from "@/lib/riot";
 
 function isRegion(value: string | null): value is Region {
@@ -17,6 +18,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    const access = await getPlayerAccess(puuid);
+    if (!access.canViewStats) {
+      return apiError("This player's match history is private.", 403);
+    }
     return apiSuccess(await getRecentMatches(puuid, region, count));
   } catch (error) {
     if (error instanceof RiotApiError) {

@@ -714,3 +714,549 @@ https://react.dev/link/hydration-mismatch
 [browser] Image with src "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/fullportrait.png" has "fill" and a height value of 0. This is likely because the parent element of the image has not been styled to have a set height.
 [browser] Image with src "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/fullportrait.png" has "fill" and a height value of 0. This is likely because the parent element of the image has not been styled to have a set height.
 [browser] Image with src "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/fullportrait.png" has "fill" and a height value of 0. This is likely because the parent element of the image has not been styled to have a set height.
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+[browser] Encountered two children with the same key, `Mahendrawr-Ihza-ap`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. 
+⚠ Fast Refresh had to perform a full reload when ./node_modules/.pnpm/next@16.2.7_@babel+core@7.2_3247453681e4b667be63d531593a3358/node_modules/next/dist/client/image-component.js changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <Suspense name="crosshairs/" fallback={<Fragment>}>
+      <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/crosshair..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+              <SegmentViewNode type="page" pagePath="crosshairs...">
+                <SegmentTrieNode>
+                <CrosshairsPage>
+                  <section className="grid-noise...">
+                    <script>
+                    <div className="mx-auto ma...">
+                      <div>
+                      <CrosshairBuilder initialCode="0;P;c;8;u;...">
+                        <div className="mt-12">
+                          <div className="grid gap-6...">
+                            <section aria-label="Crosshair ..." className="min-w-0 xl...">
+                              <div className="relative i...">
+                                <div className="absolute i...">
+                                  <div>
+                                  <div className="flex gap-1..." aria-label="Preview be...">
+                                    <button
+                                      type="button"
+                                      aria-pressed={true}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="mvls2s"
+                                    >
++                                     standing
+                                    <button
+                                      type="button"
+                                      aria-pressed={false}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="y73dks"
+                                    >
++                                     moving
+                                    <button
+                                      type="button"
+                                      aria-pressed={false}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="psz8xc"
+                                    >
++                                     firing
+                                <div>
+                                <div className="absolute b...">
+                                  <div className="flex borde...">
+                                    <button
+                                      type="button"
+                                      aria-pressed={true}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="76j06p"
+                                    >
++                                     range
+                                    <button
+                                      type="button"
+                                      aria-pressed={false}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="52nnni"
+                                    >
++                                     dark
+                                    <button
+                                      type="button"
+                                      aria-pressed={false}
+                                      onClick={function onClick}
+                                      className="valorant-action min-h-9 px-3 text-[10px] font-black uppercase trackin..."
+-                                     fdprocessedid="vanav"
+                                    >
++                                     light
+                                  ...
+                              <div className="grid gap-2...">
+                                <button
+                                  type="button"
+                                  onClick={function copyCode}
+                                  className="valorant-action min-h-12 border border-[var(--accent)] bg-[var(--accent)]..."
+-                                 fdprocessedid="4bc7mk"
+                                >
++                                 Copy code
+                                <button
+                                  type="button"
+                                  onClick={function shareBuild}
+                                  className="valorant-action min-h-12 border border-white/15 px-4 text-xs font-black u..."
+-                                 fdprocessedid="c84o0k"
+                                >
++                                 Share
+                                <button
+                                  type="button"
+                                  aria-pressed={false}
+                                  onClick={function toggleFavorite}
+                                  className="valorant-action min-h-12 border border-white/15 px-4 text-xs font-black u..."
+-                                 fdprocessedid="3bey5o"
+                                >
++                                 Favorite
+                                <button
+                                  type="button"
+                                  onClick={function onClick}
+                                  className="valorant-action min-h-12 border border-white/15 px-4 text-xs font-black u..."
+-                                 fdprocessedid="d2l2cq"
+                                >
++                                 Randomize
+                              ...
+                            <div className="grid min-w...">
+                              <section className="valorant-p...">
+                                <SectionTitle>
+                                <div className="grid gap-5">
+                                  <div>
+                                    <span>
+                                    <div className="mt-3 grid ...">
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #ffffff"
+                                        aria-pressed={false}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="dxdae9"
+                                      >
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #00ff66"
+                                        aria-pressed={false}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="gnkyuc"
+                                      >
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #00ffff"
+                                        aria-pressed={true}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="un68u"
+                                      >
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #f8ff75"
+                                        aria-pressed={false}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="ijz2y9"
+                                      >
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #ff4655"
+                                        aria-pressed={false}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="prnr8"
+                                      >
+                                      <button
+                                        type="button"
+                                        aria-label="Use color #ff4fd8"
+                                        aria-pressed={false}
+                                        onClick={function onClick}
+                                        className="grid min-h-11 place-items-center border bg-black/20 focus-visible:o..."
+-                                       fdprocessedid="mhe53a"
+                                      >
+                                      ...
+                                  <div className="grid gap-3...">
+                                    <Toggle label="Outlines" checked={true} onChange={function onChange}>
+                                      <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={true}
+                                        onClick={function onClick}
+                                        className="valorant-action flex min-h-11 w-full items-center justify-between g..."
+-                                       fdprocessedid="njacre"
+                                      >
+                                    <Toggle label="Center dot" checked={false} onChange={function onChange}>
+                                      <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={false}
+                                        onClick={function onClick}
+                                        className="valorant-action flex min-h-11 w-full items-center justify-between g..."
+-                                       fdprocessedid="bz7w4"
+                                      >
+                                  ...
+                              <section className="valorant-p...">
+                                <SectionTitle>
+                                <div className="grid gap-5">
+                                  <Toggle label="Show inner..." checked={true} onChange={function onChange}>
+                                    <button
+                                      type="button"
+                                      role="switch"
+                                      aria-checked={true}
+                                      onClick={function onClick}
+                                      className="valorant-action flex min-h-11 w-full items-center justify-between gap..."
+-                                     fdprocessedid="sr0vki"
+                                    >
+                                  <div>
+                                  <div className="grid gap-3...">
+                                    <Toggle label="Movement e..." checked={false} onChange={function onChange}>
+                                      <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={false}
+                                        onClick={function onClick}
+                                        className="valorant-action flex min-h-11 w-full items-center justify-between g..."
+-                                       fdprocessedid="urh4o"
+                                      >
+                                    <Toggle label="Firing error" checked={false} onChange={function onChange}>
+                                      <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={false}
+                                        onClick={function onClick}
+                                        className="valorant-action flex min-h-11 w-full items-center justify-between g..."
+-                                       fdprocessedid="3di3d"
+                                      >
+                              <section className="valorant-p...">
+                                <SectionTitle>
+                                <div className="grid gap-5">
+                                  <Toggle label="Show outer..." checked={false} onChange={function onChange}>
+                                    <button
+                                      type="button"
+                                      role="switch"
+                                      aria-checked={false}
+                                      onClick={function onClick}
+                                      className="valorant-action flex min-h-11 w-full items-center justify-between gap..."
+-                                     fdprocessedid="xhqgkh"
+                                    >
+                              <section className="valorant-p...">
+                                <SectionTitle>
+                                <label>
+                                <div className="mt-3 grid ...">
+                                  <button>
+                                  <button
+                                    type="button"
+                                    onClick={function onClick}
+                                    className="valorant-action min-h-12 border border-white/15 px-5 text-xs font-black..."
+-                                   fdprocessedid="wlvz4"
+                                  >
++                                   Reset default
+                                ...
+                          <section className="mt-20">
+                            <div>
+                            <div className="mt-8 grid ...">
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="e4pvn"
+                              >
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="zhs2yf"
+                              >
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="f33pa8"
+                              >
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="ihwie"
+                              >
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="zy3l8c"
+                              >
+                              <button
+                                type="button"
+                                onClick={function onClick}
+                                className="group valorant-panel min-h-48 p-5 text-left focus-visible:outline-2 focus-v..."
+-                               fdprocessedid="nzsd1"
+                              >
+              ...
+            ...
+ 
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/crosshairs" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <LoadingBoundaryProvider loading={[...]}>
+                <SegmentViewNode type="layout" pagePath="layout.tsx">
+                  <SegmentTrieNode>
+                  <link>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <RootLayout>
+                    <html lang="en" data-scroll-behavior="smooth" className="geist_a715...">
+                      <head>
+                      <body className="flex min-h...">
+                        <a>
+                        <SiteHeader statusNotice={{severity:"...", ...}}>
+                          <header className="sticky top...">
+                            <div className="mx-auto fl...">
+                              <LinkComponent>
+                              <nav>
+                              <div className="flex items...">
+                                <div ref={{current:null}} className="relative" onKeyDown={function onKeyDown}>
+                                  <button
+                                    type="button"
+                                    onClick={function toggleStatus}
+                                    aria-expanded={false}
+                                    aria-controls="riot-status-panel"
+                                    aria-label="Riot status: Game Server Unavailable"
+                                    className="valorant-action grid size-11 place-items-center border border-fuchsia-4..."
+-                                   fdprocessedid="pn3hg6"
+                                  >
+                                <button
+                                  type="button"
+                                  onClick={function openSearch}
+                                  className="valorant-action hidden min-h-10 items-center border border-white/15 px-4 ..."
+-                                 fdprocessedid="y86hh"
+                                >
++                                 Find player
+                                ...
+                          ...
+                        ...
+            ...
+ 
+⨯ Error [RiotApiError]: Riot access is no longer valid.
+    at riotRequest (lib\riot.ts:209:11)
+    at async LeaderboardPage (app\leaderboard\page.tsx:55:23)
+  207 |     };
+  208 |
+> 209 |     throw new RiotApiError(
+      |           ^
+  210 |       messages[response.status] ?? "Riot could not return a result right now.",
+  211 |       response.status,
+  212 |     ); {
+  status: 401,
+  digest: '1247626663'
+}
+⨯ Error [RiotApiError]: Riot access is no longer valid.
+    at riotRequest (lib\riot.ts:209:11)
+    at async LeaderboardPage (app\leaderboard\page.tsx:55:23)
+  207 |     };
+  208 |
+> 209 |     throw new RiotApiError(
+      |           ^
+  210 |       messages[response.status] ?? "Riot could not return a result right now.",
+  211 |       response.status,
+  212 |     ); {
+  status: 401,
+  digest: '1247626663'
+}
+[browser] Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <tbody>. See https://react.dev/link/warning-keys for more information. 
+⨯ Error [RiotApiError]: Riot access is no longer valid.
+    at riotRequest (lib\riot.ts:209:11)
+    at async LeaderboardPage (app\leaderboard\page.tsx:55:23)
+  207 |     };
+  208 |
+> 209 |     throw new RiotApiError(
+      |           ^
+  210 |       messages[response.status] ?? "Riot could not return a result right now.",
+  211 |       response.status,
+  212 |     ); {
+  status: 401,
+  digest: '1247626663'
+}
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} forbidden={undefined} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <LoadingBoundaryProvider loading={[...]}>
+                <SegmentViewNode type="layout" pagePath="layout.tsx">
+                  <SegmentTrieNode>
+                  <link>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <script>
+                  <RootLayout>
+                    <html lang="en" data-scroll-behavior="smooth" className="geist_a715...">
+                      <head>
+                      <body className="flex min-h...">
+                        <a>
+                        <SiteHeader statusNotice={{severity:"...", ...}}>
+                          <header className="sticky top...">
+                            <div className="mx-auto fl...">
+                              <LinkComponent>
+                              <nav>
+                              <div className="flex items...">
+                                <div ref={{current:null}} className="relative" onKeyDown={function onKeyDown}>
+                                  <button
+                                    type="button"
+                                    onClick={function toggleStatus}
+                                    aria-expanded={false}
+                                    aria-controls="riot-status-panel"
+                                    aria-label="Riot status: Game Server Unavailable"
+                                    className="valorant-action grid size-11 place-items-center border border-fuchsia-4..."
+-                                   fdprocessedid="civ3lg"
+                                  >
+                                <button
+                                  type="button"
+                                  onClick={function openSearch}
+                                  className="valorant-action hidden min-h-10 items-center border border-white/15 px-4 ..."
+-                                 fdprocessedid="sh3xg"
+                                >
++                                 Find player
+                                ...
+                          ...
+                        ...
+            ...
+ 
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<SegmentViewNode>} forbidden={undefined} ...>
+      <RedirectBoundary>
+        <RedirectErrorBoundary router={{...}}>
+          <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+            <SegmentViewNode type="page" pagePath="page.tsx">
+              <SegmentTrieNode>
+              <HomePage>
+                <section className="grid-noise...">
+                  <div>
+                  <div>
+                  <div>
+                  <div>
+                  <div className="mx-auto gr...">
+                    <div className="relative z...">
+                      <p>
+                      <h1>
+                      <p>
+                      <div className="mt-10 min-...">
+                        <div id="search">
+                          <PlayerSearch>
+                            <form onSubmit={function handleSubmit} className="valorant-p..." noValidate={true}>
+                              <label>
+                              <input
+                                id="player-riot-id"
+                                value=""
+                                onChange={function onChange}
+                                placeholder="PlayerName#TAG"
+                                autoComplete="off"
+                                autoFocus={false}
+                                aria-invalid={false}
+                                aria-describedby={undefined}
+                                className="min-h-14 min-w-0 w-full border border-white/12 bg-black/20 px-4 text-lg fon..."
+-                               fdprocessedid="tf67ta"
+                              >
+                              <button
+                                type="submit"
+                                disabled={false}
+                                className="min-h-14 border border-[var(--accent)] bg-[var(--accent)] px-7 text-sm font..."
+-                               fdprocessedid="u5a9vr"
+                              >
++                               Find player
+                              ...
+                        ...
+                    ...
+                ...
+            ...
+          ...
+ 
+⨯ Error [RiotApiError]: Riot access is no longer valid.
+    at riotRequest (lib\riot.ts:209:11)
+    at async LeaderboardPage (app\leaderboard\page.tsx:55:23)
+  207 |     };
+  208 |
+> 209 |     throw new RiotApiError(
+      |           ^
+  210 |       messages[response.status] ?? "Riot could not return a result right now.",
+  211 |       response.status,
+  212 |     ); {
+  status: 401,
+  digest: '1247626663'
+}

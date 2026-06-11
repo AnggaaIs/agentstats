@@ -25,6 +25,7 @@ interface CatalogBrowserProps {
   groups: string[];
   groupIcons?: Record<string, string>;
   columns?: "three" | "four" | "two";
+  paginate?: boolean;
   perPage?: number;
   searchPlaceholder?: string;
   favoriteCategory?: FavoriteCategoryName;
@@ -36,6 +37,7 @@ export function CatalogBrowser({
   groups,
   groupIcons = {},
   columns = "four",
+  paginate = true,
   perPage = 12,
   searchPlaceholder = "Search collection",
   favoriteCategory,
@@ -60,9 +62,13 @@ export function CatalogBrowser({
       return matchesGroup && matchesQuery;
     });
   }, [activeGroups, items, query]);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const totalPages = paginate
+    ? Math.max(1, Math.ceil(filtered.length / perPage))
+    : 1;
   const safePage = Math.min(page, totalPages);
-  const visible = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const visible = paginate
+    ? filtered.slice((safePage - 1) * perPage, safePage * perPage)
+    : filtered;
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (item) =>
       item === 1 ||
@@ -71,10 +77,10 @@ export function CatalogBrowser({
   );
   const gridClass =
     columns === "two"
-      ? "md:grid-cols-2"
+      ? "md:grid-cols-2 xl:grid-cols-3"
       : columns === "three"
-        ? "sm:grid-cols-2 lg:grid-cols-3"
-        : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+        ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5";
 
   function toggleGroup(group: string) {
     setActiveGroups((current) =>
@@ -96,7 +102,7 @@ export function CatalogBrowser({
 
   return (
     <>
-      <div className="motion-rise mt-12 grid gap-3 border-y border-white/8 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="motion-rise mt-8 grid gap-3 border-y border-white/8 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <label className="relative block min-w-0">
           <span className="sr-only">{searchPlaceholder}</span>
           <svg
@@ -115,7 +121,7 @@ export function CatalogBrowser({
               setPage(1);
             }}
             placeholder={searchPlaceholder}
-            className="min-h-12 w-full border border-white/12 bg-white/[0.035] pl-12 pr-4 text-sm font-bold text-white outline-none placeholder:text-[#65707e] focus:border-[var(--accent)]"
+            className="min-h-11 w-full border border-white/12 bg-white/[0.035] pl-12 pr-4 text-sm font-bold text-white outline-none placeholder:text-[#65707e] focus:border-[var(--accent)]"
           />
         </label>
         <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -124,7 +130,7 @@ export function CatalogBrowser({
       </div>
 
       {groups.length > 1 ? (
-        <fieldset className="border-b border-white/8 py-5">
+        <fieldset className="border-b border-white/8 py-3.5">
           <legend className="sr-only">Choose categories</legend>
           <div className="flex flex-wrap gap-2">
             <ChoiceChip
@@ -149,7 +155,7 @@ export function CatalogBrowser({
       ) : null}
 
       {visible.length ? (
-        <div className={`motion-stagger mt-10 grid min-w-0 gap-5 ${gridClass}`}>
+        <div className={`motion-stagger mt-7 grid min-w-0 gap-4 ${gridClass}`}>
           {visible.map((item) => (
             <div key={item.id} className="motion-card relative min-w-0">
               <CatalogCard
@@ -183,7 +189,7 @@ export function CatalogBrowser({
           ))}
         </div>
       ) : (
-        <div className="mt-10 border border-white/10 bg-[var(--panel)] px-6 py-12 text-center">
+        <div className="mt-6 border border-white/10 bg-[var(--panel)] px-5 py-8 text-center">
           <p className="font-display text-2xl font-black uppercase tracking-[-0.03em]">
             No matching items
           </p>
@@ -193,13 +199,13 @@ export function CatalogBrowser({
         </div>
       )}
 
-      {totalPages > 1 ? (
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+      {paginate && totalPages > 1 ? (
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
           <button
             type="button"
             disabled={safePage === 1}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
-            className="valorant-action min-h-11 border border-white/15 px-5 text-xs font-black uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-30"
+            className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-30"
           >
             Previous
           </button>
@@ -215,7 +221,7 @@ export function CatalogBrowser({
                 type="button"
                 aria-current={item === safePage ? "page" : undefined}
                 onClick={() => setPage(item)}
-                className="valorant-action grid size-11 place-items-center border border-white/15 text-sm font-black"
+                className="valorant-action grid size-10 place-items-center border border-white/15 text-xs font-black"
               >
                 {item}
               </button>
@@ -228,7 +234,7 @@ export function CatalogBrowser({
             onClick={() =>
               setPage((current) => Math.min(totalPages, current + 1))
             }
-            className="valorant-action min-h-11 border border-white/15 px-5 text-xs font-black uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-30"
+            className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-30"
           >
             Next
           </button>

@@ -14,13 +14,13 @@ export function ActSelector({
   region,
 }: ActSelectorProps) {
   return (
-    <nav aria-label="Leaderboard act" className="mt-10">
-      <div className="mb-3 flex items-end justify-between gap-4">
+    <nav aria-label="Leaderboard act" className="mt-8">
+      <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">
             Competitive archive
           </p>
-          <p className="mt-1 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             Choose an Act to inspect its competitive ladder.
           </p>
         </div>
@@ -39,14 +39,25 @@ export function ActSelector({
             key={act.uuid}
             href={`/leaderboard?region=${region}&act=${act.uuid}&page=1`}
             current={act.uuid === selectedActId}
-            className="valorant-action min-h-16 min-w-40 snap-start border border-white/12 px-4 py-3"
+            className="valorant-action grid min-h-16 min-w-44 snap-start grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border border-white/12 px-4 py-3"
           >
-            <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-current opacity-65">
-              {act.seasonDisplayName ?? "Competitive"}
-              {act.isCurrent ? " / Current" : ""}
+            <span className="min-w-0">
+              <span className="block text-[9px] font-black uppercase leading-4 tracking-[0.14em] text-current opacity-65">
+                {act.seasonDisplayName ?? "Competitive"}
+              </span>
+              {act.isCurrent ? (
+                <span className="mt-0.5 block text-[9px] font-black uppercase tracking-[0.14em] text-current opacity-65">
+                  Current
+                </span>
+              ) : null}
             </span>
-            <span className="mt-1 block font-display text-xl font-black uppercase">
-              {act.displayName}
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="text-xl text-white/25">
+                /
+              </span>
+              <span className="font-display text-lg font-black uppercase leading-none">
+                {act.displayName}
+              </span>
             </span>
           </RouteLink>
         ))}

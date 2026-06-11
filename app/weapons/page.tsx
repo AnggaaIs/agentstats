@@ -21,22 +21,22 @@ export default async function WeaponsPage() {
   ]);
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow={`${weapons.length} weapons`}
         title="Weapon vault"
         description="Compare price, firepower, magazine size, and available collections."
       />
-      <div className="mt-8 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap gap-2">
         <RouteLink
           href="/weapons/compare"
-          className="valorant-action inline-flex min-h-12 items-center border border-[var(--accent)] bg-[var(--accent)] px-6 text-sm font-black uppercase tracking-[0.14em]"
+          className="valorant-action inline-flex min-h-10 items-center border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
         >
           Open weapon comparison
         </RouteLink>
         <RouteLink
           href="/bundles"
-          className="valorant-action inline-flex min-h-12 items-center border border-white/15 px-6 text-sm font-black uppercase tracking-[0.14em]"
+          className="valorant-action inline-flex min-h-10 items-center border border-white/15 px-4 text-[11px] font-black uppercase tracking-[0.12em]"
         >
           Browse bundle archive
         </RouteLink>
@@ -71,7 +71,7 @@ export default async function WeaponsPage() {
           ),
         ]}
         columns="three"
-        perPage={9}
+        paginate={false}
         searchPlaceholder="Search weapons or categories"
         favoriteCategory="weapon"
         initialFavoriteIds={

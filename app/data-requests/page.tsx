@@ -39,6 +39,14 @@ export default function DataRequestsPage() {
       </p>
       <LegalContact />
 
+      <h2>Delete a linked account</h2>
+      <p>
+        Signed-in players can disconnect directly from the account page. This
+        deletes the AgentStats user, linked Riot identity, visibility and
+        consent settings, and active sessions without deleting or changing
+        the underlying Riot account.
+      </p>
+
       <h2>Verification and response</h2>
       <p>
         The operator may ask for reasonable information to confirm that the

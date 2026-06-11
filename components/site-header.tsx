@@ -18,9 +18,10 @@ export interface HeaderStatusNotice {
 
 interface SiteHeaderProps {
   statusNotice: HeaderStatusNotice | null;
+  account: { href: string; label: string } | null;
 }
 
-export function SiteHeader({ statusNotice }: SiteHeaderProps) {
+export function SiteHeader({ statusNotice, account }: SiteHeaderProps) {
   const pathname = usePathname();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -61,7 +62,7 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[color:var(--ink)/.94] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-5 lg:px-8">
+        <div className="mx-auto flex h-14 max-w-[86rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
             className="flex min-h-11 shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
@@ -90,6 +91,15 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            {account ? (
+              <RouteLink
+                href={account.href}
+                current={pathname === account.href}
+                className="valorant-action hidden min-h-10 max-w-44 items-center border border-white/15 px-4 text-xs font-black uppercase tracking-[0.12em] sm:inline-flex"
+              >
+                <span className="responsive-text truncate">{account.label}</span>
+              </RouteLink>
+            ) : null}
             {statusNotice ? (
               <div
                 ref={statusRef}
@@ -118,7 +128,7 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
                   <section
                     id="riot-status-panel"
                     aria-label="Riot service status"
-                    className="motion-pop fixed left-4 right-4 top-[4.75rem] z-50 border border-black/10 bg-[#f5f3f0] p-7 text-[#38383b] shadow-2xl shadow-black/50 sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.8rem)] sm:w-[21rem]"
+                  className="motion-pop fixed left-4 right-4 top-[4.25rem] z-50 border border-black/10 bg-[#f5f3f0] p-5 text-[#38383b] shadow-2xl shadow-black/50 sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.65rem)] sm:w-[21rem]"
                   >
                     <span
                       aria-hidden="true"
@@ -134,20 +144,20 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
                         </span>
                         {statusNotice.severity}
                       </p>
-                      <h2 className="mt-5 text-xl font-black tracking-[0.02em]">
+                      <h2 className="mt-4 text-lg font-black tracking-[0.02em]">
                         {statusNotice.title}
                       </h2>
                       <p className="mt-1 text-[11px] font-black uppercase tracking-[0.12em] text-[#929296]">
                         {statusNotice.date}
                       </p>
-                      <p className="mt-5 text-[15px] leading-6 tracking-[0.04em] text-[#47474b]">
+                      <p className="mt-4 text-sm leading-6 tracking-[0.03em] text-[#47474b]">
                         {statusNotice.message}
                       </p>
                     </>
                     <RouteLink
                       href="/status"
                       onClick={() => setStatusOpen(false)}
-                      className="mt-8 flex min-h-11 items-center justify-center bg-[#e8e6e4] px-5 text-xs font-black uppercase tracking-[0.14em] text-[#343438] transition hover:bg-[#ddd9d6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      className="mt-5 flex min-h-11 items-center justify-center bg-[#e8e6e4] px-5 text-xs font-black uppercase tracking-[0.14em] text-[#343438] transition hover:bg-[#ddd9d6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                     >
                       View more details
                     </RouteLink>
@@ -204,14 +214,14 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
             aria-label="Mobile navigation"
             className="motion-drop border-t border-white/8 bg-[var(--ink)] px-5 py-4 lg:hidden"
           >
-            <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px border border-white/10 bg-white/10">
+            <div className="mx-auto grid max-w-[86rem] grid-cols-2 gap-px border border-white/10 bg-white/10">
               {NAV_ITEMS.map((item) => (
                 <RouteLink
                   key={item.href}
                   href={item.href}
                   current={pathname === item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="valorant-action flex min-h-14 items-center bg-[var(--panel)] px-4 text-xs font-black uppercase tracking-[0.12em] text-[var(--muted)]"
+                  className="valorant-action flex min-h-12 items-center bg-[var(--panel)] px-4 text-xs font-black uppercase tracking-[0.12em] text-[var(--muted)]"
                 >
                   {item.label}
                 </RouteLink>
@@ -230,13 +240,13 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
         className="motion-dialog m-auto w-[min(42rem,calc(100%-2rem))] border-0 bg-transparent p-0 text-[var(--paper)] backdrop:bg-black/75"
       >
         <div className="motion-dialog-content border border-white/15 bg-[var(--panel)] shadow-2xl shadow-black/60">
-          <div className="border-b border-white/10 px-5 py-5 sm:px-7">
+          <div className="border-b border-white/10 px-5 py-4 sm:px-6">
             <div className="flex items-start justify-between gap-6">
               <div>
                 <p className="eyebrow">Player lookup</p>
                 <h2
                   id="player-search-title"
-                  className="mt-4 font-display text-3xl font-black uppercase tracking-[-0.04em]"
+                  className="mt-3 font-display text-2xl font-black uppercase tracking-[-0.04em]"
                 >
                   Find a Riot account
                 </h2>
@@ -251,7 +261,7 @@ export function SiteHeader({ statusNotice }: SiteHeaderProps) {
               </button>
             </div>
           </div>
-          <div className="p-5 sm:p-7">
+          <div className="p-5 sm:p-6">
             <PlayerSearch
               autoFocus
               idPrefix="header"

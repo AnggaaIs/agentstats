@@ -9,14 +9,15 @@ const STATIC_ROUTES: Array<{
   priority: number;
 }> = [
   { path: "", changeFrequency: "weekly", priority: 1 },
-  { path: "/meta", changeFrequency: "daily", priority: 0.8 },
   { path: "/status", changeFrequency: "hourly", priority: 0.8 },
   { path: "/community", changeFrequency: "daily", priority: 0.8 },
   { path: "/agents", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/agents/meta", changeFrequency: "daily", priority: 0.8 },
   { path: "/weapons", changeFrequency: "weekly", priority: 0.9 },
   { path: "/weapons/compare", changeFrequency: "monthly", priority: 0.7 },
   { path: "/bundles", changeFrequency: "weekly", priority: 0.8 },
   { path: "/maps", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/maps/meta", changeFrequency: "daily", priority: 0.7 },
   { path: "/leaderboard", changeFrequency: "daily", priority: 0.9 },
   { path: "/legal", changeFrequency: "monthly", priority: 0.3 },
   { path: "/privacy", changeFrequency: "monthly", priority: 0.3 },

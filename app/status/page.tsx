@@ -107,8 +107,8 @@ export default async function StatusPage() {
   return (
     <main>
       <section className="grid-noise border-b border-white/8">
-        <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <PageHeading
               eyebrow="Riot service monitor"
               title="Platform status"
@@ -118,7 +118,7 @@ export default async function StatusPage() {
               href={OFFICIAL_RIOT_STATUS_URL}
               target="_blank"
               rel="noreferrer"
-              className="valorant-action inline-flex min-h-12 max-w-full items-center justify-center border border-white/15 px-5 text-xs font-black uppercase tracking-[0.14em]"
+              className="valorant-action inline-flex min-h-10 max-w-full items-center justify-center border border-white/15 px-4 text-[11px] font-black uppercase tracking-[0.12em]"
             >
               Open official Riot status
               <svg
@@ -132,7 +132,7 @@ export default async function StatusPage() {
             </a>
           </div>
 
-          <dl className="mt-12 grid border border-white/10 sm:grid-cols-3">
+          <dl className="mt-7 grid border border-white/10 sm:grid-cols-3">
             {[
               ["Operational", operational, "text-emerald-300"],
               ["With notices", affected, "text-amber-300"],
@@ -154,11 +154,11 @@ export default async function StatusPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl overflow-x-hidden px-5 py-12 lg:px-8 lg:py-16">
+      <section className="mx-auto max-w-[86rem] overflow-x-hidden px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <p className="eyebrow">All regions</p>
-            <h2 className="mt-4 font-display text-3xl font-black uppercase tracking-[-0.04em] sm:text-4xl">
+            <h2 className="mt-3 font-display text-2xl font-black uppercase tracking-[-0.04em] sm:text-3xl">
               Valorant servers
             </h2>
           </div>
@@ -191,7 +191,7 @@ export default async function StatusPage() {
                 className="group motion-card min-w-0 border border-white/10 bg-[var(--panel)] open:border-white/20"
                 style={{ animationDelay: `${Math.min(index * 45, 180)}ms` }}
               >
-                <summary className="valorant-action flex cursor-pointer list-none flex-col gap-4 p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] group-open:border-b group-open:border-white/10 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-6 [&::-webkit-details-marker]:hidden">
+                <summary className="valorant-action flex cursor-pointer list-none flex-col gap-3 p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] group-open:border-b group-open:border-white/10 sm:flex-row sm:items-center sm:justify-between sm:gap-5 [&::-webkit-details-marker]:hidden">
                   <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                     <span className="grid size-11 shrink-0 place-items-center border border-white/12 bg-white/[0.035] font-mono text-xs font-black uppercase text-[var(--accent)]">
                       {status.region}
@@ -282,7 +282,7 @@ export default async function StatusPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="flex min-h-32 items-center gap-4 p-5 sm:p-6">
+                  <div className="flex min-h-24 items-center gap-4 p-4">
                     <span
                       aria-hidden="true"
                       className="grid size-9 shrink-0 place-items-center border border-emerald-400/30 text-sm font-black text-emerald-300"

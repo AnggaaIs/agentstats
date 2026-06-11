@@ -3,8 +3,19 @@ import Image from "next/image";
 
 import { PlayerSearch } from "@/components/player-search";
 import { RouteLink } from "@/components/route-link";
+import {
+  buildEmptyAgentMetaDataset,
+  buildEmptyMapMetaDataset,
+  getAgentMetaDataset,
+  getMapMetaDataset,
+} from "@/lib/agent-meta";
 import { createMetadata } from "@/lib/seo";
-import { getAgents } from "@/lib/valorant-api";
+import {
+  getAgents,
+  getCurrentAct,
+  getMaps,
+  getValorantVersion,
+} from "@/lib/valorant-api";
 
 export const metadata: Metadata = createMetadata({
   title: "AgentStats - Valorant Stats, Agents, Skins & Leaderboards",
@@ -13,201 +24,320 @@ export const metadata: Metadata = createMetadata({
   path: "/",
 });
 
+function formatNumber(value: number, digits = 0): string {
+  return value.toFixed(digits);
+}
+
+function formatPercent(value: number, digits = 1): string {
+  return `${formatNumber(value, digits)}%`;
+}
+
+function formatObservedAt(value: Date | null): string {
+  if (!value) return "Waiting for opt-in data";
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Jakarta",
+  }).format(value);
+}
+
 export default async function HomePage() {
-  const agents = await getAgents();
+  const [agents, maps, version, currentAct] = await Promise.all([
+    getAgents(),
+    getMaps(),
+    getValorantVersion(),
+    getCurrentAct().catch(() => null),
+  ]);
+  const patchVersion = version.branch.replace("release-", "");
+  const [agentMeta, mapMeta] = await Promise.all([
+    getAgentMetaDataset(agents, currentAct?.uuid).catch(() =>
+      buildEmptyAgentMetaDataset(agents),
+    ),
+    getMapMetaDataset(maps, currentAct?.uuid).catch(() =>
+      buildEmptyMapMetaDataset(maps),
+    ),
+  ]);
   const featuredAgent =
     agents.find((agent) => agent.displayName === "Jett") ?? agents[0];
   const featuredPortrait =
     featuredAgent.fullPortrait ?? featuredAgent.displayIcon;
-  const metrics = [
-    { value: agents.length.toString(), label: "Playable agents" },
-    { value: "9", label: "Competitive ranks" },
-    { value: "6", label: "Global regions" },
-  ] as const;
+  const topMetaAgent =
+    agentMeta.rows.find((agent) => agent.picks > 0) ?? agentMeta.rows[0];
+  const metaPreviewRows = agentMeta.rows.slice(0, 8);
+  const mapPreviewRows = (
+    mapMeta.rows.some((row) => row.modeId === "competitive")
+      ? mapMeta.rows.filter((row) => row.modeId === "competitive")
+      : mapMeta.rows
+  ).slice(0, 6);
 
   return (
     <>
-      <section className="grid-noise relative isolate overflow-hidden">
-        <div className="absolute -right-24 top-8 -z-20 h-[34rem] w-[34rem] rotate-12 border-[6rem] border-white/[0.025]" />
-        <div className="absolute inset-y-0 right-0 -z-20 hidden w-[48%] bg-[linear-gradient(135deg,rgba(255,70,85,0.09),transparent_42%)] lg:block" />
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[26rem] overflow-hidden lg:hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--ink)] via-[var(--ink)]/45 to-[var(--ink)]" />
+      <section className="grid-noise relative isolate overflow-hidden border-b border-white/8">
+        <div className="absolute inset-y-0 right-0 -z-20 hidden w-[48%] bg-[linear-gradient(135deg,rgba(255,70,85,0.1),transparent_46%)] lg:block" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 hidden w-[42%] opacity-45 lg:block">
           <Image
             src={featuredPortrait}
+            fill
+            priority
+            unoptimized
             alt=""
-            fill
-            priority
-            unoptimized
-            sizes="100vw"
-            className="object-contain object-right-bottom opacity-[0.14]"
-          />
-        </div>
-
-        <div
-          className="pointer-events-none absolute z-[5] hidden overflow-hidden lg:block"
-          style={{ width: "54%", top: 0, right: 0, bottom: 0 }}
-        >
-          <div className="absolute inset-0 z-10 bg-gradient-to-r from-[var(--ink)] via-transparent to-transparent" />
-          <Image
-            src={featuredPortrait}
-            alt={`${featuredAgent.displayName}, a Valorant agent`}
-            fill
-            priority
-            unoptimized
-            sizes="54vw"
+            sizes="42vw"
             className="object-contain object-right-bottom"
           />
         </div>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--ink)] via-[var(--ink)]/95 to-[var(--ink)]/70" />
 
-        <div className="mx-auto grid min-h-[calc(100svh-4rem)] w-full min-w-0 max-w-7xl items-center gap-14 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_0.72fr] lg:px-8">
+        <div className="mx-auto grid w-full max-w-[86rem] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-10">
           <div className="relative z-10 min-w-0">
-            <p className="eyebrow">Know your game</p>
-            <h1 className="responsive-text mt-7 max-w-5xl font-display text-[clamp(3.25rem,16vw,8.8rem)] font-black uppercase leading-[0.78] tracking-[-0.075em] sm:tracking-[-0.085em] lg:text-[clamp(5.5rem,7.6vw,8.2rem)]">
-              Read the
-              <span className="block text-[var(--accent)]">match.</span>
-              Own the next.
+            <p className="eyebrow">Valorant tracker</p>
+            <h1 className="responsive-text mt-4 max-w-3xl font-display text-[clamp(2.75rem,9vw,5rem)] font-black uppercase leading-[0.84] tracking-[-0.07em]">
+              Valorant stats
             </h1>
-            <p className="responsive-text mt-8 max-w-xl text-lg leading-8 text-[var(--muted)]">
-              Review recent performance, identify your strengths, and prepare
-              for the next match.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--muted)]">
+              Search a Riot ID, inspect match history, and track agent meta.
             </p>
-            <div className="mt-10 min-w-0 max-w-3xl overflow-hidden">
+            <div className="mt-6 min-w-0 max-w-3xl overflow-hidden">
               <div id="search">
                 <PlayerSearch />
               </div>
-              <p className="mt-3 text-xs text-[#75808d]">
-                Use the same name and tag shown in the game.
-              </p>
             </div>
           </div>
 
-          <aside
-            className="group relative z-20 hidden flex-col justify-between py-10 lg:flex"
-            style={{ minHeight: "42rem" }}
-          >
-            <div className="relative z-20 ml-8">
-              <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-[var(--accent)]">
-                Agent archive / 01
-              </p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                Valorant protocol
-              </p>
-            </div>
-
-            <div className="relative z-20 ml-8 flex items-end justify-between gap-6">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--accent)]">
-                  Featured agent
+          <aside className="relative z-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {[
+              {
+                label: "Top meta agent",
+                value: topMetaAgent?.picks ? topMetaAgent.name : "Pending",
+                detail: topMetaAgent?.picks
+                  ? `${formatPercent(topMetaAgent.pickRate)} pick rate`
+                  : "Waiting for match samples",
+              },
+              {
+                label: "Tracked players",
+                value: agentMeta.trackedPlayers.toString(),
+                detail: `${agentMeta.totalPicks} agent picks indexed`,
+              },
+              {
+                label: "Current patch",
+                value: patchVersion,
+                detail: currentAct?.displayLabel ?? "Competitive archive ready",
+              },
+            ].map((card) => (
+              <div key={card.label} className="border border-white/10 bg-[var(--panel)]/80 p-4 backdrop-blur">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+                  {card.label}
                 </p>
-                <div className="mt-2 flex items-end gap-4">
-                  <h2 className="font-display text-7xl font-black uppercase leading-none tracking-[-0.065em]">
-                    {featuredAgent.displayName}
-                  </h2>
-                  {featuredAgent.role ? (
-                    <Image
-                      src={featuredAgent.role.displayIcon}
-                      alt=""
-                      width={36}
-                      height={36}
-                      aria-hidden="true"
-                      className="mb-1 size-8 opacity-60"
-                    />
-                  ) : null}
-                </div>
-                <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
-                  {featuredAgent.role?.displayName ?? "Valorant agent"}
+                <p className="responsive-text mt-2 font-display text-2xl font-black uppercase tracking-[-0.04em]">
+                  {card.value}
+                </p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+                  {card.detail}
                 </p>
               </div>
-
-              <div className="mb-1 text-right">
-                <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.15em] text-[#aeb8c3]">
-                  <span className="size-1.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                  Roster online
-                </span>
-                <span className="mt-5 block text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform group-hover:translate-x-1">
-                  View profile →
-                </span>
-              </div>
-            </div>
-
-            <RouteLink
-              href={`/agents/${featuredAgent.uuid}`}
-              aria-label={`View ${featuredAgent.displayName} agent profile`}
-              className="absolute inset-0 z-30 block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
-            >
-              <span className="sr-only">
-                View {featuredAgent.displayName} profile
-              </span>
-            </RouteLink>
+            ))}
           </aside>
         </div>
       </section>
 
-      <section className="border-y border-white/8 bg-[#0e141b]">
-        <div className="mx-auto grid max-w-7xl sm:grid-cols-3">
-          {metrics.map((metric) => (
-            <div
-              key={metric.label}
-              className="border-b border-white/8 px-5 py-8 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0 lg:px-8"
-            >
-              <p className="font-display text-4xl font-black tracking-[-0.05em]">
-                {metric.value}
-              </p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                {metric.label}
-              </p>
-            </div>
-          ))}
+      <section
+        id="agent-meta"
+        className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-10"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="eyebrow">Agent meta</p>
+            <h2 className="mt-3 font-display text-3xl font-black uppercase tracking-[-0.05em]">
+              Pick rate snapshot
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+              Competitive aggregate from opt-in match observations.
+            </p>
+          </div>
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+            {agentMeta.trackedPlayers} tracked players / updated{" "}
+            {formatObservedAt(agentMeta.lastObservedAt)}
+          </p>
+        </div>
+
+        <div
+          role="region"
+          aria-label="Agent pick rate preview table"
+          tabIndex={0}
+          className="tactical-scrollbar mt-6 overflow-x-auto border border-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        >
+          <table className="w-full min-w-[64rem] border-collapse text-left">
+            <thead className="bg-white/[0.045] text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+              <tr>
+                <th className="px-4 py-3 sm:px-5">Agent</th>
+                <th className="px-4 py-3 sm:px-5">Role</th>
+                <th className="px-4 py-3 text-right sm:px-5">Picks</th>
+                <th className="px-4 py-3 text-right sm:px-5">Pick rate</th>
+                <th className="px-4 py-3 text-right sm:px-5">Win rate</th>
+                <th className="px-4 py-3 text-right sm:px-5">K/D</th>
+                <th className="px-4 py-3 text-right sm:px-5">ACS</th>
+                <th className="px-4 py-3 text-right sm:px-5">ADR</th>
+                <th className="px-4 py-3 text-right sm:px-5">HS%</th>
+                <th className="px-4 py-3 text-right sm:px-5">KAST</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metaPreviewRows.map((agent) => (
+                <tr
+                  key={agent.agentId}
+                  className="border-t border-white/8 transition-colors hover:bg-white/[0.025]"
+                >
+                  <td className="px-4 py-2.5 sm:px-5">
+                    <RouteLink
+                      href={`/agents/${agent.agentId}`}
+                      className="flex items-center gap-3 font-black uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                    >
+                      <span className="relative size-9 shrink-0 overflow-hidden bg-[#202832]">
+                        <Image
+                          src={agent.icon}
+                          alt=""
+                          fill
+                          sizes="36px"
+                          className="object-cover"
+                        />
+                      </span>
+                      {agent.name}
+                    </RouteLink>
+                  </td>
+                  <td className="px-4 py-2.5 sm:px-5">
+                    <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+                      {agent.roleIcon ? (
+                        <Image
+                          src={agent.roleIcon}
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="size-4 object-contain"
+                        />
+                      ) : null}
+                      {agent.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm text-[var(--muted)] sm:px-5">
+                    {agent.picks}
+                  </td>
+                  <td className="px-4 py-2.5 text-right sm:px-5">
+                    <div className="ml-auto w-28">
+                      <p className="font-display text-lg font-black">
+                        {formatPercent(agent.pickRate)}
+                      </p>
+                      <div className="mt-1 h-1 bg-white/10">
+                        <div
+                          className="h-full bg-[var(--accent)]"
+                          style={{ width: `${Math.min(100, agent.pickRate)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-display text-lg font-black sm:px-5">
+                    {formatPercent(agent.winRate)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm sm:px-5">
+                    {formatNumber(agent.kd, 2)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm sm:px-5">
+                    {formatNumber(agent.averageAcs)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm sm:px-5">
+                    {formatNumber(agent.averageDamagePerRound)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm sm:px-5">
+                    {formatPercent(agent.headshotRate)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-mono text-sm sm:px-5">
+                    {formatPercent(agent.kast)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <RouteLink
+            href="/agents/meta"
+            className="valorant-action inline-flex min-h-10 items-center border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
+          >
+            Full agent meta
+          </RouteLink>
+          <RouteLink
+            href="/community"
+            className="valorant-action inline-flex min-h-10 items-center border border-white/15 px-4 text-[11px] font-black uppercase tracking-[0.12em]"
+          >
+            Community favorites
+          </RouteLink>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-24 lg:px-8">
-        <p className="eyebrow">Explore the game</p>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              href: "/meta",
-              number: "00",
-              title: "Agent meta",
-              copy: "Track live patch impact, roster structure, and Riot status.",
-            },
-            {
-              href: "/agents",
-              number: "01",
-              title: "Agents",
-              copy: "Explore every role, ability, and agent playstyle.",
-            },
-            {
-              href: "/weapons",
-              number: "02",
-              title: "Weapons",
-              copy: "Compare weapon power, price, and available collections.",
-            },
-            {
-              href: "/maps",
-              number: "03",
-              title: "Maps",
-              copy: "Study every arena and its tactical layout.",
-            },
-          ].map((item) => (
-            <RouteLink
-              key={item.href}
-              href={item.href}
-              className="group valorant-panel min-h-72 p-7 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
-            >
-              <span className="font-mono text-xs text-[var(--accent)]">{item.number}</span>
-              <h2 className="mt-20 font-display text-4xl font-black uppercase tracking-[-0.05em]">
-                {item.title}
+      <section className="border-t border-white/8 bg-[#0e141b]">
+        <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="eyebrow">Map frequency</p>
+              <h2 className="mt-3 font-display text-3xl font-black uppercase tracking-[-0.05em]">
+                Maps by mode
               </h2>
-              <p className="mt-3 max-w-xs text-sm leading-6 text-[var(--muted)]">
-                {item.copy}
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                Real match-map samples by queue. No catalog-only maps.
               </p>
-              <span className="mt-7 inline-block text-sm font-black uppercase tracking-widest transition group-hover:translate-x-1">
-                Explore →
-              </span>
-            </RouteLink>
-          ))}
+            </div>
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+              {mapMeta.totalMatches} matches / {mapMeta.modes.length} modes
+            </p>
+          </div>
+
+          {mapPreviewRows.length > 0 ? (
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {mapPreviewRows.map((map) => (
+                <article
+                  key={`${map.modeId}:${map.mapId}`}
+                  className="grid grid-cols-[7rem_minmax(0,1fr)] overflow-hidden border border-white/10 bg-[var(--panel)]"
+                >
+                  <div className="relative min-h-24 bg-[#202832]">
+                    {map.image ? (
+                      <Image
+                        src={map.image}
+                        alt=""
+                        fill
+                        sizes="112px"
+                        className="object-cover"
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 bg-black/25" />
+                  </div>
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      {map.mode}
+                    </p>
+                    <h3 className="mt-1 font-display text-xl font-black uppercase tracking-[-0.04em]">
+                      {map.name}
+                    </h3>
+                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+                      {map.appearances} appearances / {formatPercent(map.appearanceRate)}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-6 border border-white/10 bg-[var(--panel)] p-5">
+              <p className="font-display text-2xl font-black uppercase tracking-[-0.04em]">
+                No map samples yet
+              </p>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Map frequency will appear after opt-in match data is synced.
+              </p>
+            </div>
+          )}
+          <RouteLink
+            href="/maps/meta"
+            className="valorant-action mt-4 inline-flex min-h-10 items-center border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
+          >
+            Full map frequency
+          </RouteLink>
         </div>
       </section>
     </>

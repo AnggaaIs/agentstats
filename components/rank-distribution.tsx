@@ -20,15 +20,15 @@ export function RankDistribution({
   return (
     <section
       aria-labelledby="rank-distribution-heading"
-      className="mt-10 grid border border-white/10 bg-[var(--panel)] lg:grid-cols-[minmax(0,1fr)_17rem]"
+      className="mt-7 grid border border-white/10 bg-[var(--panel)] lg:grid-cols-[minmax(0,1fr)_15rem]"
     >
-      <div className="p-6 sm:p-8">
+      <div className="p-5 sm:p-6">
         <p className="eyebrow">Ladder composition</p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2
               id="rank-distribution-heading"
-              className="font-display text-3xl font-black uppercase tracking-[-0.045em] sm:text-4xl"
+              className="font-display text-2xl font-black uppercase tracking-[-0.045em] sm:text-3xl"
             >
               Rank distribution
             </h2>
@@ -42,7 +42,7 @@ export function RankDistribution({
           </p>
         </div>
 
-        <div className="mt-8 space-y-5">
+        <div className="mt-6 space-y-4">
           {distribution.map((item) => (
             <div key={item.tier}>
               <div className="mb-2 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
@@ -83,18 +83,18 @@ export function RankDistribution({
         </div>
       </div>
 
-      <aside className="grid-noise border-t border-white/10 p-6 lg:border-l lg:border-t-0 lg:p-8">
+      <aside className="grid-noise border-t border-white/10 p-5 lg:border-l lg:border-t-0 lg:p-6">
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">
           Tracked ladder
         </p>
-        <p className="mt-3 font-display text-5xl font-black tracking-[-0.06em]">
+        <p className="mt-2 font-display text-4xl font-black tracking-[-0.06em]">
           {numberFormatter.format(totalPlayers)}
         </p>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
           Ranked players included in Riot&apos;s official leaderboard for this
           region and Act.
         </p>
-        <div className="mt-8 border-l-2 border-[var(--accent)] pl-4">
+        <div className="mt-5 border-l-2 border-[var(--accent)] pl-4">
           <p className="text-xs font-bold leading-5 text-white/75">
             This is the high-rank competitive ladder, so it covers Immortal and
             Radiant rather than every ranked player.

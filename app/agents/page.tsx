@@ -20,7 +20,7 @@ export default async function AgentsPage() {
   ]);
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow={`${agents.length} agents`}
         title="Choose an agent"
@@ -47,7 +47,7 @@ export default async function AgentsPage() {
               : [],
           ),
         )}
-        perPage={12}
+        paginate={false}
         searchPlaceholder="Search agents or roles"
         favoriteCategory="agent"
         initialFavoriteIds={favorites.agent}

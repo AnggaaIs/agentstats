@@ -19,11 +19,11 @@ export function Pagination({ page, totalPages, makeHref }: PaginationProps) {
   return (
     <nav
       aria-label="Choose page"
-      className="mt-10 flex flex-wrap items-center justify-center gap-2"
+      className="mt-7 flex flex-wrap items-center justify-center gap-2"
     >
       <RouteLink
         href={makeHref(Math.max(1, page - 1))}
-        className="valorant-action min-h-11 border border-white/15 px-5 py-3 text-xs font-black uppercase tracking-widest"
+        className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest"
       >
         Previous
       </RouteLink>
@@ -37,7 +37,7 @@ export function Pagination({ page, totalPages, makeHref }: PaginationProps) {
             <RouteLink
               href={makeHref(item)}
               current={item === page}
-              className="valorant-action grid size-11 place-items-center border border-white/15 text-sm font-black"
+              className="valorant-action grid size-10 place-items-center border border-white/15 text-xs font-black"
             >
               {item}
             </RouteLink>
@@ -46,7 +46,7 @@ export function Pagination({ page, totalPages, makeHref }: PaginationProps) {
       })}
       <RouteLink
         href={makeHref(Math.min(totalPages, page + 1))}
-        className="valorant-action min-h-11 border border-white/15 px-5 py-3 text-xs font-black uppercase tracking-widest"
+        className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest"
       >
         Next
       </RouteLink>

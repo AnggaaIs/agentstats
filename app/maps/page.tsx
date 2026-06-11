@@ -43,7 +43,7 @@ export default async function MapsPage() {
   });
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <PageHeading
         eyebrow={`${maps.length} maps`}
         title="Battlefields"

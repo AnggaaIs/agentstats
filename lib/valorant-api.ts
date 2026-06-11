@@ -1,4 +1,6 @@
 const API_URL = "https://valorant-api.com/v1";
+const CACHE_TTL_DAY = 86_400;
+const CACHE_TTL_HOUR = 3_600;
 
 interface ApiEnvelope<T> {
   data: T;
@@ -143,6 +145,14 @@ export interface CompetitiveTier {
   largeIcon: string | null;
 }
 
+export interface PlayerCard {
+  uuid: string;
+  displayName: string;
+  smallArt: string;
+  wideArt: string;
+  largeArt: string;
+}
+
 interface CompetitiveTierCollection {
   uuid: string;
   assetObjectName: string;
@@ -196,12 +206,12 @@ export interface ValorantEvent {
   endTime: string;
 }
 
-async function getApiData<T>(path: string, cache = true): Promise<T> {
+async function getApiData<T>(path: string, cache: number | false = CACHE_TTL_DAY): Promise<T> {
   const response = await fetch(
     `${API_URL}${path}`,
-    cache
-      ? { next: { revalidate: 86_400, tags: [`valorant-api:${path}`] } }
-      : { cache: "no-store" },
+    cache === false
+      ? { cache: "no-store" }
+      : { next: { revalidate: cache, tags: [`valorant-api:${path}`] } },
   );
 
   if (!response.ok) {
@@ -255,7 +265,7 @@ export async function getMap(uuid: string): Promise<ValorantMap> {
 }
 
 export async function getSeasons(): Promise<Season[]> {
-  return getApiData<Season[]>("/seasons");
+  return getApiData<Season[]>("/seasons", CACHE_TTL_HOUR);
 }
 
 function formatSeasonName(displayName: string): string {
@@ -329,13 +339,17 @@ export async function getCurrentAct(): Promise<CompetitiveAct> {
 }
 
 export async function getValorantVersion(): Promise<ValorantVersion> {
-  return getApiData<ValorantVersion>("/version");
+  return getApiData<ValorantVersion>("/version", false);
 }
 
 export async function getCompetitiveTiers(): Promise<CompetitiveTier[]> {
   const collections =
     await getApiData<CompetitiveTierCollection[]>("/competitivetiers");
   return collections.at(-1)?.tiers ?? [];
+}
+
+export async function getPlayerCard(uuid: string): Promise<PlayerCard> {
+  return getApiData<PlayerCard>(`/playercards/${encodeURIComponent(uuid)}`);
 }
 
 export async function getContentTiers(): Promise<ContentTier[]> {

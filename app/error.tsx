@@ -2,9 +2,9 @@
 
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
-    <section className="mx-auto flex min-h-[60vh] max-w-3xl flex-col justify-center px-5 py-20">
+    <section className="mx-auto flex min-h-[45vh] max-w-3xl flex-col justify-center px-4 py-10 sm:px-6">
       <p className="eyebrow">Unable to continue</p>
-      <h1 className="mt-5 font-display text-6xl font-black uppercase tracking-[-0.06em]">
+      <h1 className="mt-4 font-display text-4xl font-black uppercase tracking-[-0.055em] sm:text-5xl">
         Something went wrong.
       </h1>
       <p className="mt-5 max-w-xl text-[var(--muted)]">

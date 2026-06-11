@@ -211,6 +211,23 @@ body > main {
   background-size: 48px 48px;
 }
 
+.legal-layout {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 64rem) {
+  .legal-layout {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .legal-sidebar {
+    position: sticky;
+    top: 5rem;
+  }
+}
+
 .valorant-cut {
   border-radius: 0;
 }
@@ -502,6 +519,9 @@ a:focus-visible .brand-pulse {
   from {
     opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes rise-enter {
@@ -509,12 +529,20 @@ a:focus-visible .brand-pulse {
     opacity: 0;
     transform: translateY(14px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes agent-enter {
   from {
     opacity: 0;
     transform: translateY(20px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -528,6 +556,10 @@ a:focus-visible .brand-pulse {
   from {
     opacity: 0;
     transform: translateY(-6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -543,11 +575,18 @@ a:focus-visible .brand-pulse {
     opacity: 0;
     transform: translateY(10px) scale(0.99);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes backdrop-enter {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

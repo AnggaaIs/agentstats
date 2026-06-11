@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { auth } from "@/auth";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import {
   SiteHeader,
   type HeaderStatusNotice,
 } from "@/components/site-header";
+import { isRsoConfigured } from "@/lib/auth-config";
 import { APP_NAME, REGIONS } from "@/lib/constants";
 import {
   getPlatformStatus,
@@ -143,7 +145,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const statusNotice = await getHeaderStatus();
+  const [statusNotice, session] = await Promise.all([
+    getHeaderStatus(),
+    isRsoConfigured() ? auth() : Promise.resolve(null),
+  ]);
+  const account = isRsoConfigured()
+    ? {
+        href: session?.user ? "/account" : "/login",
+        label: session?.user?.gameName ?? "Connect Riot",
+      }
+    : null;
   const structuredData = [
     {
       "@context": "https://schema.org",
@@ -180,7 +191,7 @@ export default async function RootLayout({
         >
           Skip navigation
         </a>
-        <SiteHeader statusNotice={statusNotice} />
+        <SiteHeader statusNotice={statusNotice} account={account} />
         <main id="main-content" className="flex-1">
           {children}
         </main>
