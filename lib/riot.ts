@@ -340,14 +340,25 @@ export async function getRecentMatches(
 ): Promise<RiotMatch[]> {
   const list = await getMatchList(puuid, region, 0, count);
   const matches: RiotMatch[] = [];
+  let firstError: unknown;
 
   for (let index = 0; index < list.history.length; index += 5) {
     const batch = list.history.slice(index, index + 5);
-    matches.push(
-      ...(await Promise.all(
-        batch.map((reference) => getMatch(reference.matchId, region)),
-      )),
+    const results = await Promise.allSettled(
+      batch.map((reference) => getMatch(reference.matchId, region)),
     );
+
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        matches.push(result.value);
+      } else {
+        firstError ??= result.reason;
+      }
+    }
+  }
+
+  if (list.history.length > 0 && matches.length === 0 && firstError) {
+    throw firstError;
   }
 
   return matches;

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
-import { getCurrentFavorites } from "@/lib/community";
+import { getCurrentFavoritesOrEmpty } from "@/lib/community";
 import { createMetadata } from "@/lib/seo";
 import { getWeapons } from "@/lib/valorant-api";
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = createMetadata({
 export default async function WeaponsPage() {
   const [weapons, favorites] = await Promise.all([
     getWeapons(),
-    getCurrentFavorites(),
+    getCurrentFavoritesOrEmpty(),
   ]);
 
   return (

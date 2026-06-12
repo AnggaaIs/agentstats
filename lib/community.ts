@@ -26,6 +26,10 @@ export interface CurrentFavorites {
   skin: Record<string, string>;
 }
 
+function createEmptyFavorites(): CurrentFavorites {
+  return { agent: {}, map: null, weapon: null, skin: {} };
+}
+
 const CATEGORY_TO_DATABASE = {
   agent: FavoriteCategory.AGENT,
   map: FavoriteCategory.MAP,
@@ -88,7 +92,7 @@ export async function getCurrentFavorites(): Promise<CurrentFavorites> {
   );
 
   if (!token) {
-    return { agent: {}, map: null, weapon: null, skin: {} };
+    return createEmptyFavorites();
   }
 
   const votes = await prisma.communityVote.findMany({
@@ -116,4 +120,12 @@ export async function getCurrentFavorites(): Promise<CurrentFavorites> {
   }
 
   return favorites;
+}
+
+export async function getCurrentFavoritesOrEmpty(): Promise<CurrentFavorites> {
+  try {
+    return await getCurrentFavorites();
+  } catch {
+    return createEmptyFavorites();
+  }
 }

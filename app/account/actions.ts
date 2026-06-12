@@ -5,15 +5,15 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { auth, signOut } from "@/auth";
-import { PLAYER_CONSENT_VERSION } from "@/lib/auth-config";
 import { REGIONS } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { ProfileVisibility } from "@/lib/generated/prisma/enums";
+import { PLAYER_DATA_CONSENT_VERSION } from "@/lib/legal";
 
 const accountSettingsSchema = z.object({
   region: z.enum(REGIONS),
   visibility: z.enum(["PRIVATE", "PUBLIC"]),
-  consent: z.literal("on").optional(),
+  publicationConsent: z.literal("on").optional(),
 });
 
 export async function updateAccountSettings(formData: FormData) {
@@ -23,13 +23,25 @@ export async function updateAccountSettings(formData: FormData) {
   const input = accountSettingsSchema.safeParse({
     region: formData.get("region"),
     visibility: formData.get("visibility"),
-    consent: formData.get("consent") || undefined,
+    publicationConsent: formData.get("publicationConsent") || undefined,
   });
   if (!input.success) redirect("/account?status=invalid");
 
   const wantsPublic = input.data.visibility === "PUBLIC";
-  if (wantsPublic && input.data.consent !== "on") {
+  if (wantsPublic && input.data.publicationConsent !== "on") {
     redirect("/account?status=consent-required");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { consentVersion: true, consentedAt: true },
+  });
+  const hasCurrentDataConsent = Boolean(
+    user?.consentedAt &&
+      user.consentVersion === PLAYER_DATA_CONSENT_VERSION,
+  );
+  if (wantsPublic && !hasCurrentDataConsent) {
+    redirect("/account?status=data-consent-required");
   }
 
   const now = new Date();
@@ -40,14 +52,14 @@ export async function updateAccountSettings(formData: FormData) {
       visibility: wantsPublic
         ? ProfileVisibility.PUBLIC
         : ProfileVisibility.PRIVATE,
-      consentVersion: wantsPublic ? PLAYER_CONSENT_VERSION : null,
-      consentedAt: wantsPublic ? now : null,
       publishedAt: wantsPublic ? now : null,
-      revokedAt: wantsPublic ? null : now,
     },
   });
 
   revalidatePath("/account");
+  revalidatePath("/");
+  revalidatePath("/agents/meta");
+  revalidatePath("/maps/meta");
   if (session.user.gameName && session.user.tagLine) {
     revalidatePath(
       `/player/${input.data.region}/${encodeURIComponent(session.user.gameName)}/${encodeURIComponent(session.user.tagLine)}`,
@@ -56,9 +68,18 @@ export async function updateAccountSettings(formData: FormData) {
   redirect("/account?status=saved");
 }
 
-export async function disconnectRiotAccount() {
+const disconnectSchema = z.object({
+  disconnectConfirmation: z.literal("on"),
+});
+
+export async function disconnectRiotAccount(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  const input = disconnectSchema.safeParse({
+    disconnectConfirmation:
+      formData.get("disconnectConfirmation") || undefined,
+  });
+  if (!input.success) redirect("/account?status=disconnect-confirmation");
 
   await signOut({ redirect: false });
   await prisma.user.delete({ where: { id: session.user.id } });

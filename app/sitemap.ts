@@ -30,11 +30,14 @@ const STATIC_ROUTES: Array<{
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
-  const [agents, weapons, bundles] = await Promise.all([
+  const [agentResult, weaponResult, bundleResult] = await Promise.allSettled([
     getAgents(),
     getWeapons(),
     getBundles(),
   ]);
+  const agents = agentResult.status === "fulfilled" ? agentResult.value : [];
+  const weapons = weaponResult.status === "fulfilled" ? weaponResult.value : [];
+  const bundles = bundleResult.status === "fulfilled" ? bundleResult.value : [];
 
   const staticEntries = STATIC_ROUTES.map((route) => ({
     url: `${baseUrl}${route.path}`,

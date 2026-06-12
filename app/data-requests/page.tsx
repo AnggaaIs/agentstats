@@ -43,8 +43,9 @@ export default function DataRequestsPage() {
       <p>
         Signed-in players can disconnect directly from the account page. This
         deletes the AgentStats user, linked Riot identity, visibility and
-        consent settings, and active sessions without deleting or changing
-        the underlying Riot account.
+        consent settings, active sessions, and aggregate match observations
+        linked to that user without deleting or changing the underlying Riot
+        account. Aggregate pages and caches may take a short period to refresh.
       </p>
 
       <h2>Verification and response</h2>

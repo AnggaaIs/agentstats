@@ -105,7 +105,7 @@ export default async function StatusPage() {
   const operational = statuses.length - affected - unavailable;
 
   return (
-    <main>
+    <>
       <section className="grid-noise border-b border-white/8">
         <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -310,6 +310,6 @@ export default async function StatusPage() {
           Games remains the source of truth for service availability.
         </p>
       </section>
-    </main>
+    </>
   );
 }

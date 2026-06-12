@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
-import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
+import {
+  getCurrentFavoritesOrEmpty,
+  toFavoriteScope,
+} from "@/lib/community";
 import { createMetadata } from "@/lib/seo";
 import { getAgents } from "@/lib/valorant-api";
 
@@ -16,7 +19,7 @@ export const metadata: Metadata = createMetadata({
 export default async function AgentsPage() {
   const [agents, favorites] = await Promise.all([
     getAgents(),
-    getCurrentFavorites(),
+    getCurrentFavoritesOrEmpty(),
   ]);
 
   return (

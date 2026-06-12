@@ -18,6 +18,34 @@ interface PlayerSearchProps {
   surface?: "panel" | "plain";
 }
 
+interface RecentPlayer {
+  name: string;
+  tag: string;
+  region: PlayerLookupInput["region"];
+  searchedAt: number;
+}
+
+function readRecentPlayers(): RecentPlayer[] {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem("agentstats:recent") ?? "[]",
+    );
+    if (!Array.isArray(value)) return [];
+
+    return value.filter(
+      (item): item is RecentPlayer =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof item.name === "string" &&
+        typeof item.tag === "string" &&
+        typeof item.region === "string" &&
+        typeof item.searchedAt === "number",
+    );
+  } catch {
+    return [];
+  }
+}
+
 export function PlayerSearch({
   autoFocus = false,
   idPrefix = "player",
@@ -63,14 +91,17 @@ export function PlayerSearch({
           return;
         }
 
-        const recent = JSON.parse(
-          localStorage.getItem("agentstats:recent") ?? "[]",
-        ) as unknown[];
         const player = {
           name: payload.data.account.gameName,
           tag: payload.data.account.tagLine,
           region: payload.data.region,
         };
+        const recent = readRecentPlayers().filter(
+          (item) =>
+            item.name.toLocaleLowerCase() !== player.name.toLocaleLowerCase() ||
+            item.tag.toLocaleLowerCase() !== player.tag.toLocaleLowerCase() ||
+            item.region !== player.region,
+        );
         localStorage.setItem(
           "agentstats:recent",
           JSON.stringify(

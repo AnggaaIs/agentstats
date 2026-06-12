@@ -6,9 +6,13 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
-import { getCurrentFavorites } from "@/lib/community";
+import { getCurrentFavoritesOrEmpty } from "@/lib/community";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
-import { getContentTiers, getWeapon } from "@/lib/valorant-api";
+import {
+  getContentTiers,
+  getWeapon,
+  ValorantApiError,
+} from "@/lib/valorant-api";
 
 interface WeaponPageProps {
   params: Promise<{ uuid: string }>;
@@ -46,11 +50,12 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
   try {
     [weapon, favorites, contentTiers] = await Promise.all([
       getWeapon(uuid),
-      getCurrentFavorites(),
+      getCurrentFavoritesOrEmpty(),
       getContentTiers(),
     ]);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ValorantApiError && error.status === 404) notFound();
+    throw error;
   }
 
   const stats = weapon.weaponStats;

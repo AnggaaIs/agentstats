@@ -65,15 +65,17 @@ export function buildRankDistribution(
       ({ tier, startingIndex }) =>
         Number.isInteger(tier) &&
         Number.isInteger(startingIndex) &&
-        startingIndex > 0,
+        startingIndex >= 0,
     )
     .sort((left, right) => left.startingIndex - right.startingIndex);
 
   return boundaries.map((boundary, index) => {
     const nextBoundary = boundaries[index + 1];
-    const count =
-      (nextBoundary?.startingIndex ?? leaderboard.totalPlayers + 1) -
-      boundary.startingIndex;
+    const count = Math.max(
+      0,
+      (nextBoundary?.startingIndex ?? leaderboard.totalPlayers) -
+        boundary.startingIndex,
+    );
     const tier = getCompetitiveTier(boundary.tier, tiers);
 
     return {

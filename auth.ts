@@ -5,7 +5,10 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 
 import { isRsoConfigured } from "@/lib/auth-config";
-import { LEGAL_CONSENT_COOKIE } from "@/lib/legal";
+import {
+  LEGAL_CONSENT_COOKIE,
+  PLAYER_DATA_CONSENT_VERSION,
+} from "@/lib/legal";
 import { prisma } from "@/lib/db";
 
 const riotAccountSchema = z.object({
@@ -129,7 +132,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           gameName: parsed.data.gameName,
           tagLine: parsed.data.tagLine,
           name: `${parsed.data.gameName}#${parsed.data.tagLine}`,
-          lastProfileSyncAt: new Date(),
+          lastProfileSyncAt: null,
         },
       });
 
@@ -138,18 +141,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const token = cookieStore.get(LEGAL_CONSENT_COOKIE)?.value;
 
         if (token) {
-          await prisma.legalConsent.update({
+          const consent = await prisma.legalConsent.findUnique({
             where: { token },
-            data: {
-              userId: user.id,
-              linkedAt: new Date(),
-            },
+            select: { consentVersion: true, linkedAt: true },
           });
+
+          if (
+            consent?.consentVersion === PLAYER_DATA_CONSENT_VERSION &&
+            !consent.linkedAt
+          ) {
+            const acceptedAt = new Date();
+            await prisma.$transaction([
+              prisma.legalConsent.update({
+                where: { token },
+                data: {
+                  userId: user.id,
+                  linkedAt: acceptedAt,
+                },
+              }),
+              prisma.user.update({
+                where: { id: user.id },
+                data: {
+                  consentVersion: PLAYER_DATA_CONSENT_VERSION,
+                  consentedAt: acceptedAt,
+                  revokedAt: null,
+                  lastProfileSyncAt: null,
+                },
+              }),
+            ]);
+          }
           cookieStore.delete(LEGAL_CONSENT_COOKIE);
         }
       } catch {
-        // Keep sign-in working even if consent linkage fails; the login action
-        // already recorded the acceptance row in the database.
+        // Keep sign-in available, but leave data consent inactive unless the
+        // current acceptance receipt is successfully linked.
       }
     },
   },

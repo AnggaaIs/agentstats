@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { REGIONS, type Region } from "@/lib/constants";
+import { redactMatch } from "@/lib/match-privacy";
 import { getPlayerAccess } from "@/lib/player-access";
 import { getRecentMatches, RiotApiError } from "@/lib/riot";
 
@@ -22,7 +23,12 @@ export async function GET(request: Request) {
     if (!access.canViewStats) {
       return apiError("This player's match history is private.", 403);
     }
-    return apiSuccess(await getRecentMatches(puuid, region, count));
+    const matches = await getRecentMatches(puuid, region, count);
+    return apiSuccess(
+      access.isOwner
+        ? matches
+        : matches.map((match) => redactMatch(match, new Set([puuid]))),
+    );
   } catch (error) {
     if (error instanceof RiotApiError) {
       return apiError(error.message, error.status);

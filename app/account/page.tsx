@@ -10,6 +10,7 @@ import {
 } from "@/app/account/actions";
 import { REGIONS } from "@/lib/constants";
 import { prisma } from "@/lib/db";
+import { PLAYER_DATA_CONSENT_VERSION } from "@/lib/legal";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createMetadata({
@@ -35,6 +36,10 @@ export default async function AccountPage({
     searchParams,
   ]);
   if (!user) redirect("/login");
+  const hasCurrentDataConsent = Boolean(
+    user.consentedAt &&
+      user.consentVersion === PLAYER_DATA_CONSENT_VERSION,
+  );
 
   const profileHref =
     user.gameName && user.tagLine
@@ -82,7 +87,11 @@ export default async function AccountPage({
               {query.status === "saved"
                 ? "Account settings saved."
                 : query.status === "consent-required"
-                  ? "Confirm the consent statement before publishing."
+                  ? "Confirm the public profile statement before publishing."
+                  : query.status === "data-consent-required"
+                    ? "Your data consent is outdated. Disconnect and reconnect through Riot Sign On to accept the current terms before publishing."
+                    : query.status === "disconnect-confirmation"
+                      ? "Confirm that you understand this permanently deletes your AgentStats account data."
                   : "The submitted settings were not valid."}
             </p>
           ) : null}
@@ -146,14 +155,15 @@ export default async function AccountPage({
             <label className="flex cursor-pointer items-start gap-4 border-l-2 border-[var(--accent)] bg-black/15 p-4">
               <input
                 type="checkbox"
-                name="consent"
+                name="publicationConsent"
                 defaultChecked={user.visibility === "PUBLIC"}
                 className="mt-1 size-4 shrink-0 accent-[var(--accent)]"
               />
               <span className="text-sm leading-6 text-[var(--muted)]">
                 I understand that choosing Public allows AgentStats to display
                 my Riot ID, recent matches, and statistics derived from those
-                matches to other visitors. I can withdraw this choice here.
+                matches to other visitors. This public-profile choice is
+                separate from aggregate analytics, and I can withdraw it here.
               </span>
             </label>
 
@@ -167,6 +177,22 @@ export default async function AccountPage({
         </section>
 
         <aside className="grid content-start gap-4">
+          <section className="border border-white/10 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+              Aggregate analytics
+            </p>
+            <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
+              {hasCurrentDataConsent
+                ? "Active. Your own pseudonymized match observations may contribute to pick rates, win rates, competitive picks by rank, and map frequency. Meta pages do not show your Riot ID."
+                : "Inactive because your recorded consent does not match the current policy version. Reconnect through Riot Sign On to participate."}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              Making your profile private only stops public profile access.
+              Disconnecting deletes your account and linked aggregate
+              observations.
+            </p>
+          </section>
+
           <section className="border border-white/10 p-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
               Profile
@@ -198,10 +224,24 @@ export default async function AccountPage({
               Disconnect
             </p>
             <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
-              This deletes your AgentStats user, linked Riot identity, consent,
-              and active sessions. Riot&apos;s own data is unaffected.
+              This deletes your AgentStats user, linked Riot identity, active
+              consent state, sessions, and aggregate match observations.
+              Riot&apos;s own data is unaffected.
             </p>
             <form action={disconnectRiotAccount} className="mt-6">
+              <label className="mb-4 flex cursor-pointer items-start gap-3 text-xs leading-5 text-[var(--muted)]">
+                <input
+                  type="checkbox"
+                  name="disconnectConfirmation"
+                  value="on"
+                  required
+                  className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
+                />
+                <span>
+                  I understand this permanently deletes my AgentStats account
+                  and linked observations.
+                </span>
+              </label>
               <button
                 type="submit"
                 className="valorant-action min-h-10 w-full border border-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--accent)]"

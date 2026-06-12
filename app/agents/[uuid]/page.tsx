@@ -5,13 +5,16 @@ import { notFound } from "next/navigation";
 import { AgentRoleLabel } from "@/components/agent-role-label";
 import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
-import { getCurrentFavorites, toFavoriteScope } from "@/lib/community";
+import {
+  getCurrentFavoritesOrEmpty,
+  toFavoriteScope,
+} from "@/lib/community";
 import {
   absoluteUrl,
   breadcrumbJsonLd,
   createMetadata,
 } from "@/lib/seo";
-import { getAgent } from "@/lib/valorant-api";
+import { getAgent, ValorantApiError } from "@/lib/valorant-api";
 
 interface AgentPageProps {
   params: Promise<{ uuid: string }>;
@@ -48,10 +51,11 @@ export default async function AgentPage({ params }: AgentPageProps) {
   try {
     [agent, favorites] = await Promise.all([
       getAgent(uuid),
-      getCurrentFavorites(),
+      getCurrentFavoritesOrEmpty(),
     ]);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ValorantApiError && error.status === 404) notFound();
+    throw error;
   }
   const favoriteScope = toFavoriteScope(agent.role?.displayName ?? "other");
 

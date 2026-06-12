@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { isRsoConfigured } from "@/lib/auth-config";
 import { ProfileVisibility } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/db";
+import { PLAYER_DATA_CONSENT_VERSION } from "@/lib/legal";
 import type { RiotMatch } from "@/lib/riot";
 
 export interface PlayerAccess {
@@ -11,6 +12,7 @@ export interface PlayerAccess {
   isOwner: boolean;
   isPublic: boolean;
   canViewStats: boolean;
+  hasCurrentDataConsent: boolean;
   ownerId: string | null;
 }
 
@@ -28,6 +30,7 @@ export async function getPlayerAccess(puuid: string): Promise<PlayerAccess> {
       isOwner: false,
       isPublic: false,
       canViewStats: false,
+      hasCurrentDataConsent: false,
       ownerId: null,
     };
   }
@@ -40,6 +43,7 @@ export async function getPlayerAccess(puuid: string): Promise<PlayerAccess> {
         id: true,
         visibility: true,
         consentedAt: true,
+        consentVersion: true,
       },
     }),
   ]);
@@ -48,7 +52,12 @@ export async function getPlayerAccess(puuid: string): Promise<PlayerAccess> {
   );
   const isPublic = Boolean(
     linkedPlayer?.visibility === ProfileVisibility.PUBLIC &&
-      linkedPlayer.consentedAt,
+      linkedPlayer.consentedAt &&
+      linkedPlayer.consentVersion === PLAYER_DATA_CONSENT_VERSION,
+  );
+  const hasCurrentDataConsent = Boolean(
+    linkedPlayer?.consentedAt &&
+      linkedPlayer.consentVersion === PLAYER_DATA_CONSENT_VERSION,
   );
 
   return {
@@ -56,6 +65,7 @@ export async function getPlayerAccess(puuid: string): Promise<PlayerAccess> {
     isOwner,
     isPublic,
     canViewStats: isOwner || isPublic,
+    hasCurrentDataConsent,
     ownerId: linkedPlayer?.id ?? null,
   };
 }
@@ -97,6 +107,7 @@ export async function getMatchAccess(match: RiotMatch): Promise<MatchAccess> {
       puuid: { in: match.players.map((player) => player.puuid) },
       visibility: ProfileVisibility.PUBLIC,
       consentedAt: { not: null },
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
     },
     select: { puuid: true },
   });

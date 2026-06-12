@@ -9,7 +9,11 @@ import {
   resolveGameMode,
 } from "@/lib/match-context";
 import { getMatchAccess } from "@/lib/player-access";
-import { getMatch, getParticipantHeadshotRate } from "@/lib/riot";
+import {
+  getMatch,
+  getParticipantHeadshotRate,
+  RiotApiError,
+} from "@/lib/riot";
 import {
   getAgents,
   getEvents,
@@ -59,13 +63,31 @@ export default async function MatchPage({
   const { matchId } = await params;
   const selectedRegion = (await searchParams).region;
   const region: Region = isRegion(selectedRegion) ? selectedRegion : "ap";
-  const [match, agents, maps, gameModes, events] = await Promise.all([
+  const [matchResult, agentsResult, mapsResult, modesResult, eventsResult] =
+    await Promise.allSettled([
     getMatch(matchId, region),
     getAgents(),
     getMaps(),
     getGameModes(),
     getEvents(),
   ]);
+  if (matchResult.status === "rejected") {
+    if (
+      matchResult.reason instanceof RiotApiError &&
+      matchResult.reason.status === 404
+    ) {
+      notFound();
+    }
+    throw matchResult.reason;
+  }
+  const match = matchResult.value;
+  const agents =
+    agentsResult.status === "fulfilled" ? agentsResult.value : [];
+  const maps = mapsResult.status === "fulfilled" ? mapsResult.value : [];
+  const gameModes =
+    modesResult.status === "fulfilled" ? modesResult.value : [];
+  const events =
+    eventsResult.status === "fulfilled" ? eventsResult.value : [];
   const access = await getMatchAccess(match);
   if (!access.canView) notFound();
   const agentById = new Map(
@@ -82,9 +104,12 @@ export default async function MatchPage({
   );
   const event = getEventAt(events, match.matchInfo.gameStartMillis);
   const teams = match.teams.toSorted((a, b) => Number(b.won) - Number(a.won));
-  const players = match.players.toSorted(
-    (a, b) => (b.stats?.score ?? 0) - (a.stats?.score ?? 0),
-  );
+  const players = match.players
+    .filter(
+      (player) =>
+        access.canSeeFullScoreboard || access.publicPuuids.has(player.puuid),
+    )
+    .toSorted((a, b) => (b.stats?.score ?? 0) - (a.stats?.score ?? 0));
 
   return (
     <article>
@@ -164,7 +189,9 @@ export default async function MatchPage({
       </header>
 
       <section className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-11">
-        <p className="eyebrow">Full scoreboard</p>
+        <p className="eyebrow">
+          {access.canSeeFullScoreboard ? "Full scoreboard" : "Public players"}
+        </p>
         <div
           role="region"
           aria-label="Match scoreboard table"

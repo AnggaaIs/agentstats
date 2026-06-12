@@ -42,8 +42,9 @@ export function RankDistribution({
           </p>
         </div>
 
-        <div className="mt-6 space-y-4">
-          {distribution.map((item) => (
+        {distribution.length ? (
+          <div className="mt-6 space-y-4">
+            {distribution.map((item) => (
             <div key={item.tier}>
               <div className="mb-2 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
                 <div className="flex min-w-0 items-center gap-2">
@@ -79,8 +80,13 @@ export function RankDistribution({
                 />
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-6 border border-white/10 p-4 text-sm leading-6 text-[var(--muted)]">
+            Riot did not return tier boundaries for this leaderboard.
+          </p>
+        )}
       </div>
 
       <aside className="grid-noise border-t border-white/10 p-5 lg:border-l lg:border-t-0 lg:p-6">

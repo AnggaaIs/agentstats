@@ -3,9 +3,13 @@ import "server-only";
 import { createHash } from "node:crypto";
 
 import { prisma } from "@/lib/db";
-import { MatchResult } from "@/lib/generated/prisma/enums";
+import {
+  MatchResult,
+  ObservationScope,
+} from "@/lib/generated/prisma/enums";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { Region } from "@/lib/constants";
+import { PLAYER_DATA_CONSENT_VERSION } from "@/lib/legal";
 import { formatQueueName } from "@/lib/match-context";
 import type { RiotMatch } from "@/lib/riot";
 import type { Agent, ValorantMap } from "@/lib/valorant-api";
@@ -68,11 +72,16 @@ export type AgentRankBucketId =
 export interface AgentRankMetaRow {
   bucketId: AgentRankBucketId;
   label: string;
-  picks: number;
-  pickRate: number;
-  wins: number;
-  winRate: number;
-  rounds: number;
+  samplePicks: number;
+  leaders: Array<{
+    agentId: string;
+    name: string;
+    icon: string | null;
+    picks: number;
+    pickRate: number;
+    wins: number;
+    winRate: number;
+  }>;
 }
 
 export interface MapMetaRow {
@@ -94,10 +103,37 @@ export interface MapMetaDataset {
   lastObservedAt: Date | null;
 }
 
+export interface MapAgentPickRow {
+  mapId: string;
+  mapName: string;
+  mapImage: string;
+  modeId: string;
+  mode: string;
+  totalPicks: number;
+  matches: number;
+  leaders: Array<{
+    agentId: string;
+    name: string;
+    icon: string;
+    role: string;
+    picks: number;
+    pickRate: number;
+  }>;
+}
+
+export interface MapAgentPickDataset {
+  rows: MapAgentPickRow[];
+  modes: string[];
+  totalPicks: number;
+  totalMatches: number;
+  lastObservedAt: Date | null;
+}
+
 interface ParticipantObservation {
   sourceUserId: string;
   matchId: string;
   participantHash: string;
+  scope: ObservationScope;
   region: Region;
   actId: string | null;
   queueId: string;
@@ -131,7 +167,15 @@ export const AGENT_META_QUEUES = [
   { id: "unrated", label: "Unrated" },
   { id: "swiftplay", label: "Swiftplay" },
   { id: "spikerush", label: "Spike Rush" },
-  { id: "deathmatch", label: "Deathmatch" },
+  { id: "hurm", label: "Team Deathmatch" },
+] as const;
+
+export const MAP_AGENT_PICK_QUEUES = [
+  { id: "competitive", label: "Competitive" },
+  { id: "unrated", label: "Unrated" },
+  { id: "swiftplay", label: "Swiftplay" },
+  { id: "spikerush", label: "Spike Rush" },
+  { id: "hurm", label: "Team Deathmatch" },
 ] as const;
 
 export const AGENT_RANK_BUCKETS = [
@@ -168,6 +212,10 @@ function buildAgentMetaWhere(
   const canFilterRank = queueId === "competitive";
 
   return {
+    sourceUser: {
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
+      consentedAt: { not: null },
+    },
     queueId,
     ...(actId ? { actId } : {}),
     ...(canFilterRank && rankBucket.id !== "all"
@@ -214,11 +262,22 @@ export function buildEmptyAgentMetaDataset(agents: Agent[]): AgentMetaDataset {
 }
 
 export function buildEmptyMapMetaDataset(maps: ValorantMap[]): MapMetaDataset {
+  void maps;
   return {
     rows: [],
     totalAppearances: 0,
     totalMatches: 0,
     modes: [],
+    lastObservedAt: null,
+  };
+}
+
+export function buildEmptyMapAgentPickDataset(): MapAgentPickDataset {
+  return {
+    rows: [],
+    modes: [],
+    totalPicks: 0,
+    totalMatches: 0,
     lastObservedAt: null,
   };
 }
@@ -233,6 +292,7 @@ function getParticipantObservation(
   region: Region,
   match: RiotMatch,
   puuid: string,
+  scope: ObservationScope,
 ): ParticipantObservation | null {
   const participant = match.players.find((player) => player.puuid === puuid);
   if (!participant?.stats) return null;
@@ -249,6 +309,41 @@ function getParticipantObservation(
       : team.won
         ? MatchResult.WIN
         : MatchResult.LOSS;
+
+  if (scope === ObservationScope.MATCH_CONTEXT) {
+    return {
+      sourceUserId,
+      matchId: match.matchInfo.matchId,
+      participantHash: hashParticipant(puuid),
+      scope,
+      region,
+      actId: match.matchInfo.seasonId ?? null,
+      queueId: match.matchInfo.queueId,
+      mapId: match.matchInfo.mapId,
+      agentId: participant.characterId,
+      competitiveTier: participant.competitiveTier ?? null,
+      teamId: participant.teamId,
+      result,
+      matchStartedAt: new Date(match.matchInfo.gameStartMillis),
+      roundsPlayed: participant.stats.roundsPlayed,
+      roundsWon: team.roundsWon,
+      roundsLost: opponent.roundsWon,
+      score: 0,
+      kills: 0,
+      deaths: 0,
+      assists: 0,
+      damage: 0,
+      damageReceived: 0,
+      headshots: 0,
+      bodyshots: 0,
+      legshots: 0,
+      kastRounds: 0,
+      firstBloods: 0,
+      plants: 0,
+      defuses: 0,
+      playtimeMillis: 0,
+    };
+  }
   const teamByPuuid = new Map(
     match.players.map((player) => [player.puuid, player.teamId]),
   );
@@ -315,6 +410,7 @@ function getParticipantObservation(
     sourceUserId,
     matchId: match.matchInfo.matchId,
     participantHash: hashParticipant(puuid),
+    scope,
     region,
     actId: match.matchInfo.seasonId ?? null,
     queueId: match.matchInfo.queueId,
@@ -346,29 +442,43 @@ function getParticipantObservation(
 
 export async function syncAgentMatchObservations({
   sourceUserId,
+  sourcePuuid,
   region,
   matches,
 }: {
   sourceUserId: string;
+  sourcePuuid: string;
   region: Region;
   matches: RiotMatch[];
 }): Promise<number> {
-  const observations = matches.flatMap((match) =>
+  const observations = matches
+    .filter((match) => match.matchInfo.isCompleted)
+    .flatMap((match) =>
     match.players.flatMap((participant) => {
       const observation = getParticipantObservation(
         sourceUserId,
         region,
         match,
         participant.puuid,
+        participant.puuid === sourcePuuid
+          ? ObservationScope.SELF
+          : ObservationScope.MATCH_CONTEXT,
       );
       return observation ? [observation] : [];
     }),
+    );
+  const selfObservations = observations.filter(
+    (observation) => observation.scope === ObservationScope.SELF,
+  );
+  const contextObservations = observations.filter(
+    (observation) => observation.scope === ObservationScope.MATCH_CONTEXT,
   );
 
-  if (observations.length === 0) return 0;
-
   await prisma.$transaction([
-    ...observations.map((observation) =>
+    prisma.agentMatchObservation.deleteMany({
+      where: { sourceUserId },
+    }),
+    ...selfObservations.map((observation) =>
       prisma.agentMatchObservation.upsert({
         where: {
           matchId_participantHash: {
@@ -379,6 +489,7 @@ export async function syncAgentMatchObservations({
         create: observation,
         update: {
           sourceUserId: observation.sourceUserId,
+          scope: observation.scope,
           region: observation.region,
           actId: observation.actId,
           queueId: observation.queueId,
@@ -409,6 +520,14 @@ export async function syncAgentMatchObservations({
         },
       }),
     ),
+    ...(contextObservations.length > 0
+      ? [
+          prisma.agentMatchObservation.createMany({
+            data: contextObservations,
+            skipDuplicates: true,
+          }),
+        ]
+      : []),
     prisma.user.update({
       where: { id: sourceUserId },
       data: { lastProfileSyncAt: new Date() },
@@ -424,11 +543,27 @@ export async function getAgentMetaDataset(
   filters: AgentMetaFilters = {},
 ): Promise<AgentMetaDataset> {
   const where = buildAgentMetaWhere(actId, filters);
-  const [groups, resultGroups, totalPicks, matchGroups, playerGroups, latest] =
-    await Promise.all([
+  const performanceWhere = {
+    ...where,
+    scope: ObservationScope.SELF,
+  };
+  const [
+    groups,
+    performanceGroups,
+    resultGroups,
+    totalPicks,
+    matchGroups,
+    contributorGroups,
+    latest,
+  ] = await Promise.all([
       prisma.agentMatchObservation.groupBy({
         by: ["agentId"],
         where,
+        _count: { _all: true },
+      }),
+      prisma.agentMatchObservation.groupBy({
+        by: ["agentId"],
+        where: performanceWhere,
         _count: { _all: true },
         _sum: {
           roundsPlayed: true,
@@ -454,7 +589,7 @@ export async function getAgentMetaDataset(
       prisma.agentMatchObservation.count({ where }),
       prisma.agentMatchObservation.groupBy({ by: ["matchId"], where }),
       prisma.agentMatchObservation.groupBy({
-        by: ["participantHash"],
+        by: ["sourceUserId"],
         where,
       }),
       prisma.agentMatchObservation.findFirst({
@@ -464,6 +599,9 @@ export async function getAgentMetaDataset(
       }),
     ]);
   const groupByAgent = new Map(groups.map((group) => [group.agentId, group]));
+  const performanceByAgent = new Map(
+    performanceGroups.map((group) => [group.agentId, group]),
+  );
   const winsByAgent = new Map(
     resultGroups
       .filter((group) => group.result === MatchResult.WIN)
@@ -473,7 +611,9 @@ export async function getAgentMetaDataset(
     .rows.map((agent) => {
       const group = groupByAgent.get(agent.agentId);
       const picks = group?._count._all ?? 0;
-      const sums = group?._sum;
+      const performance = performanceByAgent.get(agent.agentId);
+      const performancePicks = performance?._count._all ?? 0;
+      const sums = performance?._sum;
       const rounds = sums?.roundsPlayed ?? 0;
       const kills = sums?.kills ?? 0;
       const deaths = sums?.deaths ?? 0;
@@ -501,7 +641,10 @@ export async function getAgentMetaDataset(
         ),
         headshotRate: percent(headshots, hitTotal),
         kast: percent(sums?.kastRounds ?? 0, rounds),
-        firstBloodsPerMatch: ratio(sums?.firstBloods ?? 0, picks),
+        firstBloodsPerMatch: ratio(
+          sums?.firstBloods ?? 0,
+          performancePicks,
+        ),
         rounds,
       } satisfies AgentMetaRow;
     })
@@ -516,44 +659,50 @@ export async function getAgentMetaDataset(
     rows,
     totalPicks,
     totalMatches: matchGroups.length,
-    trackedPlayers: playerGroups.length,
+    trackedPlayers: contributorGroups.length,
     lastObservedAt: latest?.observedAt ?? null,
   };
 }
 
 export async function getAgentRankMetaDataset(
+  agents: Agent[],
   actId?: string | null,
   queueId = "competitive",
 ): Promise<AgentRankMetaRow[]> {
   const where = buildAgentMetaWhere(actId, { queueId });
-  const [groups, resultGroups, totalPicks] = await Promise.all([
+  const [groups, resultGroups] = await Promise.all([
     prisma.agentMatchObservation.groupBy({
-      by: ["competitiveTier"],
-      where,
-      _count: { _all: true },
-      _sum: {
-        roundsPlayed: true,
-      },
-    }),
-    prisma.agentMatchObservation.groupBy({
-      by: ["competitiveTier", "result"],
+      by: ["competitiveTier", "agentId"],
       where,
       _count: { _all: true },
     }),
-    prisma.agentMatchObservation.count({ where }),
+    prisma.agentMatchObservation.groupBy({
+      by: ["competitiveTier", "agentId", "result"],
+      where,
+      _count: { _all: true },
+    }),
   ]);
-  const winsByTier = new Map(
+  const winsByTierAgent = new Map(
     resultGroups
       .filter((group) => group.result === MatchResult.WIN)
-      .map((group) => [group.competitiveTier ?? 0, group._count._all]),
+      .map((group) => [
+        `${group.competitiveTier ?? 0}:${group.agentId}`,
+        group._count._all,
+      ]),
   );
-  const picksByBucket = new Map<
+  const agentById = new Map(
+    agents.map((agent) => [agent.uuid.toLowerCase(), agent]),
+  );
+  const buckets = new Map<
     AgentRankBucketId,
-    { picks: number; wins: number; rounds: number }
+    {
+      samplePicks: number;
+      agents: Map<string, { picks: number; wins: number }>;
+    }
   >(
     AGENT_RANK_BUCKETS.filter((bucket) => bucket.id !== "all").map((bucket) => [
       bucket.id,
-      { picks: 0, wins: 0, rounds: 0 },
+      { samplePicks: 0, agents: new Map() },
     ]),
   );
 
@@ -564,33 +713,52 @@ export async function getAgentRankMetaDataset(
     );
     if (!bucket || bucket.id === "all") continue;
 
-    const current = picksByBucket.get(bucket.id);
+    const current = buckets.get(bucket.id);
     if (!current) continue;
 
-    current.picks += group._count._all;
-    current.wins += winsByTier.get(tier) ?? 0;
-    current.rounds += group._sum.roundsPlayed ?? 0;
+    const picks = group._count._all;
+    const agent = current.agents.get(group.agentId) ?? { picks: 0, wins: 0 };
+    current.samplePicks += picks;
+    agent.picks += picks;
+    agent.wins +=
+      winsByTierAgent.get(`${tier}:${group.agentId}`) ?? 0;
+    current.agents.set(group.agentId, agent);
   }
 
-  return AGENT_RANK_BUCKETS.filter((bucket) => bucket.id !== "all").map(
-    (bucket) => {
-      const values = picksByBucket.get(bucket.id) ?? {
-        picks: 0,
-        wins: 0,
-        rounds: 0,
-      };
+  return AGENT_RANK_BUCKETS.filter((bucket) => bucket.id !== "all")
+    .map((bucket) => {
+      const values = buckets.get(bucket.id);
+      const samplePicks = values?.samplePicks ?? 0;
+      const leaders = Array.from(values?.agents.entries() ?? [])
+        .map(([agentId, totals]) => {
+          const agent = agentById.get(agentId.toLowerCase());
+
+          return {
+            agentId,
+            name: agent?.displayName ?? "Unknown agent",
+            icon: agent?.displayIcon ?? null,
+            picks: totals.picks,
+            pickRate: percent(totals.picks, samplePicks),
+            wins: totals.wins,
+            winRate: percent(totals.wins, totals.picks),
+          };
+        })
+        .sort((left, right) => {
+          if (right.picks !== left.picks) return right.picks - left.picks;
+          if (right.winRate !== left.winRate)
+            return right.winRate - left.winRate;
+          return left.name.localeCompare(right.name);
+        })
+        .slice(0, 2);
 
       return {
         bucketId: bucket.id,
         label: bucket.label,
-        picks: values.picks,
-        pickRate: percent(values.picks, totalPicks),
-        wins: values.wins,
-        winRate: percent(values.wins, values.picks),
-        rounds: values.rounds,
+        samplePicks,
+        leaders,
       } satisfies AgentRankMetaRow;
-    },
-  );
+    })
+    .filter((row) => row.samplePicks > 0);
 }
 
 function isMetaEligibleMap(map: ValorantMap): boolean {
@@ -601,14 +769,6 @@ function isMetaEligibleMap(map: ValorantMap): boolean {
   if (mapUrl.includes("/npev2/")) return false;
 
   return true;
-}
-
-function buildMetaEligibleMaps(maps: ValorantMap[]): ValorantMap[] {
-  return maps
-    .filter(isMetaEligibleMap)
-    .toSorted((left, right) =>
-      left.displayName.localeCompare(right.displayName),
-    );
 }
 
 function buildMapLookup(maps: ValorantMap[]): Map<string, ValorantMap> {
@@ -627,9 +787,13 @@ export async function getMapMetaDataset(
   actId?: string | null,
 ): Promise<MapMetaDataset> {
   const where = {
+    sourceUser: {
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
+      consentedAt: { not: null },
+    },
     ...(actId ? { actId } : {}),
   };
-  const [matchMapGroups, matchGroups, modeGroups, latest] = await Promise.all([
+  const [matchMapGroups, latest] = await Promise.all([
     prisma.agentMatchObservation.groupBy({
       by: ["mapId", "queueId", "matchId"],
       where,
@@ -637,8 +801,6 @@ export async function getMapMetaDataset(
         roundsPlayed: true,
       },
     }),
-    prisma.agentMatchObservation.groupBy({ by: ["matchId"], where }),
-    prisma.agentMatchObservation.groupBy({ by: ["queueId"], where }),
     prisma.agentMatchObservation.findFirst({
       where,
       orderBy: { observedAt: "desc" },
@@ -684,6 +846,13 @@ export async function getMapMetaDataset(
   }
 
   const totalAppearances = eligibleMatchMapGroups.length;
+  const appearancesByMode = new Map<string, number>();
+  for (const matchMap of eligibleMatchMapGroups) {
+    appearancesByMode.set(
+      matchMap.queueId,
+      (appearancesByMode.get(matchMap.queueId) ?? 0) + 1,
+    );
+  }
   const observedRows = Array.from(groups.values())
     .map((group) => {
       const map = mapLookup.get(group.mapId.toLowerCase());
@@ -696,7 +865,10 @@ export async function getMapMetaDataset(
         modeId: group.queueId,
         mode: formatQueueName(group.queueId),
         appearances: group.appearances,
-        appearanceRate: percent(group.appearances, totalAppearances),
+        appearanceRate: percent(
+          group.appearances,
+          appearancesByMode.get(group.queueId) ?? 0,
+        ),
         rounds: group.rounds,
       } satisfies MapMetaRow;
     })
@@ -716,8 +888,139 @@ export async function getMapMetaDataset(
   return {
     rows,
     totalAppearances,
-    totalMatches: matchGroups.length,
-    modes: modeGroups.map((group) => group.queueId).sort(),
+    totalMatches: new Set(
+      eligibleMatchMapGroups.map((group) => group.matchId),
+    ).size,
+    modes: Array.from(appearancesByMode.keys()).sort(),
+    lastObservedAt: latest?.observedAt ?? null,
+  };
+}
+
+export async function getMapAgentPickDataset(
+  agents: Agent[],
+  maps: ValorantMap[],
+  actId?: string | null,
+): Promise<MapAgentPickDataset> {
+  const queueIds: string[] = MAP_AGENT_PICK_QUEUES.map((queue) => queue.id);
+  const where = {
+    sourceUser: {
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
+      consentedAt: { not: null },
+    },
+    queueId: { in: [...queueIds] },
+    ...(actId ? { actId } : {}),
+  };
+  const [pickGroups, matchGroups, latest] = await Promise.all([
+    prisma.agentMatchObservation.groupBy({
+      by: ["mapId", "queueId", "agentId"],
+      where,
+      _count: { _all: true },
+    }),
+    prisma.agentMatchObservation.groupBy({
+      by: ["mapId", "queueId", "matchId"],
+      where,
+    }),
+    prisma.agentMatchObservation.findFirst({
+      where,
+      orderBy: { observedAt: "desc" },
+      select: { observedAt: true },
+    }),
+  ]);
+  const mapLookup = buildMapLookup(maps);
+  const agentLookup = new Map(
+    agents.map((agent) => [agent.uuid.toLowerCase(), agent]),
+  );
+  const matchesByMapMode = new Map<string, number>();
+  const eligibleMatchGroups = matchGroups.filter((group) => {
+    const map = mapLookup.get(group.mapId.toLowerCase());
+    return Boolean(map && isMetaEligibleMap(map));
+  });
+
+  for (const group of eligibleMatchGroups) {
+    const key = `${group.queueId}:${group.mapId}`;
+    matchesByMapMode.set(key, (matchesByMapMode.get(key) ?? 0) + 1);
+  }
+
+  const grouped = new Map<
+    string,
+    {
+      map: ValorantMap;
+      modeId: string;
+      totalPicks: number;
+      agents: Array<{ agentId: string; picks: number }>;
+    }
+  >();
+
+  for (const group of pickGroups) {
+    const map = mapLookup.get(group.mapId.toLowerCase());
+    const agent = agentLookup.get(group.agentId.toLowerCase());
+    if (!map || !agent || !isMetaEligibleMap(map)) continue;
+
+    const key = `${group.queueId}:${map.uuid}`;
+    const current = grouped.get(key) ?? {
+      map,
+      modeId: group.queueId,
+      totalPicks: 0,
+      agents: [],
+    };
+    current.totalPicks += group._count._all;
+    current.agents.push({
+      agentId: agent.uuid,
+      picks: group._count._all,
+    });
+    grouped.set(key, current);
+  }
+
+  const rows = Array.from(grouped.values())
+    .map((group) => ({
+      mapId: group.map.uuid,
+      mapName: group.map.displayName,
+      mapImage: group.map.splash ?? group.map.displayIcon ?? "",
+      modeId: group.modeId,
+      mode:
+        MAP_AGENT_PICK_QUEUES.find((queue) => queue.id === group.modeId)
+          ?.label ?? formatQueueName(group.modeId),
+      totalPicks: group.totalPicks,
+      matches:
+        matchesByMapMode.get(`${group.modeId}:${group.map.uuid}`) ?? 0,
+      leaders: group.agents
+        .map((entry) => {
+          const agent = agentLookup.get(entry.agentId.toLowerCase());
+
+          return {
+            agentId: entry.agentId,
+            name: agent?.displayName ?? "Unknown agent",
+            icon: agent?.displayIcon ?? "",
+            role: agent?.role?.displayName ?? "Agent",
+            picks: entry.picks,
+            pickRate: percent(entry.picks, group.totalPicks),
+          };
+        })
+        .sort((left, right) => {
+          if (right.picks !== left.picks) return right.picks - left.picks;
+          return left.name.localeCompare(right.name);
+        })
+        .slice(0, 5),
+    }))
+    .sort((left, right) => {
+      const leftMode = queueIds.indexOf(left.modeId);
+      const rightMode = queueIds.indexOf(right.modeId);
+      if (leftMode !== rightMode) return leftMode - rightMode;
+      if (right.totalPicks !== left.totalPicks) {
+        return right.totalPicks - left.totalPicks;
+      }
+      return left.mapName.localeCompare(right.mapName);
+    });
+
+  return {
+    rows,
+    modes: MAP_AGENT_PICK_QUEUES.filter((queue) =>
+      rows.some((row) => row.modeId === queue.id),
+    ).map((queue) => queue.id),
+    totalPicks: rows.reduce((total, row) => total + row.totalPicks, 0),
+    totalMatches: new Set(
+      eligibleMatchGroups.map((group) => group.matchId),
+    ).size,
     lastObservedAt: latest?.observedAt ?? null,
   };
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -57,8 +58,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               explicit choice.
             </li>
             <li className="border-l-2 border-white/20 pl-4">
-              You can make the profile private again or disconnect it from the
-              account page.
+              Your own pseudonymized match observations help calculate
+              aggregate pick rates, win rates, rank trends, and map frequency.
+            </li>
+            <li className="border-l-2 border-white/20 pl-4">
+              Match composition can add minimal agent, rank, result, queue, and
+              map context without publishing another player&apos;s identity or
+              performance profile.
+            </li>
+            <li className="border-l-2 border-white/20 pl-4">
+              You can make the profile private without leaving aggregate
+              analytics, or disconnect and delete your contribution.
             </li>
           </ul>
 
@@ -79,10 +89,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   className="mt-1 size-4 shrink-0 accent-[var(--accent)]"
                 />
                 <span>
-                  I have read and agree to the AgentStats Terms, Privacy Policy,
-                  Cookie Notice, and Disclaimer. I understand that continuing
-                  will record this consent in AgentStats&apos; database before
-                  Riot sign-in.
+                  I have read and agree to the AgentStats{" "}
+                  <Link href="/terms">Terms</Link>,{" "}
+                  <Link href="/privacy">Privacy Policy</Link>,{" "}
+                  <Link href="/cookies">Cookie Notice</Link>, and{" "}
+                  <Link href="/disclaimer">Disclaimer</Link>. I authorize
+                  AgentStats to retrieve and process my Riot identity and
+                  recent match data, create my private player statistics, and
+                  use my own pseudonymized match observations in aggregate
+                  statistics such as agent pick and win rates, competitive
+                  picks by rank, and map frequency.
                 </span>
               </label>
               <button
@@ -106,8 +122,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           )}
 
           <p className="mt-5 text-xs leading-5 text-white/50">
-            By continuing, you agree to the AgentStats terms and acknowledge the
-            privacy policy. Linking alone does not publish your profile.
+            This consent is required to use Riot Sign On. Linking does not
+            publish your Riot ID or personal profile; public visibility remains
+            a separate choice on the account page.
           </p>
         </section>
       </div>

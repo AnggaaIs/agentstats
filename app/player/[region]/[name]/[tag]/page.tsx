@@ -69,6 +69,11 @@ function resultClass(result: MatchSummary["result"]): string {
   return "border-amber-300/45 text-amber-200";
 }
 
+function deltaClass(value: number | null): string {
+  if (value === null || value === 0) return "text-[var(--muted)]";
+  return value > 0 ? "text-emerald-300" : "text-red-300";
+}
+
 function PerformanceTrend({ matches }: { matches: MatchSummary[] }) {
   const ordered = matches.toReversed();
   const max = Math.max(1, ...ordered.map((match) => match.acs));
@@ -146,11 +151,11 @@ export async function generateMetadata({
   params,
 }: PlayerPageProps): Promise<Metadata> {
   const { region, name, tag } = await params;
-  const riotId = `${decodeURIComponent(name)}#${decodeURIComponent(tag)}`;
+  const riotId = `${name}#${tag}`;
   return createMetadata({
     title: `${riotId} Valorant Profile`,
     description: `Opt-in Valorant match history and performance profile for ${riotId} on AgentStats.`,
-    path: `/player/${region}/${name}/${tag}`,
+    path: `/player/${encodeURIComponent(region)}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`,
     noIndex: true,
   });
 }
@@ -161,8 +166,8 @@ export default async function PlayerPage({
 }: PlayerPageProps) {
   const raw = await params;
   const input = playerSearchSchema.safeParse({
-    name: decodeURIComponent(raw.name),
-    tag: decodeURIComponent(raw.tag),
+    name: raw.name,
+    tag: raw.tag,
     region: raw.region,
   });
   if (!input.success) notFound();
@@ -256,8 +261,8 @@ export default async function PlayerPage({
   const agents = agentsResult.status === "fulfilled" ? agentsResult.value : [];
   const maps = mapsResult.status === "fulfilled" ? mapsResult.value : [];
   const tiers = tiersResult.status === "fulfilled" ? tiersResult.value : [];
-  const matches =
-    matchesResult.status === "fulfilled" ? matchesResult.value : [];
+  if (matchesResult.status === "rejected") throw matchesResult.reason;
+  const matches = matchesResult.value;
   const initialSummary = buildPlayerSummary(
     account.puuid,
     matches,
@@ -273,10 +278,15 @@ export default async function PlayerPage({
     result.status === "fulfilled" ? [result.value] : [],
   );
   const summary = buildPlayerSummary(account.puuid, matches, agents, maps, weapons);
-  if (access.isPublic && access.ownerId && matches.length > 0) {
+  if (
+    access.hasCurrentDataConsent &&
+    access.ownerId &&
+    matches.length > 0
+  ) {
     after(async () => {
       await syncAgentMatchObservations({
         sourceUserId: access.ownerId!,
+        sourcePuuid: account.puuid,
         region,
         matches,
       });
@@ -353,6 +363,55 @@ export default async function PlayerPage({
     .filter((map) => map.games >= 2)
     .toSorted((a, b) => a.winRate - b.winRate)[0];
   const mainAgent = summary.agents[0];
+  const previousForm = summary.recentForm.previous;
+  const recentFormMetrics = [
+    {
+      label: "Win rate",
+      recent: `${formatNumber(summary.recentForm.recent.winRate)}%`,
+      previous: previousForm
+        ? `${formatNumber(previousForm.winRate)}%`
+        : "—",
+      delta: summary.recentForm.winRateDelta,
+      deltaLabel:
+        summary.recentForm.winRateDelta === null
+          ? "Baseline"
+          : `${formatSigned(summary.recentForm.winRateDelta)} pts`,
+    },
+    {
+      label: "K / D",
+      recent: formatNumber(summary.recentForm.recent.kd, 2),
+      previous: previousForm ? formatNumber(previousForm.kd, 2) : "—",
+      delta: summary.recentForm.kdDelta,
+      deltaLabel:
+        summary.recentForm.kdDelta === null
+          ? "Baseline"
+          : formatSigned(summary.recentForm.kdDelta, 2),
+    },
+    {
+      label: "ACS",
+      recent: formatNumber(summary.recentForm.recent.averageAcs),
+      previous: previousForm
+        ? formatNumber(previousForm.averageAcs)
+        : "—",
+      delta: summary.recentForm.acsDelta,
+      deltaLabel:
+        summary.recentForm.acsDelta === null
+          ? "Baseline"
+          : formatSigned(summary.recentForm.acsDelta),
+    },
+    {
+      label: "ADR",
+      recent: formatNumber(summary.recentForm.recent.averageDamagePerRound),
+      previous: previousForm
+        ? formatNumber(previousForm.averageDamagePerRound)
+        : "—",
+      delta: summary.recentForm.damageDelta,
+      deltaLabel:
+        summary.recentForm.damageDelta === null
+          ? "Baseline"
+          : formatSigned(summary.recentForm.damageDelta),
+    },
+  ] as const;
   const reviewCues = [
     {
       label: "Agent identity",
@@ -377,8 +436,10 @@ export default async function PlayerPage({
     },
     {
       label: "Opening impact",
-      value: `${formatNumber(summary.firstBloods / summary.games, 2)} FB / match`,
-      note: `${summary.firstBloods} first bloods across the current sample`,
+      value: summary.openingDuels.total
+        ? `${formatNumber(summary.openingDuels.winRate)}% success`
+        : "No opening duels",
+      note: `${summary.openingDuels.wins} first kills · ${summary.openingDuels.losses} first deaths`,
     },
   ] as const;
 
@@ -474,7 +535,9 @@ export default async function PlayerPage({
             ["#agents", "Agents"],
             ["#maps", "Maps"],
             ["#weapons", "Weapons"],
-            ["#encounters", "Encounters"],
+            ...(access.isOwner
+              ? ([["#encounters", "Encounters"]] as const)
+              : []),
           ].map(([href, label]) => (
             <a
               key={href}
@@ -682,6 +745,176 @@ export default async function PlayerPage({
                 </section>
               </div>
 
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="flex flex-col gap-2 border-b border-white/8 p-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                        Form comparison
+                      </p>
+                      <h3 className="mt-1 font-display text-lg font-black uppercase">
+                        Latest {summary.recentForm.recent.games} vs previous{" "}
+                        {previousForm?.games ?? 0}
+                      </h3>
+                    </div>
+                    <p className="text-[10px] text-[var(--muted)]">
+                      {previousForm
+                        ? "Direction, not a global rating"
+                        : "Needs more than five matches"}
+                    </p>
+                  </div>
+                  <div className="grid gap-px bg-white/8 sm:grid-cols-2">
+                    {recentFormMetrics.map((metric) => (
+                      <article
+                        key={metric.label}
+                        className="grid grid-cols-[1fr_auto] gap-4 bg-[var(--panel)] p-4"
+                      >
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.13em] text-[var(--muted)]">
+                            {metric.label}
+                          </p>
+                          <p className="mt-1 font-display text-2xl font-black">
+                            {metric.recent}
+                          </p>
+                          <p className="mt-1 text-[9px] text-white/45">
+                            Latest {summary.recentForm.recent.games} matches
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p
+                            className={`font-mono text-xs font-black ${deltaClass(metric.delta)}`}
+                          >
+                            {metric.deltaLabel}
+                          </p>
+                          <p className="mt-2 text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                            Previous
+                          </p>
+                          <p className="mt-0.5 font-mono text-xs">
+                            {metric.previous}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="border border-white/10 bg-[var(--panel)] p-4">
+                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                    Round impact
+                  </p>
+                  <h3 className="mt-1 font-display text-lg font-black uppercase">
+                    Openings and trades
+                  </h3>
+                  <div className="mt-4 grid grid-cols-2 gap-px bg-white/8">
+                    <div className="bg-[var(--panel)] p-3">
+                      <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                        Opening success
+                      </p>
+                      <p className="mt-1 font-display text-2xl font-black">
+                        {formatNumber(summary.openingDuels.winRate)}%
+                      </p>
+                      <p className="mt-1 text-[9px] text-white/45">
+                        {summary.openingDuels.wins} won /{" "}
+                        {summary.openingDuels.losses} lost
+                      </p>
+                    </div>
+                    <div className="bg-[var(--panel)] p-3">
+                      <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                        Opening net
+                      </p>
+                      <p
+                        className={`mt-1 font-display text-2xl font-black ${deltaClass(summary.openingDuels.net)}`}
+                      >
+                        {formatSigned(summary.openingDuels.net)}
+                      </p>
+                      <p className="mt-1 text-[9px] text-white/45">
+                        First kills minus first deaths
+                      </p>
+                    </div>
+                    <div className="col-span-2 bg-[var(--panel)] p-3">
+                      <div className="flex items-end justify-between gap-4">
+                        <div>
+                          <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                            Deaths traded
+                          </p>
+                          <p className="mt-1 font-display text-2xl font-black">
+                            {summary.trades.tradedDeaths}
+                          </p>
+                        </div>
+                        <p className="font-mono text-sm font-black">
+                          {formatNumber(summary.trades.tradeRate)}%
+                        </p>
+                      </div>
+                      <progress
+                        max={100}
+                        value={summary.trades.tradeRate}
+                        aria-label="Percentage of deaths traded within five seconds"
+                        className="community-progress mt-3 h-1.5 w-full"
+                      />
+                      <p className="mt-2 text-[9px] leading-4 text-white/45">
+                        {summary.trades.tradedDeaths} of{" "}
+                        {summary.trades.trackedDeaths} timeline deaths were
+                        answered by a teammate within five seconds.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <section className="mt-4 border border-white/10 bg-[var(--panel)]">
+                <div className="flex flex-col gap-2 border-b border-white/8 p-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      Result context
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Performance when winning and losing
+                    </h3>
+                  </div>
+                  <p className="text-[10px] text-[var(--muted)]">
+                    Separates output from match outcome
+                  </p>
+                </div>
+                <div className="grid gap-px bg-white/8 sm:grid-cols-2 lg:grid-cols-3">
+                  {summary.resultSplits.map((split) => (
+                    <article
+                      key={split.result}
+                      className="bg-[var(--panel)] p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span
+                          className={`border px-2 py-1 text-[9px] font-black ${resultClass(split.result)}`}
+                        >
+                          {split.result}
+                        </span>
+                        <span className="text-[10px] text-[var(--muted)]">
+                          {split.games} matches
+                        </span>
+                      </div>
+                      <dl className="mt-4 grid grid-cols-3 gap-3">
+                        {[
+                          ["ACS", formatNumber(split.averageAcs)],
+                          ["K/D", formatNumber(split.kd, 2)],
+                          [
+                            "ADR",
+                            formatNumber(split.averageDamagePerRound),
+                          ],
+                        ].map(([label, value]) => (
+                          <div key={label}>
+                            <dt className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                              {label}
+                            </dt>
+                            <dd className="mt-1 font-display text-xl font-black">
+                              {value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
               <div className="mt-4 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   ["First bloods", summary.firstBloods, `${summary.plants} plants`],
@@ -841,7 +1074,7 @@ export default async function PlayerPage({
                           {match.score}
                         </p>
                         <p className="mt-1 text-xs text-[var(--muted)]">
-                          {match.firstBloods} first blood
+                          {match.firstBloods} FB · {match.firstDeaths} FD
                         </p>
                       </div>
                     </RouteLink>
@@ -1010,63 +1243,65 @@ export default async function PlayerPage({
               </div>
             </section>
 
-            <section id="encounters" className="scroll-mt-32 py-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
-                Recurring players
-              </p>
-              <h2 className="mt-1.5 font-display text-2xl font-black uppercase tracking-[-0.035em] sm:text-3xl">
-                Encounters
-              </h2>
-              <p className="mt-2 max-w-3xl text-xs leading-5 text-[var(--muted)]">
-                Players appearing repeatedly in this match sample.
-              </p>
-              <div
-                role="region"
-                aria-label="Recurring player encounters"
-                tabIndex={0}
-                className="tactical-scrollbar mt-4 overflow-x-auto border border-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-              >
-                <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
-                  <thead className="bg-white/5 text-[9px] uppercase tracking-[0.14em] text-[var(--muted)]">
-                    <tr>
-                      <th className="p-3">Player</th>
-                      <th className="p-3">With</th>
-                      <th className="p-3">Against</th>
-                      <th className="p-3">Wins together</th>
-                      <th className="p-3">Losses against</th>
-                      <th className="p-3">Duel K / D</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summary.encounters.map((encounter) => (
-                      <tr
-                        key={encounter.puuid}
-                        className="border-t border-white/8"
-                      >
-                        <td className="p-3">
-                          <RouteLink
-                            href={`/player/${region}/${encodeURIComponent(encounter.gameName)}/${encodeURIComponent(encounter.tagLine)}`}
-                            className="font-black hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
-                          >
-                            {encounter.gameName}
-                            <span className="text-[var(--muted)]">
-                              #{encounter.tagLine}
-                            </span>
-                          </RouteLink>
-                        </td>
-                        <td className="p-3">{encounter.teammateMatches}</td>
-                        <td className="p-3">{encounter.opponentMatches}</td>
-                        <td className="p-3">{encounter.winsWith}</td>
-                        <td className="p-3">{encounter.lossesAgainst}</td>
-                        <td className="p-3 font-black">
-                          {encounter.kills} / {encounter.deaths}
-                        </td>
+            {access.isOwner ? (
+              <section id="encounters" className="scroll-mt-32 py-10">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+                  Recurring players
+                </p>
+                <h2 className="mt-1.5 font-display text-2xl font-black uppercase tracking-[-0.035em] sm:text-3xl">
+                  Encounters
+                </h2>
+                <p className="mt-2 max-w-3xl text-xs leading-5 text-[var(--muted)]">
+                  Players appearing repeatedly in this match sample.
+                </p>
+                <div
+                  role="region"
+                  aria-label="Recurring player encounters"
+                  tabIndex={0}
+                  className="tactical-scrollbar mt-4 overflow-x-auto border border-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                >
+                  <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
+                    <thead className="bg-white/5 text-[9px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                      <tr>
+                        <th className="p-3">Player</th>
+                        <th className="p-3">With</th>
+                        <th className="p-3">Against</th>
+                        <th className="p-3">Wins together</th>
+                        <th className="p-3">Losses against</th>
+                        <th className="p-3">Duel K / D</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                    </thead>
+                    <tbody>
+                      {summary.encounters.map((encounter) => (
+                        <tr
+                          key={encounter.puuid}
+                          className="border-t border-white/8"
+                        >
+                          <td className="p-3">
+                            <RouteLink
+                              href={`/player/${region}/${encodeURIComponent(encounter.gameName)}/${encodeURIComponent(encounter.tagLine)}`}
+                              className="font-black hover:text-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                            >
+                              {encounter.gameName}
+                              <span className="text-[var(--muted)]">
+                                #{encounter.tagLine}
+                              </span>
+                            </RouteLink>
+                          </td>
+                          <td className="p-3">{encounter.teammateMatches}</td>
+                          <td className="p-3">{encounter.opponentMatches}</td>
+                          <td className="p-3">{encounter.winsWith}</td>
+                          <td className="p-3">{encounter.lossesAgainst}</td>
+                          <td className="p-3 font-black">
+                            {encounter.kills} / {encounter.deaths}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ) : null}
               </div>
             </div>
           </>

@@ -66,7 +66,11 @@ export default async function AgentMetaPage({
       rankBucket: selectedRank,
     }).catch(() => buildEmptyAgentMetaDataset(agents)),
     hasRankFilter
-      ? getAgentRankMetaDataset(currentAct?.uuid, selectedMode).catch(() => [])
+      ? getAgentRankMetaDataset(
+          agents,
+          currentAct?.uuid,
+          selectedMode,
+        ).catch(() => [])
       : Promise.resolve([]),
   ]);
   const roles = [
@@ -120,7 +124,7 @@ export default async function AgentMetaPage({
         <PageHeading
           eyebrow={currentAct?.displayLabel ?? "Agent meta"}
           title="Agent pick rates"
-          description="Agent pick rate by mode and role. Competitive adds rank buckets."
+          description="Agent pick rate by mode and role. Competitive also reveals which agents lead each rank."
         />
         <div className="flex flex-wrap gap-2">
           <RouteLink
@@ -235,17 +239,23 @@ export default async function AgentMetaPage({
         <section className="mt-6 border border-white/10 bg-[#0e141b]">
           <div className="flex flex-col gap-2 border-b border-white/8 p-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="eyebrow">Rank buckets</p>
+              <p className="eyebrow">Rank-specific meta</p>
               <h2 className="mt-2 font-display text-2xl font-black uppercase tracking-[-0.04em]">
-                Competitive picks by rank
+                Most picked agents by rank
               </h2>
+              <p className="mt-2 max-w-2xl text-xs leading-5 text-[var(--muted)]">
+                Shows the overall agent leaders in each rank bucket. Pick rate
+                is calculated within that rank, so Gold and Diamond can be
+                compared directly.
+              </p>
             </div>
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-              {rankMeta.length} buckets
+              {rankMeta.length} ranks with samples
             </p>
           </div>
-          <div className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
-            {rankMeta.map((row) => {
+          {rankMeta.length > 0 ? (
+            <div className="grid gap-px bg-white/10 md:grid-cols-2 xl:grid-cols-3">
+              {rankMeta.map((row) => {
               const bucket = AGENT_RANK_BUCKETS.find(
                 (item) => item.id === row.bucketId,
               );
@@ -254,32 +264,90 @@ export default async function AgentMetaPage({
               return (
                 <article
                   key={row.bucketId}
-                  className="flex items-center gap-3 bg-[var(--panel)] p-4"
+                  className="bg-[var(--panel)] p-4"
                 >
-                  {icon ? (
-                    <Image
-                      src={icon}
-                      alt=""
-                      width={34}
-                      height={34}
-                      className="size-9 object-contain"
-                    />
-                  ) : null}
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
-                      {row.label}
-                    </p>
-                    <p className="mt-1 font-display text-2xl font-black tracking-[-0.04em]">
-                      {formatPercent(row.pickRate)}
-                    </p>
-                    <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
-                      {row.picks} picks / {formatPercent(row.winRate)} WR
-                    </p>
+                  <div className="flex items-center justify-between gap-3 border-b border-white/8 pb-3">
+                    <div className="flex items-center gap-3">
+                      {icon ? (
+                        <Image
+                          src={icon}
+                          alt=""
+                          width={34}
+                          height={34}
+                          className="size-9 object-contain"
+                        />
+                      ) : null}
+                      <div>
+                        <p className="font-display text-xl font-black uppercase tracking-[-0.04em]">
+                          {row.label}
+                        </p>
+                        <p className="mt-0.5 text-[9px] uppercase tracking-[0.12em] text-[var(--muted)]">
+                          {row.samplePicks} player picks
+                        </p>
+                      </div>
+                    </div>
+                    <RouteLink
+                      href={metaHref({ rank: row.bucketId, role: "all" })}
+                      className="valorant-action border border-white/12 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]"
+                    >
+                      View table
+                    </RouteLink>
                   </div>
+                  <div className="mt-3 grid gap-2">
+                    {row.leaders.map((leader, index) => (
+                      <div
+                        key={leader.agentId}
+                        className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 border border-white/8 bg-black/10 p-2.5"
+                      >
+                        <span className="font-mono text-xs text-white/35">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          {leader.icon ? (
+                            <Image
+                              src={leader.icon}
+                              alt=""
+                              width={32}
+                              height={32}
+                              className="size-8 shrink-0 bg-white/5 object-cover"
+                            />
+                          ) : null}
+                          <div className="min-w-0">
+                            <p className="responsive-text font-black uppercase">
+                              {leader.name}
+                            </p>
+                            <p className="mt-0.5 text-[9px] uppercase tracking-[0.1em] text-[var(--muted)]">
+                              {leader.picks} picks ·{" "}
+                              {formatPercent(leader.winRate)} WR
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-display text-xl font-black text-[var(--accent)]">
+                            {formatPercent(leader.pickRate)}
+                          </p>
+                          <p className="text-[8px] uppercase tracking-wider text-[var(--muted)]">
+                            pick rate
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {row.samplePicks < 20 ? (
+                    <p className="mt-3 text-[9px] leading-4 text-amber-200/75">
+                      Small sample: treat this rank insight as directional.
+                    </p>
+                  ) : null}
                 </article>
               );
-            })}
-          </div>
+              })}
+            </div>
+          ) : (
+            <div className="p-5 text-sm leading-6 text-[var(--muted)]">
+              No competitive rank samples are available for this act yet.
+              Agent leaders will appear after opt-in matches are synced.
+            </div>
+          )}
         </section>
       ) : null}
 

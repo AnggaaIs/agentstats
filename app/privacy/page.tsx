@@ -27,11 +27,11 @@ export default function PrivacyPage() {
         ladder data.
       </p>
       <p>
-        Personal match history and derived player statistics may only be
-        displayed after the player has opted in through Riot Sign On and Riot
-        has approved the integration. AgentStats must not make a player&apos;s
-        personal gameplay data available to other people before that player
-        has linked their own account.
+        Personal match history and derived player statistics are processed only
+        after the player opts in through Riot Sign On and Riot has approved the
+        integration. Connecting creates a private profile. AgentStats does not
+        make that profile or its personal match history available to other
+        people unless the player separately chooses public visibility.
       </p>
       <p>
         When you connect through Riot Sign On, AgentStats stores a user
@@ -40,6 +40,26 @@ export default function PrivacyPage() {
         database session identifier keeps you signed in. AgentStats does not
         receive your Riot password and does not retain Riot OAuth access or
         refresh tokens after account verification.
+      </p>
+      <p>
+        Riot Sign On also requires consent for AgentStats to retrieve your
+        recent match data and use your own match observations in aggregate
+        gameplay analytics. The stored observation can include a one-way
+        participant identifier, agent, rank tier, map, queue, match result,
+        rounds, combat score, kills, deaths, assists, damage, hit distribution,
+        KAST inputs, first bloods, plants, defuses, and playtime. These records
+        support agent pick and win rates, competitive picks by rank, performance
+        averages, and map frequency.
+      </p>
+      <p>
+        Aggregate analytics do not display your Riot ID. AgentStats stores only
+        the connecting player&apos;s full observation for performance metrics.
+        For other participants in the same match, it keeps only minimal
+        pseudonymized context needed for non-player-specific aggregates: a
+        one-way row key, agent pick, rank tier, team result, queue, map, rounds,
+        and match time. It does not store their Riot ID, combat score, kills,
+        deaths, assists, damage, hit distribution, KAST inputs, first bloods,
+        plants, defuses, or playtime in the aggregate dataset.
       </p>
       <p>
         AgentStats also displays public game content supplied by
@@ -89,6 +109,10 @@ export default function PrivacyPage() {
       <h2>Why information is used</h2>
       <ul>
         <li>To return the player information and game content you request.</li>
+        <li>
+          To calculate pseudonymized aggregate pick rates, win rates,
+          rank-specific agent trends, performance averages, and map frequency.
+        </li>
         <li>To remember recent searches on your device.</li>
         <li>To protect the service and investigate errors or misuse.</li>
         <li>To count community favorites and limit manipulated voting.</li>
@@ -133,9 +157,18 @@ export default function PrivacyPage() {
       <p>
         A linked account remains until you disconnect it. Disconnecting from
         the account page deletes the AgentStats user record, Riot connection,
-        consent record, and active sessions. Making a profile private
-        immediately withdraws permission for other visitors to view its
-        personal match statistics.
+        active consent state, active sessions, and aggregate observations
+        linked to that user. A historical consent receipt may remain without a
+        linked user identifier where needed to demonstrate when the choice was
+        recorded.
+      </p>
+      <p>
+        Making a profile private immediately withdraws permission for other
+        visitors to view its personal match statistics, but does not stop the
+        player&apos;s pseudonymized observations from contributing to aggregate
+        analytics. To withdraw from that processing, disconnect and delete the
+        linked account. Cached aggregate results may take a short period to
+        refresh after deletion.
       </p>
       <p>
         Hosting and security records are retained according to the provider

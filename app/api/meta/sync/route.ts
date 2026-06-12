@@ -4,7 +4,7 @@ import { apiError, apiSuccess } from "@/lib/api-response";
 import { syncAgentMatchObservations } from "@/lib/agent-meta";
 import { REGIONS, type Region } from "@/lib/constants";
 import { prisma } from "@/lib/db";
-import { ProfileVisibility } from "@/lib/generated/prisma/enums";
+import { PLAYER_DATA_CONSENT_VERSION } from "@/lib/legal";
 import { getRecentMatches, RiotApiError } from "@/lib/riot";
 
 const STALE_AFTER_MS = 15 * 60 * 1_000;
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     where: {
       puuid: { not: null },
       consentedAt: { not: null },
-      visibility: ProfileVisibility.PUBLIC,
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
       OR: [
         { lastProfileSyncAt: null },
         { lastProfileSyncAt: { lt: staleBefore } },
@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       );
       observations += await syncAgentMatchObservations({
         sourceUserId: user.id,
+        sourcePuuid: user.puuid,
         region: user.region,
         matches,
       });

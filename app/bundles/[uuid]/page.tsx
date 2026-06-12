@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
-import { getBundle } from "@/lib/valorant-api";
+import { getBundle, ValorantApiError } from "@/lib/valorant-api";
 
 interface BundlePageProps {
   params: Promise<{ uuid: string }>;
@@ -37,8 +37,13 @@ export async function generateMetadata({
 }
 
 export default async function BundlePage({ params }: BundlePageProps) {
-  const bundle = await getBundle((await params).uuid).catch(() => null);
-  if (!bundle) notFound();
+  let bundle;
+  try {
+    bundle = await getBundle((await params).uuid);
+  } catch (error) {
+    if (error instanceof ValorantApiError && error.status === 404) notFound();
+    throw error;
+  }
 
   const descriptions = [
     bundle.displayNameSubText,

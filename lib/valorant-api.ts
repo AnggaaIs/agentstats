@@ -7,6 +7,16 @@ interface ApiEnvelope<T> {
   status: number;
 }
 
+export class ValorantApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "ValorantApiError";
+  }
+}
+
 export interface Agent {
   uuid: string;
   displayName: string;
@@ -218,17 +228,39 @@ async function getApiData<T>(
   );
 
   if (!response.ok) {
-    throw new Error(
-      `Valorant API request failed with status ${response.status}`,
+    throw new ValorantApiError(
+      response.status === 404
+        ? "The requested Valorant content was not found."
+        : "Valorant content is temporarily unavailable.",
+      response.status,
     );
   }
 
   const payload = (await response.json()) as ApiEnvelope<T>;
+  if (payload.data === undefined || payload.data === null) {
+    throw new ValorantApiError(
+      "Valorant content returned an invalid response.",
+      502,
+    );
+  }
   return payload.data;
 }
 
+function requireNonEmpty<T>(items: T[], label: string): T[] {
+  if (items.length === 0) {
+    throw new ValorantApiError(
+      `Valorant returned an empty ${label} catalog.`,
+      502,
+    );
+  }
+  return items;
+}
+
 export async function getAgents(): Promise<Agent[]> {
-  return getApiData<Agent[]>("/agents?isPlayableCharacter=true");
+  return requireNonEmpty(
+    await getApiData<Agent[]>("/agents?isPlayableCharacter=true"),
+    "agent",
+  );
 }
 
 export async function getAgent(uuid: string): Promise<Agent> {
@@ -237,7 +269,10 @@ export async function getAgent(uuid: string): Promise<Agent> {
 
 export async function getWeapons(): Promise<Weapon[]> {
   // The full weapon index includes every skin and exceeds Next.js' 2 MB fetch cache limit.
-  return getApiData<Weapon[]>("/weapons", false);
+  return requireNonEmpty(
+    await getApiData<Weapon[]>("/weapons", false),
+    "weapon",
+  );
 }
 
 export async function getWeapon(uuid: string): Promise<Weapon> {
@@ -262,7 +297,10 @@ export async function getWeaponSkinChroma(
 
 export async function getMaps(): Promise<ValorantMap[]> {
   const maps = await getApiData<ValorantMap[]>("/maps");
-  return maps.filter((map) => map.splash && map.displayName !== "The Range");
+  return requireNonEmpty(
+    maps.filter((map) => map.splash && map.displayName !== "The Range"),
+    "map",
+  );
 }
 
 export async function getMap(uuid: string): Promise<ValorantMap> {

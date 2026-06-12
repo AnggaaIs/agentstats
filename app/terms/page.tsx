@@ -44,6 +44,31 @@ export default function TermsPage() {
         withdrawn when necessary to protect the service, its users, or others.
       </p>
 
+      <h2>Riot Sign On and gameplay data</h2>
+      <p>
+        Connecting a Riot account requires an explicit agreement that
+        AgentStats may verify your Riot identity, retrieve your recent match
+        data, create statistics for your private account experience, and use
+        your own pseudonymized observations in aggregate features such as
+        agent pick and win rates, competitive picks by rank, performance
+        averages, and map frequency.
+      </p>
+      <p>
+        Match composition may also be used for non-player-specific aggregate
+        statistics. For players in the same match who have not connected
+        AgentStats, only minimal pseudonymized context such as agent pick, rank
+        tier, team result, queue, and map is retained. Their Riot ID and
+        personal performance statistics are not published or retained for
+        those aggregates.
+      </p>
+      <p>
+        This processing permission is required to use Riot Sign On. It does not
+        make your profile public. Publishing your Riot ID, recent matches, and
+        player-specific statistics is a separate optional setting. You can
+        remove public access by making the profile private, or withdraw from
+        the linked-data service by disconnecting and deleting the account.
+      </p>
+
       <h2>Your responsibilities</h2>
       <p>
         You are responsible for the searches and actions you make through

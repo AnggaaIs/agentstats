@@ -48,6 +48,21 @@ export default function DisclaimerPage() {
         as publicly available merely because a Riot ID can be found.
       </p>
 
+      <h2>Aggregate statistics</h2>
+      <p>
+        Pick rates, win rates, competitive picks by rank, performance averages,
+        and map frequency are estimates from the available sample of consenting
+        AgentStats users. They do not represent every Valorant player or match,
+        and small or uneven samples can produce unstable results. These metrics
+        should be read with the sample counts shown by the service.
+      </p>
+      <p>
+        Agent pick, rank, team-result, and map aggregates may include minimal
+        match context from other participants in a consenting user&apos;s match.
+        Player-specific profiles and performance statistics still require that
+        player&apos;s own opt-in.
+      </p>
+
       <h2>No official or professional advice</h2>
       <p>
         AgentStats is for general information and entertainment. It does not

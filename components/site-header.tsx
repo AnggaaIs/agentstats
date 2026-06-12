@@ -95,6 +95,10 @@ export function SiteHeader({ statusNotice, account }: SiteHeaderProps) {
               <RouteLink
                 href={account.href}
                 current={pathname === account.href}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setStatusOpen(false);
+                }}
                 className="valorant-action hidden min-h-10 max-w-44 items-center border border-white/15 px-4 text-xs font-black uppercase tracking-[0.12em] sm:inline-flex"
               >
                 <span className="responsive-text truncate">{account.label}</span>
@@ -128,7 +132,7 @@ export function SiteHeader({ statusNotice, account }: SiteHeaderProps) {
                   <section
                     id="riot-status-panel"
                     aria-label="Riot service status"
-                  className="motion-pop fixed left-4 right-4 top-[4.25rem] z-50 border border-black/10 bg-[#f5f3f0] p-5 text-[#38383b] shadow-2xl shadow-black/50 sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.65rem)] sm:w-[21rem]"
+                    className="motion-pop fixed left-4 right-4 top-[4.25rem] z-50 border border-black/10 bg-[#f5f3f0] p-5 text-[#38383b] shadow-2xl shadow-black/50 sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.65rem)] sm:w-[21rem]"
                   >
                     <span
                       aria-hidden="true"
@@ -226,6 +230,16 @@ export function SiteHeader({ statusNotice, account }: SiteHeaderProps) {
                   {item.label}
                 </RouteLink>
               ))}
+              {account ? (
+                <RouteLink
+                  href={account.href}
+                  current={pathname === account.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="valorant-action col-span-2 flex min-h-12 items-center justify-center bg-[var(--panel)] px-4 text-xs font-black uppercase tracking-[0.12em] text-white sm:hidden"
+                >
+                  {account.label}
+                </RouteLink>
+              ) : null}
             </div>
           </nav>
         ) : null}

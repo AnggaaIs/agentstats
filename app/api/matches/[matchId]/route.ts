@@ -1,6 +1,7 @@
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { REGIONS, type Region } from "@/lib/constants";
-import { canViewMatch } from "@/lib/player-access";
+import { redactMatch } from "@/lib/match-privacy";
+import { getMatchAccess } from "@/lib/player-access";
 import { getMatch, RiotApiError } from "@/lib/riot";
 
 function isRegion(value: string | null): value is Region {
@@ -20,10 +21,15 @@ export async function GET(
 
   try {
     const match = await getMatch(matchId, region);
-    if (!(await canViewMatch(match))) {
+    const access = await getMatchAccess(match);
+    if (!access.canView) {
       return apiError("This match is private.", 403);
     }
-    return apiSuccess(match);
+    return apiSuccess(
+      access.canSeeFullScoreboard
+        ? match
+        : redactMatch(match, access.publicPuuids),
+    );
   } catch (error) {
     if (error instanceof RiotApiError) {
       return apiError(error.message, error.status);

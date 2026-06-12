@@ -28,6 +28,7 @@ import { getAgent, getMap, getWeapon } from "@/lib/valorant-api";
 const DEVICE_CHANGES_PER_DAY = 40;
 const NETWORK_VOTES_PER_HOUR = 120;
 const NETWORK_DEVICES_PER_HOUR = 60;
+const MAX_VOTE_BODY_BYTES = 1_024;
 
 class VoteLimitError extends Error {
   constructor(
@@ -103,6 +104,32 @@ function getCredential(request: NextRequest) {
   return { credential, token: createdToken };
 }
 
+async function readVoteBody(request: NextRequest): Promise<unknown> {
+  if (!request.body) throw new Error("Missing request body.");
+
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let body = "";
+  let totalBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_VOTE_BODY_BYTES) {
+        throw new VoteLimitError("The vote request is too large.", 0);
+      }
+      body += decoder.decode(value, { stream: true });
+    }
+    body += decoder.decode();
+  } finally {
+    reader.releaseLock();
+  }
+
+  return JSON.parse(body);
+}
+
 export async function GET(request: NextRequest) {
   const parsedCategory = favoriteCategorySchema.safeParse(
     request.nextUrl.searchParams.get("category"),
@@ -154,14 +181,17 @@ export async function POST(request: NextRequest) {
     return apiError("This vote could not be verified.", 403);
   }
 
-  if (contentLength > 1_024) {
+  if (contentLength > MAX_VOTE_BODY_BYTES) {
     return apiError("The vote request is too large.", 413);
   }
 
   let body: unknown;
   try {
-    body = await request.json();
-  } catch {
+    body = await readVoteBody(request);
+  } catch (error) {
+    if (error instanceof VoteLimitError) {
+      return apiError(error.message, 413);
+    }
     return apiError("The vote request is not valid.", 400);
   }
 

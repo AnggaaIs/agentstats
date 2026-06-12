@@ -123,7 +123,7 @@ export function CommunityLeaderboard({
 
       <div
         className="grid max-w-2xl grid-cols-4 border border-white/12"
-        role="tablist"
+        role="group"
         aria-label="Community favorite categories"
       >
         {(Object.keys(CATEGORY_LABELS) as CommunityLeaderboardCategory[]).map(
@@ -131,8 +131,7 @@ export function CommunityLeaderboard({
             <button
               key={item}
               type="button"
-              role="tab"
-              aria-selected={category === item}
+              aria-pressed={category === item}
               onClick={() => setCategory(item)}
               className={`valorant-action min-h-10 border-r border-white/12 px-2 text-[10px] font-black uppercase tracking-[0.08em] last:border-r-0 sm:px-4 sm:text-[11px] sm:tracking-[0.11em] ${
                 category === item
@@ -147,7 +146,7 @@ export function CommunityLeaderboard({
       </div>
 
       <section
-        role="tabpanel"
+        aria-live="polite"
         className="border-x border-b border-white/12 bg-[#10161d]"
       >
         {category === "agent" ? (

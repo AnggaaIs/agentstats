@@ -20,12 +20,28 @@ export interface MatchSummary {
   kills: number;
   deaths: number;
   assists: number;
+  rounds: number;
   acs: number;
   headshotRate: number;
   damagePerRound: number;
   damageDelta: number;
   firstBloods: number;
+  firstDeaths: number;
   competitiveTier: number | null;
+}
+
+export interface PlayerFormWindow {
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  kd: number;
+  averageAcs: number;
+  averageDamagePerRound: number;
 }
 
 export interface PlayerSummary {
@@ -74,6 +90,31 @@ export interface PlayerSummary {
     quads: number;
     aces: number;
   };
+  openingDuels: {
+    wins: number;
+    losses: number;
+    total: number;
+    winRate: number;
+    net: number;
+  };
+  trades: {
+    trackedDeaths: number;
+    tradedDeaths: number;
+    tradeRate: number;
+  };
+  recentForm: {
+    recent: PlayerFormWindow;
+    previous: PlayerFormWindow | null;
+    winRateDelta: number | null;
+    kdDelta: number | null;
+    acsDelta: number | null;
+    damageDelta: number | null;
+  };
+  resultSplits: Array<
+    PlayerFormWindow & {
+      result: MatchSummary["result"];
+    }
+  >;
   bestMatch: MatchSummary | null;
   consistency: number;
   accountLevel: number | null;
@@ -135,6 +176,46 @@ export interface PlayerSummary {
   }>;
 }
 
+function summarizeMatches(matches: MatchSummary[]): PlayerFormWindow {
+  let wins = 0;
+  let losses = 0;
+  let draws = 0;
+  let kills = 0;
+  let deaths = 0;
+  let assists = 0;
+  let rounds = 0;
+  let score = 0;
+  let damage = 0;
+
+  for (const match of matches) {
+    if (match.result === "WIN") wins += 1;
+    if (match.result === "LOSS") losses += 1;
+    if (match.result === "DRAW") draws += 1;
+    kills += match.kills;
+    deaths += match.deaths;
+    assists += match.assists;
+    rounds += match.rounds;
+    score += match.acs * match.rounds;
+    damage += match.damagePerRound * match.rounds;
+  }
+
+  const games = matches.length;
+
+  return {
+    games,
+    wins,
+    losses,
+    draws,
+    winRate: games === 0 ? 0 : (wins / games) * 100,
+    kills,
+    deaths,
+    assists,
+    kd: deaths === 0 ? kills : kills / deaths,
+    averageAcs: rounds === 0 ? 0 : score / rounds,
+    averageDamagePerRound: rounds === 0 ? 0 : damage / rounds,
+  };
+}
+
 function findMapName(mapId: string, maps: ValorantMap[]): string {
   return (
     maps.find(
@@ -160,11 +241,13 @@ export function buildPlayerSummary(
   let assists = 0;
   let score = 0;
   let rounds = 0;
-  let headshotRateTotal = 0;
   let damage = 0;
   let damageReceived = 0;
   let kastRounds = 0;
   let firstBloods = 0;
+  let firstDeaths = 0;
+  let trackedDeaths = 0;
+  let tradedDeaths = 0;
   let aces = 0;
   let playtimeMillis = 0;
   let roundWins = 0;
@@ -239,15 +322,19 @@ export function buildPlayerSummary(
   const summaries: MatchSummary[] = [];
 
   for (const match of matches) {
+    if (!match.matchInfo.isCompleted) continue;
+
     const participant = match.players.find((player) => player.puuid === puuid);
     if (!participant?.stats) continue;
 
     const team = match.teams.find((item) => item.teamId === participant.teamId);
     const opponent = match.teams.find((item) => item.teamId !== participant.teamId);
+    if (!team || !opponent) continue;
+
     const result =
-      team?.roundsWon === opponent?.roundsWon
+      team.roundsWon === opponent.roundsWon
         ? "DRAW"
-        : team?.won
+        : team.won
           ? "WIN"
           : "LOSS";
     const agent = agents.find(
@@ -259,6 +346,7 @@ export function buildPlayerSummary(
     let participantDamageReceived = 0;
     let matchKastRounds = 0;
     let matchFirstBloods = 0;
+    let matchFirstDeaths = 0;
     const teamByPuuid = new Map(
       match.players.map((player) => [player.puuid, player.teamId]),
     );
@@ -309,6 +397,8 @@ export function buildPlayerSummary(
       if (ownKills.length > 0 || assisted || survived || traded) {
         matchKastRounds += 1;
       }
+      if (death) trackedDeaths += 1;
+      if (traded) tradedDeaths += 1;
       if (ownKills.length === 2) doubles += 1;
       if (ownKills.length === 3) triples += 1;
       if (ownKills.length === 4) quads += 1;
@@ -332,6 +422,7 @@ export function buildPlayerSummary(
         null,
       );
       if (firstKill?.killer === puuid) matchFirstBloods += 1;
+      if (firstKill?.victim === puuid) matchFirstDeaths += 1;
       if (death) {
         const killer = encounterTotals.get(death.killer);
         if (killer) killer.deaths += 1;
@@ -387,11 +478,11 @@ export function buildPlayerSummary(
     assists += participant.stats.assists;
     score += participant.stats.score;
     rounds += participant.stats.roundsPlayed;
-    headshotRateTotal += headshotRate;
     damage += participantDamage;
     damageReceived += participantDamageReceived;
     kastRounds += matchKastRounds;
     firstBloods += matchFirstBloods;
+    firstDeaths += matchFirstDeaths;
     playtimeMillis += participant.stats.playtimeMillis;
     accountLevel ??= participant.accountLevel ?? null;
     competitiveTier ??= participant.competitiveTier ?? null;
@@ -449,10 +540,11 @@ export function buildPlayerSummary(
       agentName: agent?.displayName ?? "Unknown agent",
       agentIcon: agent?.displayIcon ?? null,
       result,
-      score: `${team?.roundsWon ?? 0} – ${opponent?.roundsWon ?? 0}`,
+      score: `${team.roundsWon} – ${opponent.roundsWon}`,
       kills: participant.stats.kills,
       deaths: participant.stats.deaths,
       assists: participant.stats.assists,
+      rounds: participant.stats.roundsPlayed,
       acs,
       headshotRate,
       damagePerRound:
@@ -465,6 +557,7 @@ export function buildPlayerSummary(
           : (participantDamage - participantDamageReceived) /
             participant.stats.roundsPlayed,
       firstBloods: matchFirstBloods,
+      firstDeaths: matchFirstDeaths,
       competitiveTier: participant.competitiveTier ?? null,
     });
 
@@ -486,11 +579,15 @@ export function buildPlayerSummary(
   const games = summaries.length;
   const hitTotal = headHits + bodyHits + legHits;
   const averageAcs = rounds === 0 ? 0 : score / rounds;
+  const averageMatchAcs =
+    games === 0
+      ? 0
+      : summaries.reduce((total, match) => total + match.acs, 0) / games;
   const acsVariance =
     games === 0
       ? 0
       : summaries.reduce(
-          (total, match) => total + (match.acs - averageAcs) ** 2,
+          (total, match) => total + (match.acs - averageMatchAcs) ** 2,
           0,
         ) / games;
   const agentRows = [...agentTotals.values()]
@@ -514,6 +611,21 @@ export function buildPlayerSummary(
       averageAcs: map.rounds === 0 ? 0 : map.score / map.rounds,
     }))
     .sort((a, b) => b.games - a.games);
+  const recentMatches = summaries.slice(0, 5);
+  const previousMatches = summaries.slice(5, 10);
+  const recentForm = summarizeMatches(recentMatches);
+  const previousForm =
+    previousMatches.length > 0 ? summarizeMatches(previousMatches) : null;
+  const openingDuelTotal = firstBloods + firstDeaths;
+  const resultOrder: MatchSummary["result"][] = ["WIN", "LOSS", "DRAW"];
+  const resultSplits = resultOrder
+    .map((result) => ({
+      result,
+      ...summarizeMatches(
+        summaries.filter((match) => match.result === result),
+      ),
+    }))
+    .filter((split) => split.games > 0);
 
   return {
     games,
@@ -526,7 +638,8 @@ export function buildPlayerSummary(
     assists,
     kd: deaths === 0 ? kills : kills / deaths,
     averageAcs,
-    averageHeadshotRate: games === 0 ? 0 : headshotRateTotal / games,
+    averageHeadshotRate:
+      hitTotal === 0 ? 0 : (headHits / hitTotal) * 100,
     averageDamagePerRound: rounds === 0 ? 0 : damage / rounds,
     rounds,
     kad: deaths === 0 ? kills + assists : (kills + assists) / deaths,
@@ -559,6 +672,36 @@ export function buildPlayerSummary(
       legPercent: hitTotal === 0 ? 0 : (legHits / hitTotal) * 100,
     },
     multiKills: { doubles, triples, quads, aces },
+    openingDuels: {
+      wins: firstBloods,
+      losses: firstDeaths,
+      total: openingDuelTotal,
+      winRate:
+        openingDuelTotal === 0 ? 0 : (firstBloods / openingDuelTotal) * 100,
+      net: firstBloods - firstDeaths,
+    },
+    trades: {
+      trackedDeaths,
+      tradedDeaths,
+      tradeRate:
+        trackedDeaths === 0 ? 0 : (tradedDeaths / trackedDeaths) * 100,
+    },
+    recentForm: {
+      recent: recentForm,
+      previous: previousForm,
+      winRateDelta: previousForm
+        ? recentForm.winRate - previousForm.winRate
+        : null,
+      kdDelta: previousForm ? recentForm.kd - previousForm.kd : null,
+      acsDelta: previousForm
+        ? recentForm.averageAcs - previousForm.averageAcs
+        : null,
+      damageDelta: previousForm
+        ? recentForm.averageDamagePerRound -
+          previousForm.averageDamagePerRound
+        : null,
+    },
+    resultSplits,
     bestMatch:
       summaries.reduce<MatchSummary | null>(
         (best, match) => (!best || match.acs > best.acs ? match : best),

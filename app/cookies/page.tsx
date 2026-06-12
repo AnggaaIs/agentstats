@@ -38,6 +38,13 @@ export default function CookiesPage() {
         protect the authorization callback.
       </p>
       <p>
+        Before Riot Sign On begins, AgentStats sets a strictly necessary,
+        HTTP-only consent cookie for up to ten minutes. It links the legal and
+        gameplay-data acceptance recorded immediately before sign-in to the
+        Riot account that completes the callback. It is deleted after the
+        connection is processed or expires automatically.
+      </p>
+      <p>
         The service uses browser storage, which is different from a cookie, to
         keep up to five recent player searches on your device. This helps you
         return to a previous search. The list is not used for advertising or

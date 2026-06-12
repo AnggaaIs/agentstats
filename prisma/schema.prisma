@@ -30,6 +30,11 @@ enum MatchResult {
   DRAW
 }
 
+enum ObservationScope {
+  SELF
+  MATCH_CONTEXT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -156,6 +161,7 @@ model AgentMatchObservation {
   sourceUserId    String
   matchId         String
   participantHash String
+  scope           ObservationScope @default(SELF)
   region          String
   actId           String?
   queueId         String
@@ -188,6 +194,7 @@ model AgentMatchObservation {
 
   @@unique([matchId, participantHash])
   @@index([sourceUserId, matchStartedAt])
+  @@index([scope, actId, queueId])
   @@index([actId, queueId, region])
   @@index([agentId, actId])
   @@index([matchStartedAt])

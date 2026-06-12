@@ -55,7 +55,10 @@ export default async function LeaderboardPage({
   const leaderboard = await getLeaderboard(region, act.uuid);
   const distribution = buildRankDistribution(leaderboard, competitiveTiers);
   const perPage = 25;
-  const totalPages = Math.ceil(leaderboard.players.length / perPage);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(leaderboard.players.length / perPage),
+  );
   const page = Math.min(
     totalPages,
     Math.max(1, Number.isInteger(requestedPage) ? requestedPage : 1),
@@ -115,7 +118,7 @@ export default async function LeaderboardPage({
             </tr>
           </thead>
           <tbody>
-            {players.map((player) => {
+            {players.length ? players.map((player) => {
               const tier = getCompetitiveTier(
                 player.competitiveTier,
                 competitiveTiers,
@@ -160,7 +163,16 @@ export default async function LeaderboardPage({
                 </td>
               </tr>
               );
-            })}
+            }) : (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="p-8 text-center text-sm text-[var(--muted)]"
+                >
+                  Riot returned no ranked players for this region and Act.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

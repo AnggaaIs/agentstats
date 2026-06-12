@@ -67,6 +67,9 @@ export default async function WeaponComparisonPage({
         }
       : null,
   }));
+  if (comparisonWeapons.length === 0) {
+    throw new Error("The weapon catalog is currently empty.");
+  }
   const weaponIds = new Set(comparisonWeapons.map((weapon) => weapon.uuid));
   const vandal =
     comparisonWeapons.find((weapon) => weapon.name === "Vandal") ??

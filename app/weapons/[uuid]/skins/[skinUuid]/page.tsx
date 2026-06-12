@@ -6,9 +6,13 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
 import { VideoPreviewModal } from "@/components/video-preview-modal";
-import { getCurrentFavorites } from "@/lib/community";
+import { getCurrentFavoritesOrEmpty } from "@/lib/community";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
-import { getContentTiers, getWeapon } from "@/lib/valorant-api";
+import {
+  getContentTiers,
+  getWeapon,
+  ValorantApiError,
+} from "@/lib/valorant-api";
 
 interface SkinPageProps {
   params: Promise<{ uuid: string; skinUuid: string }>;
@@ -58,14 +62,20 @@ export async function generateMetadata({
 
 export default async function SkinPage({ params }: SkinPageProps) {
   const { uuid, skinUuid } = await params;
-  const [weapon, contentTiers, favorites] = await Promise.all([
-    getWeapon(uuid).catch(() => null),
+  let weapon;
+  try {
+    weapon = await getWeapon(uuid);
+  } catch (error) {
+    if (error instanceof ValorantApiError && error.status === 404) notFound();
+    throw error;
+  }
+  const [contentTiers, favorites] = await Promise.all([
     getContentTiers(),
-    getCurrentFavorites(),
+    getCurrentFavoritesOrEmpty(),
   ]);
   const skin = weapon?.skins.find((item) => item.uuid === skinUuid);
 
-  if (!weapon || !skin) notFound();
+  if (!skin) notFound();
 
   const tier = contentTiers.find(
     (item) => item.uuid === skin.contentTierUuid,

@@ -24,6 +24,12 @@ export default function LegalOverviewPage() {
         documents describe the service as it operates today. They may be
         updated when features, providers, or legal requirements change.
       </p>
+      <p>
+        Riot Sign On requires permission to process the connecting
+        player&apos;s own match data for private player tools and pseudonymized
+        aggregate analytics. Making a profile public remains a separate,
+        optional choice.
+      </p>
 
       <div className="mt-8 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">
         {LEGAL_LINKS.filter((item) => item.href !== "/legal").map((item) => (

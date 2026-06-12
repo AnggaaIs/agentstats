@@ -19,7 +19,9 @@ The repository currently implements the public product foundation:
   pick rate, win rate, K/D, ACS, ADR, HS%, KAST, DDΔ, and first bloods from
   eligible match observations
 - Full agent meta and map-frequency pages, including tracked player counts and
-  per-mode map appearance rates from the same opt-in match sample pipeline
+  per-rank agent leaders, most-picked agents per map for eligible selection
+  modes, per-mode map appearance rates, and sample-size context from the same
+  opt-in match pipeline
 - Dedicated Riot platform status page covering every supported region
 - Historical Act selection and exact Immortal/Radiant ladder distribution by
   region on the competitive leaderboard
@@ -30,8 +32,10 @@ The repository currently implements the public product foundation:
   self-service disconnection
 - Expanded opt-in player profiles with recent rank observation, account level,
   ACS trend, KAST, KAD, damage delta, hit distribution, round and economy
-  detail, first bloods, multi-kills, match filters, recurring encounters,
-  personal review cues, and agent, map, and finishing-weapon reports
+  detail, first bloods and deaths, opening-duel and trade impact, recent-form
+  comparisons, win/loss performance splits, multi-kills, match filters,
+  recurring encounters, personal review cues, and agent, map, and
+  finishing-weapon reports
 - Consistent loading, error, and not-found states
 - Server-side Riot API client boundary and validated route handlers
 - Accessible navigation, form controls, focus states, and reduced-motion support
@@ -48,9 +52,12 @@ derived statistics. Before public production, AgentStats must be registered in
 the Riot Developer Portal, its product description must match the deployed
 features, and the RSO flow must enforce player consent. Community favorites use
 the configured PostgreSQL database and do not require a Riot account.
-Agent meta is aggregated from matches shared by consenting public profiles; all
-participants in those matches can contribute to agent-level statistics, but the
-landing-page meta table does not expose those participants' Riot IDs.
+Agent meta uses two data scopes. A consenting RSO user's own observation can
+support aggregate performance metrics. Other participants in the same match
+contribute only minimal, pseudonymized match context such as agent pick, rank
+bucket, team result, queue, and map. Their Riot IDs and personal performance
+statistics are not stored or exposed. Public profile visibility is a separate,
+optional setting.
 
 ## Riot Sign On
 

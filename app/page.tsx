@@ -42,13 +42,19 @@ function formatObservedAt(value: Date | null): string {
 }
 
 export default async function HomePage() {
-  const [agents, maps, version, currentAct] = await Promise.all([
+  const [agents, maps, versionResult, currentAct] = await Promise.all([
     getAgents(),
     getMaps(),
-    getValorantVersion(),
+    getValorantVersion().then(
+      (value) => ({ status: "fulfilled" as const, value }),
+      () => ({ status: "rejected" as const }),
+    ),
     getCurrentAct().catch(() => null),
   ]);
-  const patchVersion = version.branch.replace("release-", "");
+  const patchVersion =
+    versionResult.status === "fulfilled"
+      ? versionResult.value.branch.replace("release-", "")
+      : "Unavailable";
   const [agentMeta, mapMeta] = await Promise.all([
     getAgentMetaDataset(agents, currentAct?.uuid).catch(() =>
       buildEmptyAgentMetaDataset(agents),
@@ -276,12 +282,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[86rem] px-4 py-9 sm:px-6 lg:px-8 lg:py-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="eyebrow">Map frequency</p>
+              <p className="eyebrow">Map intelligence</p>
               <h2 className="mt-3 font-display text-3xl font-black uppercase tracking-[-0.05em]">
-                Maps by mode
+                Maps and agent picks
               </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-                Real match-map samples by queue. No catalog-only maps.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                See map frequency by queue and the agents most often selected
+                on each battlefield.
               </p>
             </div>
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -336,7 +343,7 @@ export default async function HomePage() {
             href="/maps/meta"
             className="valorant-action mt-4 inline-flex min-h-10 items-center border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
           >
-            Full map frequency
+            Explore map intelligence
           </RouteLink>
         </div>
       </section>
