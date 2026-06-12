@@ -30,6 +30,13 @@ export default function LegalOverviewPage() {
         aggregate analytics. Making a profile public remains a separate,
         optional choice.
       </p>
+      <p>
+        Authenticated players can also create improvement plans and private
+        match journals, publish revocable performance snapshots, and join
+        invite-only team workspaces. Publishing a report and joining a team are
+        separate actions; connecting a Riot account does not enable either one
+        automatically.
+      </p>
 
       <div className="mt-8 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">
         {LEGAL_LINKS.filter((item) => item.href !== "/legal").map((item) => (

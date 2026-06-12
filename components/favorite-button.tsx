@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-import type { FavoriteCategoryName } from "@/lib/community";
+import type {
+  CommunityCount,
+  FavoriteCategoryName,
+} from "@/lib/community";
+import { formatCompactNumber } from "@/lib/format-number";
 
 interface FavoriteButtonProps {
   category: FavoriteCategoryName;
@@ -11,10 +15,12 @@ interface FavoriteButtonProps {
   targetName: string;
   selected: boolean;
   selectedTargetId?: string | null;
+  voteCount?: number;
   onChange?: (
     targetId: string | null,
     scopeKey: string,
     phase: "optimistic" | "confirmed" | "rollback",
+    counts?: CommunityCount[],
   ) => void;
   className?: string;
   appearance?: "standard" | "compact" | "responsive";
@@ -23,6 +29,7 @@ interface FavoriteButtonProps {
 interface VoteResponse {
   data: {
     selectedTargetId?: string | null;
+    counts?: CommunityCount[];
   } | null;
   error: string | null;
 }
@@ -34,6 +41,7 @@ export function FavoriteButton({
   targetName,
   selected,
   selectedTargetId,
+  voteCount,
   onChange,
   className = "",
   appearance = "standard",
@@ -42,7 +50,11 @@ export function FavoriteButton({
   const [message, setMessage] = useState("");
   const [failed, setFailed] = useState(false);
   const [internalSelected, setInternalSelected] = useState(selected);
+  const [voteCountOverride, setVoteCountOverride] = useState<number | null>(
+    null,
+  );
   const isSelected = onChange ? selected : internalSelected;
+  const displayedVoteCount = voteCountOverride ?? voteCount ?? 0;
 
   async function updateFavorite() {
     if (pending) return;
@@ -60,6 +72,9 @@ export function FavoriteButton({
     setFailed(false);
     onChange?.(optimisticTarget, scopeKey, "optimistic");
     setInternalSelected(Boolean(optimisticTarget));
+    setVoteCountOverride(
+      Math.max(0, displayedVoteCount + (isSelected ? -1 : 1)),
+    );
 
     try {
       const response = await fetch(
@@ -85,14 +100,27 @@ export function FavoriteButton({
         setFailed(true);
         onChange?.(previousTarget, scopeKey, "rollback");
         setInternalSelected(previousTarget === targetId);
+        setVoteCountOverride(null);
         return;
       }
 
       const confirmedTarget = isSelected
         ? null
         : (payload.data?.selectedTargetId ?? targetId);
-      onChange?.(confirmedTarget, scopeKey, "confirmed");
+      const confirmedCount =
+        payload.data?.counts?.find((count) => count.targetId === targetId)
+          ?.votes ??
+        (isSelected
+          ? Math.max(0, (voteCount ?? 0) - 1)
+          : (voteCount ?? 0) + 1);
+      onChange?.(
+        confirmedTarget,
+        scopeKey,
+        "confirmed",
+        payload.data?.counts,
+      );
       setInternalSelected(confirmedTarget === targetId);
+      setVoteCountOverride(confirmedCount);
       setMessage(
         isSelected
           ? `${targetName} was removed from your favorites.`
@@ -103,6 +131,7 @@ export function FavoriteButton({
       setFailed(true);
       onChange?.(previousTarget, scopeKey, "rollback");
       setInternalSelected(previousTarget === targetId);
+      setVoteCountOverride(null);
     } finally {
       setPending(false);
     }
@@ -115,17 +144,13 @@ export function FavoriteButton({
         disabled={pending}
         aria-busy={pending}
         aria-pressed={isSelected}
-        aria-label={
-          isSelected
-            ? `Remove ${targetName} as your favorite ${category}`
-            : `Choose ${targetName} as your favorite ${category}`
-        }
+        aria-label={`${isSelected ? "Remove" : "Choose"} ${targetName} as your favorite ${category}. ${displayedVoteCount} community ${displayedVoteCount === 1 ? "favorite" : "favorites"}.`}
         onClick={updateFavorite}
         className={`favorite-action valorant-action inline-flex items-center justify-center border font-black uppercase disabled:cursor-wait disabled:opacity-60 ${
           appearance === "compact"
-            ? "size-11 p-0"
+            ? "min-h-11 min-w-11 gap-1.5 px-2"
             : appearance === "responsive"
-              ? "size-10 p-0 sm:min-h-11 sm:w-auto sm:gap-2 sm:px-4 sm:text-[11px] sm:tracking-[0.13em]"
+              ? "min-h-10 min-w-12 gap-1.5 px-2 sm:min-h-11 sm:gap-2 sm:px-4 sm:text-[11px] sm:tracking-[0.13em]"
             : "min-h-11 gap-2 px-4 text-[11px] tracking-[0.13em]"
         } ${
           isSelected
@@ -169,6 +194,13 @@ export function FavoriteButton({
                 : "Set as favorite"}
           </span>
         )}
+        <span
+          aria-hidden="true"
+          title={`${displayedVoteCount.toLocaleString()} community favorites`}
+          className="font-mono text-[10px] font-black lowercase tracking-[-0.02em] tabular-nums sm:text-[11px]"
+        >
+          {formatCompactNumber(displayedVoteCount)}
+        </span>
       </button>
       <span
         className={

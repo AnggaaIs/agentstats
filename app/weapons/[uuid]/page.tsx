@@ -6,7 +6,10 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
-import { getCurrentFavoritesOrEmpty } from "@/lib/community";
+import {
+  getCommunityCountsOrEmpty,
+  getCurrentFavoritesOrEmpty,
+} from "@/lib/community";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
 import {
   getContentTiers,
@@ -46,12 +49,22 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
   let weapon;
   let favorites;
   let contentTiers;
+  let weaponFavoriteCounts;
+  let skinFavoriteCounts;
 
   try {
-    [weapon, favorites, contentTiers] = await Promise.all([
+    [
+      weapon,
+      favorites,
+      contentTiers,
+      weaponFavoriteCounts,
+      skinFavoriteCounts,
+    ] = await Promise.all([
       getWeapon(uuid),
       getCurrentFavoritesOrEmpty(),
       getContentTiers(),
+      getCommunityCountsOrEmpty("weapon"),
+      getCommunityCountsOrEmpty("skin"),
     ]);
   } catch (error) {
     if (error instanceof ValorantApiError && error.status === 404) notFound();
@@ -98,6 +111,11 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
               targetId={weapon.uuid}
               targetName={weapon.displayName}
               selected={favorites.weapon === weapon.uuid}
+              voteCount={
+                weaponFavoriteCounts.find(
+                  (count) => count.targetId === weapon.uuid,
+                )?.votes ?? 0
+              }
             />
           </div>
         </div>
@@ -216,6 +234,7 @@ export default async function WeaponPage({ params }: WeaponPageProps) {
           searchPlaceholder="Search this skin collection"
           favoriteCategory="skin"
           initialFavoriteIds={favorites.skin}
+          initialFavoriteCounts={skinFavoriteCounts}
         />
       </section>
     </article>

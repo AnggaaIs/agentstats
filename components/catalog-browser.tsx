@@ -5,7 +5,10 @@ import { useMemo, useState } from "react";
 import { CatalogCard } from "@/components/catalog-card";
 import { ChoiceChip } from "@/components/choice-chip";
 import { FavoriteButton } from "@/components/favorite-button";
-import type { FavoriteCategoryName } from "@/lib/community";
+import type {
+  CommunityCount,
+  FavoriteCategoryName,
+} from "@/lib/community";
 
 export interface CatalogItem {
   id: string;
@@ -30,6 +33,7 @@ interface CatalogBrowserProps {
   searchPlaceholder?: string;
   favoriteCategory?: FavoriteCategoryName;
   initialFavoriteIds?: Record<string, string>;
+  initialFavoriteCounts?: CommunityCount[];
 }
 
 export function CatalogBrowser({
@@ -42,11 +46,17 @@ export function CatalogBrowser({
   searchPlaceholder = "Search collection",
   favoriteCategory,
   initialFavoriteIds = {},
+  initialFavoriteCounts = [],
 }: CatalogBrowserProps) {
   const [activeGroups, setActiveGroups] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [favoriteIds, setFavoriteIds] = useState(initialFavoriteIds);
+  const [favoriteCounts, setFavoriteCounts] = useState<Record<string, number>>(
+    Object.fromEntries(
+      initialFavoriteCounts.map((count) => [count.targetId, count.votes]),
+    ),
+  );
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
 
@@ -91,8 +101,35 @@ export function CatalogBrowser({
     setPage(1);
   }
 
-  function updateFavorite(targetId: string | null, scopeKey: string) {
+  function updateFavorite(
+    targetId: string | null,
+    scopeKey: string,
+    phase: "optimistic" | "confirmed" | "rollback",
+    counts?: CommunityCount[],
+  ) {
     setFavoriteIds((current) => {
+      const previousTargetId = current[scopeKey] ?? null;
+      if (phase === "confirmed" && counts) {
+        setFavoriteCounts(
+          Object.fromEntries(
+            counts.map((count) => [count.targetId, count.votes]),
+          ),
+        );
+      } else if (previousTargetId !== targetId) {
+        setFavoriteCounts((currentCounts) => {
+          const nextCounts = { ...currentCounts };
+          if (previousTargetId) {
+            nextCounts[previousTargetId] = Math.max(
+              0,
+              (nextCounts[previousTargetId] ?? 0) - 1,
+            );
+          }
+          if (targetId) {
+            nextCounts[targetId] = (nextCounts[targetId] ?? 0) + 1;
+          }
+          return nextCounts;
+        });
+      }
       const next = { ...current };
       if (targetId) next[scopeKey] = targetId;
       else delete next[scopeKey];
@@ -179,6 +216,7 @@ export function CatalogBrowser({
                       selectedTargetId={
                         favoriteIds[item.favoriteScope ?? "default"] ?? null
                       }
+                      voteCount={favoriteCounts[item.id] ?? 0}
                       onChange={updateFavorite}
                       appearance="compact"
                     />

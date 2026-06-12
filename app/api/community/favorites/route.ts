@@ -382,7 +382,19 @@ export async function DELETE(request: NextRequest) {
     return removed.count;
   });
 
-  const response = apiSuccess({ removed: result });
+  const counts = parsedCategory.success
+    ? await getCommunityCounts(parsedCategory.data)
+    : undefined;
+  const response = apiSuccess({
+    removed: result,
+    ...(counts
+      ? {
+          counts,
+          totalVotes: counts.reduce((sum, item) => sum + item.votes, 0),
+          selectedTargetId: null,
+        }
+      : {}),
+  });
   if (!parsedCategory.success) {
     response.cookies.delete(COMMUNITY_DEVICE_COOKIE);
   }

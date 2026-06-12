@@ -4,6 +4,7 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
 import {
   getCurrentFavoritesOrEmpty,
+  getCommunityCountsOrEmpty,
   toFavoriteScope,
 } from "@/lib/community";
 import { createMetadata } from "@/lib/seo";
@@ -17,9 +18,10 @@ export const metadata: Metadata = createMetadata({
 });
 
 export default async function AgentsPage() {
-  const [agents, favorites] = await Promise.all([
+  const [agents, favorites, favoriteCounts] = await Promise.all([
     getAgents(),
     getCurrentFavoritesOrEmpty(),
+    getCommunityCountsOrEmpty("agent"),
   ]);
 
   return (
@@ -54,6 +56,7 @@ export default async function AgentsPage() {
         searchPlaceholder="Search agents or roles"
         favoriteCategory="agent"
         initialFavoriteIds={favorites.agent}
+        initialFavoriteCounts={favoriteCounts}
       />
     </section>
   );

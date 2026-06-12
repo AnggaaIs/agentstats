@@ -185,7 +185,7 @@ export default async function LeaderboardPage({
 
               return (
                 <tr
-                  key={player.puuid}
+                  key={`${player.leaderboardRank}:${player.puuid}`}
                   className="group border-t border-white/8 transition hover:bg-[var(--accent)]/10"
                 >
                 <td className="p-5 font-mono text-[var(--accent)]">

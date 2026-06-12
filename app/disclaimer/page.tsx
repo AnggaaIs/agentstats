@@ -69,6 +69,13 @@ export default function DisclaimerPage() {
         provide official competitive rulings, account support, coaching,
         financial advice, betting advice, or any guarantee of gameplay results.
       </p>
+      <p>
+        Automated coaching findings, session comparisons, improvement targets,
+        and team summaries are inferences from limited available match data.
+        They can miss game context, communication, role assignments, connection
+        issues, or player intent and should not be treated as a definitive
+        evaluation of a player.
+      </p>
 
       <h2>Third-party services</h2>
       <p>

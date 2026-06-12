@@ -36,6 +36,20 @@ The repository currently implements the public product foundation:
   comparisons, win/loss performance splits, multi-kills, match filters,
   recurring encounters, personal review cues, and agent, map, and
   finishing-weapon reports
+- Advanced opt-in review insights covering round conversion, pistol rounds,
+  loadout efficiency, duel timing, consistency, agent-map combinations,
+  session progression, official ability-cast counters, personal baselines, and
+  privacy-thresholded rank-plus-agent cohort benchmarks
+- Responsive Recharts visualizations for match trends, round impact, economy,
+  duel timing, consistency, agent-map output, session progression, utility
+  distribution, and cohort comparison
+- Authenticated improvement workspace with evidence-based coaching,
+  post-session debriefs, measurable 7/14/30-day plans, and private per-match
+  journals
+- Revocable, expiring performance-report snapshots with optional Riot ID
+  anonymization and explicit publication consent
+- Opt-in team workspaces with invite-code membership, consent-aware aggregate
+  comparisons, bounded recent samples, and owner-controlled deletion
 - Consistent loading, error, and not-found states
 - Server-side Riot API client boundary and validated route handlers
 - Accessible navigation, form controls, focus states, and reduced-motion support

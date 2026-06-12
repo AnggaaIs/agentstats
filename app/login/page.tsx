@@ -70,6 +70,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               You can make the profile private without leaving aggregate
               analytics, or disconnect and delete your contribution.
             </li>
+            <li className="border-l-2 border-white/20 pl-4">
+              Private journals, shareable reports, and team workspaces are
+              optional tools that require separate actions after sign-in.
+            </li>
           </ul>
 
           {query.status === "consent-required" ? (
@@ -98,7 +102,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   recent match data, create my private player statistics, and
                   use my own pseudonymized match observations in aggregate
                   statistics such as agent pick and win rates, competitive
-                  picks by rank, and map frequency.
+                  picks by rank, and map frequency. I understand that optional
+                  journals, reports, and team sharing are controlled separately
+                  after connection.
                 </span>
               </label>
               <button

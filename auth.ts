@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { isRsoConfigured } from "@/lib/auth-config";
 import {
+  LEGAL_CONSENT_VERSION,
   LEGAL_CONSENT_COOKIE,
   PLAYER_DATA_CONSENT_VERSION,
 } from "@/lib/legal";
@@ -147,7 +148,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (
-            consent?.consentVersion === PLAYER_DATA_CONSENT_VERSION &&
+            consent?.consentVersion === LEGAL_CONSENT_VERSION &&
             !consent.linkedAt
           ) {
             const acceptedAt = new Date();

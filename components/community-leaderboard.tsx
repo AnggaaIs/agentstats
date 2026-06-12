@@ -10,6 +10,7 @@ import type {
   CommunityLeaderboardCategory,
   CurrentFavorites,
 } from "@/lib/community";
+import { formatCompactNumber } from "@/lib/format-number";
 
 export interface CommunityLeaderboardRow {
   id: string;
@@ -109,14 +110,18 @@ export function CommunityLeaderboard({
     <div className="mt-7">
       <p className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-xs">
         <span>
-          <span className="text-white">{participants}</span>{" "}
+          <span className="text-white" title={participants.toLocaleString()}>
+            {formatCompactNumber(participants)}
+          </span>{" "}
           {participants === 1 ? "participant" : "participants"}
         </span>
         <span aria-hidden="true" className="text-[var(--accent)]">
           /
         </span>
         <span>
-          <span className="text-white">{totalChoices}</span> active{" "}
+          <span className="text-white" title={totalChoices.toLocaleString()}>
+            {formatCompactNumber(totalChoices)}
+          </span>{" "}
           {totalChoices === 1 ? "choice" : "choices"}
         </span>
       </p>
@@ -179,7 +184,7 @@ export function CommunityLeaderboard({
                     />
                   ) : null}
                   <span className="ml-2 font-mono text-[10px] opacity-60">
-                    {agentTotals[role.scopeKey] ?? 0}
+                    {formatCompactNumber(agentTotals[role.scopeKey] ?? 0)}
                   </span>
                 </button>
               ))}
@@ -201,7 +206,7 @@ export function CommunityLeaderboard({
                 >
                   {skinGroups.map((group) => (
                     <option key={group.scopeKey} value={group.scopeKey}>
-                      {group.label} ({group.total})
+                      {group.label} ({formatCompactNumber(group.total)})
                     </option>
                   ))}
                 </select>
@@ -230,7 +235,8 @@ export function CommunityLeaderboard({
             </h2>
           </div>
           <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
-            {activeTotal} verified {activeTotal === 1 ? "vote" : "votes"}
+            {formatCompactNumber(activeTotal)} verified{" "}
+            {activeTotal === 1 ? "vote" : "votes"}
           </p>
         </div>
 
@@ -239,7 +245,7 @@ export function CommunityLeaderboard({
             {rows.map((row, index) => (
               <li
                 key={row.id}
-                className="group grid grid-cols-[2rem_4rem_minmax(0,1fr)_2.5rem] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.035] sm:grid-cols-[2.5rem_4.25rem_minmax(0,1fr)_5rem_auto] sm:gap-4 sm:px-5 sm:py-3.5"
+                className="group grid grid-cols-[2rem_4rem_minmax(0,1fr)_3.25rem] items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.035] sm:grid-cols-[2.5rem_4.25rem_minmax(0,1fr)_5rem_auto] sm:gap-4 sm:px-5 sm:py-3.5"
               >
                 <p className="font-display text-xl font-black text-white/30 sm:text-3xl">
                   {String(index + 1).padStart(2, "0")}
@@ -291,7 +297,7 @@ export function CommunityLeaderboard({
                     className="community-progress mt-2 block h-1 w-full sm:mt-3 sm:h-1.5"
                   />
                   <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--muted)] sm:hidden">
-                    {row.percentage}% · {row.votes}{" "}
+                    {row.percentage}% · {formatCompactNumber(row.votes)}{" "}
                     {row.votes === 1 ? "vote" : "votes"}
                   </p>
                 </div>
@@ -300,7 +306,8 @@ export function CommunityLeaderboard({
                     {row.percentage}%
                   </p>
                   <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted)]">
-                    {row.votes} {row.votes === 1 ? "vote" : "votes"}
+                    {formatCompactNumber(row.votes)}{" "}
+                    {row.votes === 1 ? "vote" : "votes"}
                   </p>
                 </div>
                 <div className="flex justify-end">
@@ -323,6 +330,7 @@ export function CommunityLeaderboard({
                           ? (favorites.skin[row.scopeKey] ?? null)
                         : favorites[category]
                     }
+                    voteCount={row.votes}
                     onChange={updateFavorite}
                     appearance="responsive"
                   />

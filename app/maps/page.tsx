@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { PageHeading } from "@/components/page-heading";
-import { getCurrentFavoritesOrEmpty } from "@/lib/community";
+import {
+  getCommunityCountsOrEmpty,
+  getCurrentFavoritesOrEmpty,
+} from "@/lib/community";
 import { createMetadata } from "@/lib/seo";
 import { getMaps } from "@/lib/valorant-api";
 
@@ -23,9 +26,10 @@ function getMapGroup(mapUrl: string): string {
 }
 
 export default async function MapsPage() {
-  const [maps, favorites] = await Promise.all([
+  const [maps, favorites, favoriteCounts] = await Promise.all([
     getMaps(),
     getCurrentFavoritesOrEmpty(),
+    getCommunityCountsOrEmpty("map"),
   ]);
   const items = maps.map((map) => {
     const group = getMapGroup(map.mapUrl);
@@ -59,6 +63,7 @@ export default async function MapsPage() {
         initialFavoriteIds={
           favorites.map ? { default: favorites.map } : {}
         }
+        initialFavoriteCounts={favoriteCounts}
       />
     </section>
   );

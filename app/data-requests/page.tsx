@@ -43,9 +43,17 @@ export default function DataRequestsPage() {
       <p>
         Signed-in players can disconnect directly from the account page. This
         deletes the AgentStats user, linked Riot identity, visibility and
-        consent settings, active sessions, and aggregate match observations
-        linked to that user without deleting or changing the underlying Riot
-        account. Aggregate pages and caches may take a short period to refresh.
+        consent settings, active sessions, aggregate match observations,
+        improvement plans, match journals, performance reports, and team
+        memberships linked to that user without deleting or changing the
+        underlying Riot account. A team owned by the account is also deleted.
+        Aggregate pages and caches may take a short period to refresh.
+      </p>
+      <p>
+        Before deleting the whole account, you can revoke an individual report,
+        leave a team you do not own, delete a team you own, or update a match
+        journal from the relevant workspace. Expired or revoked report
+        snapshots may remain stored until the linked account is deleted.
       </p>
 
       <h2>Verification and response</h2>

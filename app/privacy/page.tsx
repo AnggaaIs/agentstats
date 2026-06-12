@@ -61,6 +61,56 @@ export default function PrivacyPage() {
         deaths, assists, damage, hit distribution, KAST inputs, first bloods,
         plants, defuses, or playtime in the aggregate dataset.
       </p>
+
+      <h3>Improvement tools and match journals</h3>
+      <p>
+        The authenticated improvement workspace uses recent Riot match data to
+        calculate coaching signals, session comparisons, and progress against
+        a metric you select. AgentStats stores improvement-plan records such as
+        the selected metric, baseline, target, review period, status, and
+        timestamps.
+      </p>
+      <p>
+        If you create a match journal, AgentStats stores the linked match
+        identifier and the information you enter: session focus, mood rating,
+        party size, review note, and an optional VOD URL. Journals are private
+        to your account and are not included in public reports or team
+        workspaces. AgentStats stores the URL but does not need to copy the
+        linked video. The video host may process visits under its own terms and
+        privacy notice.
+      </p>
+
+      <h3>Shareable performance reports</h3>
+      <p>
+        You can create an unlisted performance-report link after separately
+        confirming publication. The stored report is a frozen snapshot of
+        aggregate metrics, coaching findings, recent-session metrics, and top
+        agents or maps. It excludes journals, VOD links, match identifiers,
+        teammate identities, and raw Riot responses. You can choose whether
+        the snapshot displays your Riot ID.
+      </p>
+      <p>
+        Report links use a random token and are not intended for search
+        indexing, but anyone who obtains or receives the link can view it until
+        it expires or is revoked. Recipients may copy or capture what they can
+        view, so revocation cannot remove copies made outside AgentStats.
+      </p>
+
+      <h3>Team workspaces</h3>
+      <p>
+        A team workspace stores its name, random join code, owner, members,
+        roles, and membership timestamps. Joining with a code is an explicit
+        choice to show other current members your Riot ID, region, main-agent
+        estimate, and bounded aggregate performance metrics derived from your
+        stored self-observations. Journals, VOD links, personal reports, raw
+        matches, and full scoreboards are not shared in the workspace.
+      </p>
+      <p>
+        Members whose current player-data consent is inactive remain visible as
+        members but contribute no performance statistics. Leaving removes
+        future workspace access. The owner can delete the workspace and all of
+        its memberships.
+      </p>
       <p>
         AgentStats also displays public game content supplied by
         valorant-api.com, an independent third-party content API, such as
@@ -117,6 +167,14 @@ export default function PrivacyPage() {
           To calculate pseudonymized aggregate pick rates, win rates,
           rank-specific agent trends, performance averages, and map frequency.
         </li>
+        <li>
+          To provide coaching signals, session reviews, improvement plans, and
+          private match journals requested by a signed-in player.
+        </li>
+        <li>
+          To create revocable performance snapshots and invite-only team
+          comparisons when the player separately chooses those features.
+        </li>
         <li>To remember recent searches on your device.</li>
         <li>To protect the service and investigate errors or misuse.</li>
         <li>
@@ -145,6 +203,12 @@ export default function PrivacyPage() {
         AgentStats does not sell personal information or share it for targeted
         advertising.
       </p>
+      <p>
+        Other people receive information when you deliberately publish a
+        report link or join a team workspace. A report recipient does not need
+        an AgentStats account. Team information is available only to current
+        workspace members.
+      </p>
 
       <h2>Storage and retention</h2>
       <p>
@@ -165,10 +229,19 @@ export default function PrivacyPage() {
       <p>
         A linked account remains until you disconnect it. Disconnecting from
         the account page deletes the AgentStats user record, Riot connection,
-        active consent state, active sessions, and aggregate observations
-        linked to that user. A historical consent receipt may remain without a
-        linked user identifier where needed to demonstrate when the choice was
-        recorded.
+        active consent state, active sessions, aggregate observations,
+        improvement plans, match journals, shareable reports, and team
+        memberships linked to that user. A team owned by the deleted account
+        and its memberships are also deleted. A historical consent receipt may
+        remain without a linked user identifier where needed to demonstrate
+        when the choice was recorded.
+      </p>
+      <p>
+        Improvement plans and journals remain until the linked account is
+        deleted. A report becomes unavailable when it expires or is revoked,
+        but its stored snapshot may remain with the account until account
+        deletion. Leaving a team deletes that membership. Deleting a team
+        deletes all memberships in that workspace.
       </p>
       <p>
         Making a profile private immediately withdraws permission for other
@@ -198,6 +271,12 @@ export default function PrivacyPage() {
         a copy, object to or limit certain uses, withdraw consent, or complain
         to a privacy authority. AgentStats may need to verify your request
         before acting on it.
+      </p>
+      <p>
+        Feature-level controls include completing or archiving an improvement
+        plan, updating a journal, revoking a report, leaving a team, and
+        deleting a team you own. Account disconnection is the current
+        self-service method for deleting all linked account data.
       </p>
       <p>
         Riot Games controls Riot accounts and the source game records. Requests

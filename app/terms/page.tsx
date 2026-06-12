@@ -69,6 +69,37 @@ export default function TermsPage() {
         the linked-data service by disconnecting and deleting the account.
       </p>
 
+      <h2>Improvement and coaching features</h2>
+      <p>
+        Coaching signals, session debriefs, targets, and comparisons are
+        automated interpretations of a limited match sample. They may be
+        incomplete or unsuitable for a particular player. They are provided
+        for reflection and entertainment, not as professional coaching or a
+        guarantee of rank or performance improvement.
+      </p>
+      <p>
+        You are responsible for journal text and VOD links you submit. Do not
+        enter confidential information, unlawful material, another
+        person&apos;s private information, or a link you are not permitted to
+        share.
+      </p>
+
+      <h2>Reports and team workspaces</h2>
+      <p>
+        Creating a performance report authorizes AgentStats to make that
+        snapshot available to anyone with its unlisted link until expiry or
+        revocation. You are responsible for deciding who receives the link.
+        Revocation prevents later access through AgentStats but cannot recall
+        screenshots or copies made by recipients.
+      </p>
+      <p>
+        Joining a team workspace authorizes current members to view the
+        workspace identity and aggregate metrics described in the Privacy
+        Policy. Keep join codes limited to intended members. Workspace owners
+        control the invite code and may delete the workspace. If an owner
+        deletes their AgentStats account, a workspace they own is also deleted.
+      </p>
+
       <h2>Your responsibilities</h2>
       <p>
         You are responsible for the searches and actions you make through
@@ -80,6 +111,11 @@ export default function TermsPage() {
         Community Favorites are intended for genuine personal preferences. You
         may not automate votes, create artificial voting identities, evade
         voting limits, or coordinate manipulation of a ranking.
+      </p>
+      <p>
+        You may not use report links, team workspaces, journals, or VOD links
+        to harass, expose, rank-shame, impersonate, or publish another
+        person&apos;s private information.
       </p>
       <p>
         Do not use player lookup to scout opponents, identify deliberately

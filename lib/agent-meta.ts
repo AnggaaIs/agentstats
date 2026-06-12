@@ -84,6 +84,21 @@ export interface AgentRankMetaRow {
   }>;
 }
 
+export interface PlayerAgentBenchmark {
+  eligible: boolean;
+  rankBucketId: AgentRankBucketId;
+  rankBucketLabel: string;
+  sampleMatches: number;
+  trackedPlayers: number;
+  minimumMatches: number;
+  minimumPlayers: number;
+  averageAcs: number;
+  averageDamagePerRound: number;
+  damageDeltaPerRound: number;
+  kd: number;
+  kast: number;
+}
+
 export interface MapMetaRow {
   mapId: string;
   name: string;
@@ -200,6 +215,16 @@ function getRankBucket(id: AgentRankBucketId): AgentRankBucket {
   return (
     AGENT_RANK_BUCKETS.find((bucket) => bucket.id === id) ??
     AGENT_RANK_BUCKETS[0]
+  );
+}
+
+function getRankBucketForTier(tier: number): AgentRankBucket {
+  return (
+    AGENT_RANK_BUCKETS.find(
+      (bucket) =>
+        bucket.id !== "all" &&
+        (bucket.tiers as readonly number[]).includes(tier),
+    ) ?? AGENT_RANK_BUCKETS[1]
   );
 }
 
@@ -759,6 +784,82 @@ export async function getAgentRankMetaDataset(
       } satisfies AgentRankMetaRow;
     })
     .filter((row) => row.samplePicks > 0);
+}
+
+export async function getPlayerAgentBenchmark({
+  agentId,
+  competitiveTier,
+  actId,
+  excludeSourceUserId,
+}: {
+  agentId: string;
+  competitiveTier: number;
+  actId?: string | null;
+  excludeSourceUserId?: string | null;
+}): Promise<PlayerAgentBenchmark> {
+  const rankBucket = getRankBucketForTier(competitiveTier);
+  const minimumMatches = 10;
+  const minimumPlayers = 3;
+  const where: Prisma.AgentMatchObservationWhereInput = {
+    sourceUser: {
+      consentVersion: PLAYER_DATA_CONSENT_VERSION,
+      consentedAt: { not: null },
+    },
+    scope: ObservationScope.SELF,
+    queueId: "competitive",
+    agentId,
+    competitiveTier: { in: [...rankBucket.tiers] },
+    ...(actId ? { actId } : {}),
+    ...(excludeSourceUserId
+      ? { sourceUserId: { not: excludeSourceUserId } }
+      : {}),
+  };
+  const [aggregate, contributors] = await Promise.all([
+    prisma.agentMatchObservation.aggregate({
+      where,
+      _count: { _all: true },
+      _sum: {
+        roundsPlayed: true,
+        score: true,
+        kills: true,
+        deaths: true,
+        damage: true,
+        damageReceived: true,
+        kastRounds: true,
+      },
+    }),
+    prisma.agentMatchObservation.groupBy({
+      by: ["sourceUserId"],
+      where,
+    }),
+  ]);
+  const sampleMatches = aggregate._count._all;
+  const trackedPlayers = contributors.length;
+  const rounds = aggregate._sum.roundsPlayed ?? 0;
+  const kills = aggregate._sum.kills ?? 0;
+  const deaths = aggregate._sum.deaths ?? 0;
+
+  return {
+    eligible:
+      sampleMatches >= minimumMatches &&
+      trackedPlayers >= minimumPlayers &&
+      rounds > 0,
+    rankBucketId: rankBucket.id,
+    rankBucketLabel: rankBucket.label,
+    sampleMatches,
+    trackedPlayers,
+    minimumMatches,
+    minimumPlayers,
+    averageAcs: ratio(aggregate._sum.score ?? 0, rounds),
+    averageDamagePerRound: ratio(aggregate._sum.damage ?? 0, rounds),
+    damageDeltaPerRound: ratio(
+      (aggregate._sum.damage ?? 0) -
+        (aggregate._sum.damageReceived ?? 0),
+      rounds,
+    ),
+    kd: deaths === 0 ? kills : kills / deaths,
+    kast: percent(aggregate._sum.kastRounds ?? 0, rounds),
+  };
 }
 
 function isMetaEligibleMap(map: ValorantMap): boolean {

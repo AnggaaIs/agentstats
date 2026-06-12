@@ -135,6 +135,7 @@ async function HomeContent() {
             src={featuredPortrait}
             fill
             alt=""
+            loading="eager"
             sizes="42vw"
             className="object-contain object-right-bottom"
           />

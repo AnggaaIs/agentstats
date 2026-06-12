@@ -1,7 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 
 import { REGIONS } from "@/lib/constants";
 import type { ApiResponse } from "@/lib/api-response";
@@ -25,11 +30,12 @@ interface RecentPlayer {
   searchedAt: number;
 }
 
+const RECENT_PLAYERS_KEY = "agentstats:recent";
+const RECENT_PLAYERS_EVENT = "agentstats:recent-updated";
+
 function readRecentPlayers(): RecentPlayer[] {
   try {
-    const value = JSON.parse(
-      localStorage.getItem("agentstats:recent") ?? "[]",
-    );
+    const value = JSON.parse(localStorage.getItem(RECENT_PLAYERS_KEY) ?? "[]");
     if (!Array.isArray(value)) return [];
 
     return value.filter(
@@ -56,10 +62,37 @@ export function PlayerSearch({
   const [riotId, setRiotId] = useState("");
   const [region, setRegion] =
     useState<PlayerLookupInput["region"]>("auto");
+  const [recentPlayers, setRecentPlayers] = useState<RecentPlayer[]>([]);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const inputId = `${idPrefix}-riot-id`;
   const errorId = `${idPrefix}-search-error`;
+
+  useEffect(() => {
+    function syncRecentPlayers() {
+      setRecentPlayers(readRecentPlayers());
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === RECENT_PLAYERS_KEY) syncRecentPlayers();
+    }
+
+    syncRecentPlayers();
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(RECENT_PLAYERS_EVENT, syncRecentPlayers);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(RECENT_PLAYERS_EVENT, syncRecentPlayers);
+    };
+  }, []);
+
+  function openRecentPlayer(player: RecentPlayer) {
+    onSubmitted?.();
+    router.push(
+      `/player/${player.region}/${encodeURIComponent(player.name)}/${encodeURIComponent(player.tag)}`,
+    );
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,12 +135,13 @@ export function PlayerSearch({
             item.tag.toLocaleLowerCase() !== player.tag.toLocaleLowerCase() ||
             item.region !== player.region,
         );
-        localStorage.setItem(
-          "agentstats:recent",
-          JSON.stringify(
-            [{ ...player, searchedAt: Date.now() }, ...recent].slice(0, 5),
-          ),
-        );
+        const nextRecent = [
+          { ...player, searchedAt: Date.now() },
+          ...recent,
+        ].slice(0, 5);
+        localStorage.setItem(RECENT_PLAYERS_KEY, JSON.stringify(nextRecent));
+        setRecentPlayers(nextRecent);
+        window.dispatchEvent(new Event(RECENT_PLAYERS_EVENT));
         onSubmitted?.();
         router.push(
           `/player/${player.region}/${encodeURIComponent(player.name)}/${encodeURIComponent(player.tag)}`,
@@ -180,6 +214,31 @@ export function PlayerSearch({
         <p id={errorId} role="alert" className="text-sm text-[#ff9aa2] sm:col-span-2">
           {error}
         </p>
+      ) : null}
+      {recentPlayers.length > 0 ? (
+        <div className="mt-1 min-w-0 border-t border-white/10 pt-3 sm:col-span-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+            Recent searches
+          </p>
+          <div className="mt-2 flex min-w-0 flex-wrap gap-2">
+            {recentPlayers.map((player) => (
+              <button
+                key={`${player.region}:${player.name}:${player.tag}`}
+                type="button"
+                onClick={() => openRecentPlayer(player)}
+                className="valorant-action min-w-0 border border-white/12 bg-black/20 px-3 py-2 text-left hover:border-white/35"
+                aria-label={`Open ${player.name} number ${player.tag} in ${player.region}`}
+              >
+                <span className="block max-w-52 truncate text-xs font-bold text-white">
+                  {player.name}#{player.tag}
+                </span>
+                <span className="mt-0.5 block text-[9px] font-black uppercase tracking-[0.14em] text-[var(--accent)]">
+                  {player.region}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       ) : null}
     </form>
   );

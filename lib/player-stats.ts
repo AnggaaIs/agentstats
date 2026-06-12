@@ -117,6 +117,112 @@ export interface PlayerSummary {
   >;
   bestMatch: MatchSummary | null;
   consistency: number;
+  consistencyReport: {
+    acsDeviation: number;
+    adrDeviation: number;
+    kdDeviation: number;
+    matchesAboveAverageAcs: number;
+    matchesBelowAverageAcs: number;
+    rollingAcsFive: Array<{
+      playedAt: number;
+      averageAcs: number;
+    }>;
+  };
+  roundImpact: {
+    trackedRounds: number;
+    openingKillRounds: number;
+    openingKillRoundWins: number;
+    openingKillConversion: number;
+    firstDeathRounds: number;
+    firstDeathRoundWins: number;
+    firstDeathRecovery: number;
+    survivedRounds: number;
+    survivalRate: number;
+    nonTradedDeaths: number;
+    nonTradedDeathRate: number;
+  };
+  pistolRounds: {
+    rounds: number;
+    wins: number;
+    winRate: number;
+    kills: number;
+    deaths: number;
+    kd: number;
+    damage: number;
+    damagePerRound: number;
+    openingDuels: number;
+    openingDuelWins: number;
+    openingDuelWinRate: number;
+  };
+  economy: Array<{
+    id: "low" | "mid" | "full";
+    label: string;
+    rounds: number;
+    kills: number;
+    damage: number;
+    creditsSpent: number;
+    averageLoadoutValue: number;
+    killsPerThousandLoadout: number;
+    damagePerThousandLoadout: number;
+  }>;
+  roundTiming: Array<{
+    id: "early" | "mid" | "late";
+    label: string;
+    window: string;
+    kills: number;
+    deaths: number;
+    duels: number;
+    duelWinRate: number;
+  }>;
+  agentMaps: Array<{
+    agentName: string;
+    agentIcon: string | null;
+    mapName: string;
+    games: number;
+    wins: number;
+    winRate: number;
+    rounds: number;
+    averageAcs: number;
+    kast: number;
+    damageDeltaPerRound: number;
+  }>;
+  sessions: {
+    count: number;
+    averageMatches: number;
+    longestSession: number;
+    firstMatches: PlayerFormWindow;
+    laterMatches: PlayerFormWindow;
+    byPosition: Array<{
+      position: "first" | "second" | "third-plus";
+      label: string;
+      form: PlayerFormWindow;
+    }>;
+  };
+  utility: {
+    matchesWithData: number;
+    roundsWithData: number;
+    grenadeCasts: number;
+    ability1Casts: number;
+    ability2Casts: number;
+    ultimateCasts: number;
+    totalCasts: number;
+    castsPerRound: number;
+    ultimateCastsPerMatch: number;
+  };
+  competitiveAgentSample: {
+    agentId: string;
+    agentName: string;
+    agentIcon: string | null;
+    games: number;
+    rounds: number;
+    kills: number;
+    deaths: number;
+    kd: number;
+    averageAcs: number;
+    averageDamagePerRound: number;
+    damageDeltaPerRound: number;
+    kast: number;
+  } | null;
   accountLevel: number | null;
   competitiveTier: number | null;
   playerCardId: string | null;
@@ -226,6 +332,36 @@ function findMapName(mapId: string, maps: ValorantMap[]): string {
   );
 }
 
+function percent(value: number, total: number): number {
+  return total === 0 ? 0 : (value / total) * 100;
+}
+
+function standardDeviation(values: number[]): number {
+  if (values.length === 0) return 0;
+  const average = values.reduce((total, value) => total + value, 0) / values.length;
+  const variance =
+    values.reduce((total, value) => total + (value - average) ** 2, 0) /
+    values.length;
+  return Math.sqrt(variance);
+}
+
+function getRoundTimingId(
+  timeSinceRoundStartMillis: number | undefined,
+): "early" | "mid" | "late" | null {
+  if (timeSinceRoundStartMillis === undefined) return null;
+  if (timeSinceRoundStartMillis <= 30_000) return "early";
+  if (timeSinceRoundStartMillis <= 70_000) return "mid";
+  return "late";
+}
+
+function getEconomyBucket(
+  loadoutValue: number,
+): "low" | "mid" | "full" {
+  if (loadoutValue < 2_500) return "low";
+  if (loadoutValue < 3_900) return "mid";
+  return "full";
+}
+
 export function buildPlayerSummary(
   puuid: string,
   matches: RiotMatch[],
@@ -263,6 +399,25 @@ export function buildPlayerSummary(
   let doubles = 0;
   let triples = 0;
   let quads = 0;
+  let trackedRoundResults = 0;
+  let openingKillRounds = 0;
+  let openingKillRoundWins = 0;
+  let firstDeathRounds = 0;
+  let firstDeathRoundWins = 0;
+  let survivedRounds = 0;
+  let pistolRoundCount = 0;
+  let pistolRoundWins = 0;
+  let pistolKills = 0;
+  let pistolDeaths = 0;
+  let pistolDamage = 0;
+  let pistolOpeningDuels = 0;
+  let pistolOpeningDuelWins = 0;
+  let utilityMatchesWithData = 0;
+  let utilityRoundsWithData = 0;
+  let grenadeCasts = 0;
+  let ability1Casts = 0;
+  let ability2Casts = 0;
+  let ultimateCasts = 0;
   let accountLevel: number | null = null;
   let competitiveTier: number | null = null;
   let playerCardId: string | null = null;
@@ -320,6 +475,59 @@ export function buildPlayerSummary(
     }
   >();
   const summaries: MatchSummary[] = [];
+  const economyTotals = new Map<
+    "low" | "mid" | "full",
+    {
+      rounds: number;
+      kills: number;
+      damage: number;
+      creditsSpent: number;
+      loadoutValue: number;
+    }
+  >([
+    ["low", { rounds: 0, kills: 0, damage: 0, creditsSpent: 0, loadoutValue: 0 }],
+    ["mid", { rounds: 0, kills: 0, damage: 0, creditsSpent: 0, loadoutValue: 0 }],
+    ["full", { rounds: 0, kills: 0, damage: 0, creditsSpent: 0, loadoutValue: 0 }],
+  ]);
+  const roundTimingTotals = new Map<
+    "early" | "mid" | "late",
+    { kills: number; deaths: number }
+  >([
+    ["early", { kills: 0, deaths: 0 }],
+    ["mid", { kills: 0, deaths: 0 }],
+    ["late", { kills: 0, deaths: 0 }],
+  ]);
+  const agentMapTotals = new Map<
+    string,
+    {
+      agentName: string;
+      agentIcon: string | null;
+      mapName: string;
+      games: number;
+      wins: number;
+      rounds: number;
+      score: number;
+      kastRounds: number;
+      damage: number;
+      damageReceived: number;
+    }
+  >();
+  const competitiveAgentTotals = new Map<
+    string,
+    {
+      agentId: string;
+      agentName: string;
+      agentIcon: string | null;
+      games: number;
+      rounds: number;
+      kills: number;
+      deaths: number;
+      score: number;
+      damage: number;
+      damageReceived: number;
+      kastRounds: number;
+    }
+  >();
 
   for (const match of matches) {
     if (!match.matchInfo.isCompleted) continue;
@@ -343,6 +551,15 @@ export function buildPlayerSummary(
     const mapName = findMapName(match.matchInfo.mapId, maps);
     const headshotRate = getParticipantHeadshotRate(match, puuid);
     const participantDamage = getParticipantDamage(match, puuid);
+    const abilityCasts = participant.stats.abilityCasts;
+    if (abilityCasts) {
+      utilityMatchesWithData += 1;
+      utilityRoundsWithData += participant.stats.roundsPlayed;
+      grenadeCasts += abilityCasts.grenadeCasts;
+      ability1Casts += abilityCasts.ability1Casts;
+      ability2Casts += abilityCasts.ability2Casts;
+      ultimateCasts += abilityCasts.ultimateCasts;
+    }
     let participantDamageReceived = 0;
     let matchKastRounds = 0;
     let matchFirstBloods = 0;
@@ -379,6 +596,8 @@ export function buildPlayerSummary(
       const ownRound = round.playerStats.find((stats) => stats.puuid === puuid);
       const ownKills = ownRound?.kills ?? [];
       const death = allKills.find((kill) => kill.victim === puuid);
+      const ownRoundDamage =
+        ownRound?.damage.reduce((total, hit) => total + hit.damage, 0) ?? 0;
       const assisted = allKills.some((kill) => kill.assistants.includes(puuid));
       const survived = !death;
       const traded = death
@@ -396,6 +615,10 @@ export function buildPlayerSummary(
 
       if (ownKills.length > 0 || assisted || survived || traded) {
         matchKastRounds += 1;
+      }
+      if (ownRound) {
+        trackedRoundResults += 1;
+        if (survived) survivedRounds += 1;
       }
       if (death) trackedDeaths += 1;
       if (traded) tradedDeaths += 1;
@@ -423,9 +646,52 @@ export function buildPlayerSummary(
       );
       if (firstKill?.killer === puuid) matchFirstBloods += 1;
       if (firstKill?.victim === puuid) matchFirstDeaths += 1;
+      if (firstKill?.killer === puuid) {
+        openingKillRounds += 1;
+        if (round.winningTeam === participant.teamId) {
+          openingKillRoundWins += 1;
+        }
+      }
+      if (firstKill?.victim === puuid) {
+        firstDeathRounds += 1;
+        if (round.winningTeam === participant.teamId) {
+          firstDeathRoundWins += 1;
+        }
+      }
       if (death) {
         const killer = encounterTotals.get(death.killer);
         if (killer) killer.deaths += 1;
+      }
+
+      for (const kill of ownKills) {
+        const timingId = getRoundTimingId(kill.timeSinceRoundStartMillis);
+        if (timingId) {
+          const timing = roundTimingTotals.get(timingId);
+          if (timing) timing.kills += 1;
+        }
+      }
+      if (death) {
+        const timingId = getRoundTimingId(death.timeSinceRoundStartMillis);
+        if (timingId) {
+          const timing = roundTimingTotals.get(timingId);
+          if (timing) timing.deaths += 1;
+        }
+      }
+
+      const isRegulationPistol =
+        (match.matchInfo.queueId === "competitive" ||
+          match.matchInfo.queueId === "unrated") &&
+        (round.roundNum === 0 || round.roundNum === 12);
+      if (isRegulationPistol && ownRound) {
+        pistolRoundCount += 1;
+        if (round.winningTeam === participant.teamId) pistolRoundWins += 1;
+        pistolKills += ownKills.length;
+        pistolDeaths += death ? 1 : 0;
+        pistolDamage += ownRoundDamage;
+        if (firstKill?.killer === puuid || firstKill?.victim === puuid) {
+          pistolOpeningDuels += 1;
+          if (firstKill.killer === puuid) pistolOpeningDuelWins += 1;
+        }
       }
 
       for (const roundPlayer of round.playerStats) {
@@ -443,6 +709,16 @@ export function buildPlayerSummary(
         economyRounds += 1;
         loadoutValue += ownRound.economy.loadoutValue;
         creditsSpent += ownRound.economy.spent;
+        const bucket = economyTotals.get(
+          getEconomyBucket(ownRound.economy.loadoutValue),
+        );
+        if (bucket) {
+          bucket.rounds += 1;
+          bucket.kills += ownKills.length;
+          bucket.damage += ownRoundDamage;
+          bucket.creditsSpent += ownRound.economy.spent;
+          bucket.loadoutValue += ownRound.economy.loadoutValue;
+        }
       }
 
       for (const kill of ownKills) {
@@ -530,6 +806,53 @@ export function buildPlayerSummary(
     previousMap.score += participant.stats.score;
     mapTotals.set(mapName, previousMap);
 
+    const agentMapKey = `${agentKey}:${mapName}`;
+    const previousAgentMap = agentMapTotals.get(agentMapKey) ?? {
+      agentName: agent?.displayName ?? "Unknown agent",
+      agentIcon: agent?.displayIcon ?? null,
+      mapName,
+      games: 0,
+      wins: 0,
+      rounds: 0,
+      score: 0,
+      kastRounds: 0,
+      damage: 0,
+      damageReceived: 0,
+    };
+    previousAgentMap.games += 1;
+    previousAgentMap.wins += result === "WIN" ? 1 : 0;
+    previousAgentMap.rounds += participant.stats.roundsPlayed;
+    previousAgentMap.score += participant.stats.score;
+    previousAgentMap.kastRounds += matchKastRounds;
+    previousAgentMap.damage += participantDamage;
+    previousAgentMap.damageReceived += participantDamageReceived;
+    agentMapTotals.set(agentMapKey, previousAgentMap);
+
+    if (match.matchInfo.queueId === "competitive") {
+      const previousCompetitiveAgent = competitiveAgentTotals.get(agentKey) ?? {
+        agentId: agentKey,
+        agentName: agent?.displayName ?? "Unknown agent",
+        agentIcon: agent?.displayIcon ?? null,
+        games: 0,
+        rounds: 0,
+        kills: 0,
+        deaths: 0,
+        score: 0,
+        damage: 0,
+        damageReceived: 0,
+        kastRounds: 0,
+      };
+      previousCompetitiveAgent.games += 1;
+      previousCompetitiveAgent.rounds += participant.stats.roundsPlayed;
+      previousCompetitiveAgent.kills += participant.stats.kills;
+      previousCompetitiveAgent.deaths += participant.stats.deaths;
+      previousCompetitiveAgent.score += participant.stats.score;
+      previousCompetitiveAgent.damage += participantDamage;
+      previousCompetitiveAgent.damageReceived += participantDamageReceived;
+      previousCompetitiveAgent.kastRounds += matchKastRounds;
+      competitiveAgentTotals.set(agentKey, previousCompetitiveAgent);
+    }
+
     summaries.push({
       matchId: match.matchInfo.matchId,
       mapName,
@@ -576,6 +899,7 @@ export function buildPlayerSummary(
     queueTotals.set(match.matchInfo.queueId, previousQueue);
   }
 
+  summaries.sort((left, right) => right.playedAt - left.playedAt);
   const games = summaries.length;
   const hitTotal = headHits + bodyHits + legHits;
   const averageAcs = rounds === 0 ? 0 : score / rounds;
@@ -626,6 +950,123 @@ export function buildPlayerSummary(
       ),
     }))
     .filter((split) => split.games > 0);
+  const chronologicalMatches = summaries.toSorted(
+    (left, right) => left.playedAt - right.playedAt,
+  );
+  const rollingAcsFive = chronologicalMatches.map((match, index) => {
+    const window = chronologicalMatches.slice(Math.max(0, index - 4), index + 1);
+    return {
+      playedAt: match.playedAt,
+      averageAcs:
+        window.reduce((total, item) => total + item.acs, 0) / window.length,
+    };
+  });
+  const matchAdrValues = summaries.map((match) => match.damagePerRound);
+  const matchKdValues = summaries.map((match) =>
+    match.deaths === 0 ? match.kills : match.kills / match.deaths,
+  );
+  const sessions: MatchSummary[][] = [];
+  for (const match of chronologicalMatches) {
+    const currentSession = sessions.at(-1);
+    const previousMatch = currentSession?.at(-1);
+    const previousEnd = previousMatch
+      ? previousMatch.playedAt + previousMatch.durationMillis
+      : null;
+    if (
+      !currentSession ||
+      previousEnd === null ||
+      match.playedAt - previousEnd > 90 * 60_000
+    ) {
+      sessions.push([match]);
+    } else {
+      currentSession.push(match);
+    }
+  }
+  const firstSessionMatches = sessions.flatMap((session) =>
+    session[0] ? [session[0]] : [],
+  );
+  const secondSessionMatches = sessions.flatMap((session) =>
+    session[1] ? [session[1]] : [],
+  );
+  const thirdPlusSessionMatches = sessions.flatMap((session) =>
+    session.slice(2),
+  );
+  const laterSessionMatches = sessions.flatMap((session) => session.slice(1));
+  const economyRows = (
+    [
+      ["low", "Low buy"],
+      ["mid", "Mid buy"],
+      ["full", "Full buy"],
+    ] as const
+  ).map(([id, label]) => {
+    const total = economyTotals.get(id)!;
+    return {
+      id,
+      label,
+      rounds: total.rounds,
+      kills: total.kills,
+      damage: total.damage,
+      creditsSpent: total.creditsSpent,
+      averageLoadoutValue:
+        total.rounds === 0 ? 0 : total.loadoutValue / total.rounds,
+      killsPerThousandLoadout:
+        total.loadoutValue === 0
+          ? 0
+          : (total.kills / total.loadoutValue) * 1_000,
+      damagePerThousandLoadout:
+        total.loadoutValue === 0
+          ? 0
+          : (total.damage / total.loadoutValue) * 1_000,
+    };
+  });
+  const roundTimingRows = (
+    [
+      ["early", "Early round", "0–30 seconds"],
+      ["mid", "Mid round", "31–70 seconds"],
+      ["late", "Late round", "After 70 seconds"],
+    ] as const
+  ).map(([id, label, window]) => {
+    const total = roundTimingTotals.get(id)!;
+    const duels = total.kills + total.deaths;
+    return {
+      id,
+      label,
+      window,
+      kills: total.kills,
+      deaths: total.deaths,
+      duels,
+      duelWinRate: percent(total.kills, duels),
+    };
+  });
+  const agentMapRows = [...agentMapTotals.values()]
+    .map((row) => ({
+      agentName: row.agentName,
+      agentIcon: row.agentIcon,
+      mapName: row.mapName,
+      games: row.games,
+      wins: row.wins,
+      winRate: percent(row.wins, row.games),
+      rounds: row.rounds,
+      averageAcs: row.rounds === 0 ? 0 : row.score / row.rounds,
+      kast: percent(row.kastRounds, row.rounds),
+      damageDeltaPerRound:
+        row.rounds === 0
+          ? 0
+          : (row.damage - row.damageReceived) / row.rounds,
+    }))
+    .sort((left, right) => {
+      if (right.games !== left.games) return right.games - left.games;
+      if (right.averageAcs !== left.averageAcs) {
+        return right.averageAcs - left.averageAcs;
+      }
+      return `${left.agentName}:${left.mapName}`.localeCompare(
+        `${right.agentName}:${right.mapName}`,
+      );
+    });
+  const totalUtilityCasts =
+    grenadeCasts + ability1Casts + ability2Casts + ultimateCasts;
+  const competitiveAgentSample = [...competitiveAgentTotals.values()]
+    .sort((left, right) => right.games - left.games)[0];
 
   return {
     games,
@@ -708,6 +1149,138 @@ export function buildPlayerSummary(
         null,
       ),
     consistency: Math.sqrt(acsVariance),
+    consistencyReport: {
+      acsDeviation: standardDeviation(summaries.map((match) => match.acs)),
+      adrDeviation: standardDeviation(matchAdrValues),
+      kdDeviation: standardDeviation(matchKdValues),
+      matchesAboveAverageAcs: summaries.filter(
+        (match) => match.acs >= averageMatchAcs,
+      ).length,
+      matchesBelowAverageAcs: summaries.filter(
+        (match) => match.acs < averageMatchAcs,
+      ).length,
+      rollingAcsFive,
+    },
+    roundImpact: {
+      trackedRounds: trackedRoundResults,
+      openingKillRounds,
+      openingKillRoundWins,
+      openingKillConversion: percent(
+        openingKillRoundWins,
+        openingKillRounds,
+      ),
+      firstDeathRounds,
+      firstDeathRoundWins,
+      firstDeathRecovery: percent(firstDeathRoundWins, firstDeathRounds),
+      survivedRounds,
+      survivalRate: percent(survivedRounds, trackedRoundResults),
+      nonTradedDeaths: Math.max(0, trackedDeaths - tradedDeaths),
+      nonTradedDeathRate: percent(
+        Math.max(0, trackedDeaths - tradedDeaths),
+        trackedDeaths,
+      ),
+    },
+    pistolRounds: {
+      rounds: pistolRoundCount,
+      wins: pistolRoundWins,
+      winRate: percent(pistolRoundWins, pistolRoundCount),
+      kills: pistolKills,
+      deaths: pistolDeaths,
+      kd: pistolDeaths === 0 ? pistolKills : pistolKills / pistolDeaths,
+      damage: pistolDamage,
+      damagePerRound:
+        pistolRoundCount === 0 ? 0 : pistolDamage / pistolRoundCount,
+      openingDuels: pistolOpeningDuels,
+      openingDuelWins: pistolOpeningDuelWins,
+      openingDuelWinRate: percent(
+        pistolOpeningDuelWins,
+        pistolOpeningDuels,
+      ),
+    },
+    economy: economyRows,
+    roundTiming: roundTimingRows,
+    agentMaps: agentMapRows,
+    sessions: {
+      count: sessions.length,
+      averageMatches:
+        sessions.length === 0 ? 0 : summaries.length / sessions.length,
+      longestSession: sessions.reduce(
+        (longest, session) => Math.max(longest, session.length),
+        0,
+      ),
+      firstMatches: summarizeMatches(firstSessionMatches),
+      laterMatches: summarizeMatches(laterSessionMatches),
+      byPosition: [
+        {
+          position: "first",
+          label: "First match",
+          form: summarizeMatches(firstSessionMatches),
+        },
+        {
+          position: "second",
+          label: "Second match",
+          form: summarizeMatches(secondSessionMatches),
+        },
+        {
+          position: "third-plus",
+          label: "Third match onward",
+          form: summarizeMatches(thirdPlusSessionMatches),
+        },
+      ],
+    },
+    utility: {
+      matchesWithData: utilityMatchesWithData,
+      roundsWithData: utilityRoundsWithData,
+      grenadeCasts,
+      ability1Casts,
+      ability2Casts,
+      ultimateCasts,
+      totalCasts: totalUtilityCasts,
+      castsPerRound:
+        utilityRoundsWithData === 0
+          ? 0
+          : totalUtilityCasts / utilityRoundsWithData,
+      ultimateCastsPerMatch:
+        utilityMatchesWithData === 0
+          ? 0
+          : ultimateCasts / utilityMatchesWithData,
+    },
+    competitiveAgentSample: competitiveAgentSample
+      ? {
+          agentId: competitiveAgentSample.agentId,
+          agentName: competitiveAgentSample.agentName,
+          agentIcon: competitiveAgentSample.agentIcon,
+          games: competitiveAgentSample.games,
+          rounds: competitiveAgentSample.rounds,
+          kills: competitiveAgentSample.kills,
+          deaths: competitiveAgentSample.deaths,
+          kd:
+            competitiveAgentSample.deaths === 0
+              ? competitiveAgentSample.kills
+              : competitiveAgentSample.kills /
+                competitiveAgentSample.deaths,
+          averageAcs:
+            competitiveAgentSample.rounds === 0
+              ? 0
+              : competitiveAgentSample.score /
+                competitiveAgentSample.rounds,
+          averageDamagePerRound:
+            competitiveAgentSample.rounds === 0
+              ? 0
+              : competitiveAgentSample.damage /
+                competitiveAgentSample.rounds,
+          damageDeltaPerRound:
+            competitiveAgentSample.rounds === 0
+              ? 0
+              : (competitiveAgentSample.damage -
+                  competitiveAgentSample.damageReceived) /
+                competitiveAgentSample.rounds,
+          kast: percent(
+            competitiveAgentSample.kastRounds,
+            competitiveAgentSample.rounds,
+          ),
+        }
+      : null,
     accountLevel,
     competitiveTier,
     playerCardId,

@@ -7,6 +7,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
 import {
   getCurrentFavoritesOrEmpty,
+  getCommunityCountsOrEmpty,
   toFavoriteScope,
 } from "@/lib/community";
 import {
@@ -47,11 +48,13 @@ export default async function AgentPage({ params }: AgentPageProps) {
   const { uuid } = await params;
   let agent;
   let favorites;
+  let favoriteCounts;
 
   try {
-    [agent, favorites] = await Promise.all([
+    [agent, favorites, favoriteCounts] = await Promise.all([
       getAgent(uuid),
       getCurrentFavoritesOrEmpty(),
+      getCommunityCountsOrEmpty("agent"),
     ]);
   } catch (error) {
     if (error instanceof ValorantApiError && error.status === 404) notFound();
@@ -113,6 +116,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
               targetId={agent.uuid}
               targetName={agent.displayName}
               selected={favorites.agent[favoriteScope] === agent.uuid}
+              voteCount={
+                favoriteCounts.find((count) => count.targetId === agent.uuid)
+                  ?.votes ?? 0
+              }
               className="mt-5"
             />
           </div>
@@ -121,7 +128,7 @@ export default async function AgentPage({ params }: AgentPageProps) {
               src={agent.fullPortrait ?? agent.displayIcon}
               alt={`${agent.displayName} full portrait`}
               fill
-              priority
+              loading="eager"
               sizes="(max-width: 1024px) 100vw, 55vw"
               className="object-contain object-bottom drop-shadow-[0_22px_36px_rgba(0,0,0,0.45)]"
             />

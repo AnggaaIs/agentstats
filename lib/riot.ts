@@ -76,6 +76,12 @@ export interface MatchParticipant {
     deaths: number;
     assists: number;
     playtimeMillis: number;
+    abilityCasts?: {
+      grenadeCasts: number;
+      ability1Casts: number;
+      ability2Casts: number;
+      ultimateCasts: number;
+    };
   } | null;
 }
 

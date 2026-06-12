@@ -4,9 +4,13 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { Pagination } from "@/components/pagination";
+import { PlayerInsightCharts } from "@/components/player-insight-charts";
 import { RouteLink } from "@/components/route-link";
 import { RouteSelect } from "@/components/route-select";
-import { syncAgentMatchObservations } from "@/lib/agent-meta";
+import {
+  getPlayerAgentBenchmark,
+  syncAgentMatchObservations,
+} from "@/lib/agent-meta";
 import { isRsoConfigured } from "@/lib/auth-config";
 import { getPlayerAccess } from "@/lib/player-access";
 import { buildPlayerSummary, type MatchSummary } from "@/lib/player-stats";
@@ -62,6 +66,13 @@ function formatPlaytime(milliseconds: number): string {
   const hours = Math.floor(milliseconds / 3_600_000);
   const minutes = Math.floor((milliseconds % 3_600_000) / 60_000);
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
+function formatChartDate(timestamp: number): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(timestamp));
 }
 
 function resultClass(result: MatchSummary["result"]): string {
@@ -322,6 +333,16 @@ export default async function PlayerPage({
       ladderPlayer = null;
     }
   }
+  const competitiveAgentSample = summary.competitiveAgentSample;
+  const agentBenchmark = competitiveAgentSample
+    ? await getPlayerAgentBenchmark({
+        agentId: competitiveAgentSample.agentId,
+        competitiveTier: summary.competitiveTier ?? 0,
+        actId:
+          actResult.status === "fulfilled" ? actResult.value.uuid : null,
+        excludeSourceUserId: access.ownerId,
+      }).catch(() => null)
+    : null;
 
   const filteredMatches =
     selectedQueue === "all"
@@ -443,6 +464,140 @@ export default async function PlayerPage({
       note: `${summary.openingDuels.wins} first kills · ${summary.openingDuels.losses} first deaths`,
     },
   ] as const;
+  const personalBenchmarks = [
+    {
+      label: "Latest form",
+      value: formatNumber(summary.recentForm.recent.averageAcs),
+      delta: summary.recentForm.acsDelta,
+      note: previousForm
+        ? "ACS versus the previous five matches"
+        : "Needs a previous match window",
+    },
+    {
+      label: "Main agent",
+      value: mainAgent ? formatNumber(mainAgent.averageAcs) : "—",
+      delta: mainAgent ? mainAgent.averageAcs - summary.averageAcs : null,
+      note: mainAgent
+        ? `${mainAgent.name} ACS versus personal average`
+        : "No agent sample",
+    },
+    {
+      label: "Best map sample",
+      value: bestMap ? formatNumber(bestMap.averageAcs) : "—",
+      delta: bestMap ? bestMap.averageAcs - summary.averageAcs : null,
+      note: bestMap
+        ? `${bestMap.name} ACS versus personal average`
+        : "No map sample",
+    },
+  ] as const;
+  const recentRollingAcs =
+    summary.consistencyReport.rollingAcsFive.slice(-5);
+  const chartMatchTrend = summary.matches
+    .toReversed()
+    .map((match) => ({
+      label: formatChartDate(match.playedAt),
+      acs: Number(match.acs.toFixed(1)),
+      adr: Number(match.damagePerRound.toFixed(1)),
+    }));
+  const chartRoundImpact = [
+    {
+      label: "Opening",
+      value: summary.roundImpact.openingKillConversion,
+    },
+    {
+      label: "Recovery",
+      value: summary.roundImpact.firstDeathRecovery,
+    },
+    {
+      label: "Survival",
+      value: summary.roundImpact.survivalRate,
+    },
+    {
+      label: "Traded",
+      value: summary.trades.tradeRate,
+    },
+  ];
+  const chartEconomy = summary.economy.map((bucket) => ({
+    label: bucket.label.replace(" buy", ""),
+    damage: Number(bucket.damagePerThousandLoadout.toFixed(1)),
+    kills: Number(bucket.killsPerThousandLoadout.toFixed(2)),
+  }));
+  const chartDuelTiming = summary.roundTiming.map((phase) => ({
+    label: phase.label.replace(" round", ""),
+    kills: phase.kills,
+    deaths: phase.deaths,
+  }));
+  const chartRollingAcs = summary.consistencyReport.rollingAcsFive.map(
+    (point) => ({
+      label: formatChartDate(point.playedAt),
+      acs: Number(point.averageAcs.toFixed(1)),
+    }),
+  );
+  const chartAgentMaps = summary.agentMaps.slice(0, 6).map((row) => ({
+    label: `${row.agentName} / ${row.mapName}`,
+    games: row.games,
+    acs: Number(row.averageAcs.toFixed(1)),
+    winRate: Number(row.winRate.toFixed(1)),
+  }));
+  const chartSessions = summary.sessions.byPosition.map((row) => ({
+    label:
+      row.position === "third-plus"
+        ? "3rd+"
+        : row.position === "second"
+          ? "2nd"
+          : "1st",
+    games: row.form.games,
+    acs: Number(row.form.averageAcs.toFixed(1)),
+    winRate: Number(row.form.winRate.toFixed(1)),
+  }));
+  const chartUtility =
+    summary.utility.matchesWithData > 0
+      ? [
+          { name: "Grenade", value: summary.utility.grenadeCasts },
+          { name: "Ability 1", value: summary.utility.ability1Casts },
+          { name: "Ability 2", value: summary.utility.ability2Casts },
+          { name: "Ultimate", value: summary.utility.ultimateCasts },
+        ].filter((item) => item.value > 0)
+      : [];
+  const benchmarkMetrics =
+    competitiveAgentSample && agentBenchmark?.eligible
+      ? [
+          [
+            "ACS",
+            competitiveAgentSample.averageAcs,
+            agentBenchmark.averageAcs,
+          ],
+          [
+            "ADR",
+            competitiveAgentSample.averageDamagePerRound,
+            agentBenchmark.averageDamagePerRound,
+          ],
+          ["K/D", competitiveAgentSample.kd, agentBenchmark.kd],
+          ["KAST", competitiveAgentSample.kast, agentBenchmark.kast],
+          [
+            "DDΔ",
+            competitiveAgentSample.damageDeltaPerRound,
+            agentBenchmark.damageDeltaPerRound,
+          ],
+        ]
+      : [];
+  const chartBenchmark = benchmarkMetrics.map(
+    ([metric, playerValue, cohortValue]) => {
+      const cohort = Number(cohortValue);
+      const player = Number(playerValue);
+      const normalized =
+        cohort === 0
+          ? player === 0
+            ? 100
+            : 160
+          : Math.max(0, Math.min(160, (player / cohort) * 100));
+      return {
+        metric: String(metric),
+        player: Number(normalized.toFixed(1)),
+        cohort: 100,
+      };
+    },
+  );
 
   return (
     <article>
@@ -452,7 +607,7 @@ export default async function PlayerPage({
             src={playerCard.wideArt}
             alt=""
             fill
-            priority
+            loading="eager"
             sizes="100vw"
             className="-z-30 object-cover object-center opacity-35"
           />
@@ -461,7 +616,7 @@ export default async function PlayerPage({
             src={topAgent.fullPortrait}
             alt=""
             fill
-            priority
+            loading="eager"
             sizes="100vw"
             className="-z-30 object-cover object-[75%_18%] opacity-20"
           />
@@ -532,6 +687,7 @@ export default async function PlayerPage({
         <div className="tactical-scrollbar mx-auto flex max-w-[86rem] overflow-x-auto px-4 sm:px-6 lg:px-8">
           {[
             ["#overview", "Overview"],
+            ["#insights", "Insights"],
             ["#matches", "Matches"],
             ["#agents", "Agents"],
             ["#maps", "Maps"],
@@ -996,6 +1152,594 @@ export default async function PlayerPage({
                   ))}
                 </div>
               </section>
+            </section>
+
+            <section id="insights" className="scroll-mt-32 pt-10">
+              <div className="border-b border-white/10 pb-5">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+                  Advanced insights
+                </p>
+                <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <h2 className="font-display text-2xl font-black uppercase tracking-[-0.035em] sm:text-3xl">
+                    Actionable match review
+                  </h2>
+                  <p className="max-w-2xl text-xs leading-5 text-[var(--muted)]">
+                    Derived only from official Riot match fields. Thresholds and
+                    sample limits are shown where AgentStats applies its own
+                    grouping rules.
+                  </p>
+                </div>
+              </div>
+
+              <PlayerInsightCharts
+                matchTrend={chartMatchTrend}
+                roundImpact={chartRoundImpact}
+                economy={chartEconomy}
+                duelTiming={chartDuelTiming}
+                rollingAcs={chartRollingAcs}
+                agentMaps={chartAgentMaps}
+                sessions={chartSessions}
+                utility={chartUtility}
+                benchmark={chartBenchmark}
+                benchmarkLabel={
+                  competitiveAgentSample && agentBenchmark?.eligible
+                    ? `${competitiveAgentSample.agentName} / ${agentBenchmark.rankBucketLabel}`
+                    : null
+                }
+              />
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      01 / Round impact
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      What happened after the first duel
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-px bg-white/8">
+                    {[
+                      [
+                        "Opening conversion",
+                        `${formatNumber(summary.roundImpact.openingKillConversion)}%`,
+                        `${summary.roundImpact.openingKillRoundWins}/${summary.roundImpact.openingKillRounds} rounds won after first kill`,
+                      ],
+                      [
+                        "First-death recovery",
+                        `${formatNumber(summary.roundImpact.firstDeathRecovery)}%`,
+                        `${summary.roundImpact.firstDeathRoundWins}/${summary.roundImpact.firstDeathRounds} rounds recovered`,
+                      ],
+                      [
+                        "Survival rate",
+                        `${formatNumber(summary.roundImpact.survivalRate)}%`,
+                        `${summary.roundImpact.survivedRounds}/${summary.roundImpact.trackedRounds} tracked rounds`,
+                      ],
+                      [
+                        "Non-traded deaths",
+                        `${formatNumber(summary.roundImpact.nonTradedDeathRate)}%`,
+                        `${summary.roundImpact.nonTradedDeaths}/${summary.trades.trackedDeaths} deaths not traded in five seconds`,
+                      ],
+                    ].map(([label, value, note]) => (
+                      <article key={label} className="bg-[var(--panel)] p-4">
+                        <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                          {label}
+                        </p>
+                        <p className="mt-1 font-display text-2xl font-black">
+                          {value}
+                        </p>
+                        <p className="mt-1 text-[9px] leading-4 text-white/45">
+                          {note}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      02 / Pistol rounds
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Regulation round one and thirteen
+                    </h3>
+                  </div>
+                  {summary.pistolRounds.rounds > 0 ? (
+                    <div className="grid grid-cols-2 gap-px bg-white/8">
+                      {[
+                        [
+                          "Round win",
+                          `${formatNumber(summary.pistolRounds.winRate)}%`,
+                          `${summary.pistolRounds.wins}/${summary.pistolRounds.rounds} pistol rounds`,
+                        ],
+                        [
+                          "K / D",
+                          formatNumber(summary.pistolRounds.kd, 2),
+                          `${summary.pistolRounds.kills}/${summary.pistolRounds.deaths}`,
+                        ],
+                        [
+                          "Damage / round",
+                          formatNumber(summary.pistolRounds.damagePerRound),
+                          `${summary.pistolRounds.damage} total damage`,
+                        ],
+                        [
+                          "Opening duels",
+                          `${formatNumber(summary.pistolRounds.openingDuelWinRate)}%`,
+                          `${summary.pistolRounds.openingDuelWins}/${summary.pistolRounds.openingDuels} won`,
+                        ],
+                      ].map(([label, value, note]) => (
+                        <article key={label} className="bg-[var(--panel)] p-4">
+                          <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                            {label}
+                          </p>
+                          <p className="mt-1 font-display text-2xl font-black">
+                            {value}
+                          </p>
+                          <p className="mt-1 text-[9px] text-white/45">{note}</p>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="p-4 text-xs leading-5 text-[var(--muted)]">
+                      No regulation pistol rounds from competitive or unrated
+                      matches are present in this sample.
+                    </p>
+                  )}
+                </section>
+              </div>
+
+              <section className="mt-4 border border-white/10 bg-[var(--panel)]">
+                <div className="flex flex-col gap-2 border-b border-white/8 p-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      03 / Economy efficiency
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Output by loadout value
+                    </h3>
+                  </div>
+                  <p className="text-[10px] text-[var(--muted)]">
+                    Low &lt; 2,500 · Mid 2,500–3,899 · Full ≥ 3,900 credits
+                  </p>
+                </div>
+                <div className="grid gap-px bg-white/8 md:grid-cols-3">
+                  {summary.economy.map((bucket) => (
+                    <article key={bucket.id} className="bg-[var(--panel)] p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="font-display text-lg font-black uppercase">
+                          {bucket.label}
+                        </h4>
+                        <span className="text-[10px] text-[var(--muted)]">
+                          {bucket.rounds} rounds
+                        </span>
+                      </div>
+                      <dl className="mt-4 grid grid-cols-2 gap-3">
+                        {[
+                          [
+                            "Damage / 1k loadout",
+                            formatNumber(bucket.damagePerThousandLoadout),
+                          ],
+                          [
+                            "Kills / 1k loadout",
+                            formatNumber(bucket.killsPerThousandLoadout, 2),
+                          ],
+                          ["Kills", String(bucket.kills)],
+                          [
+                            "Avg loadout",
+                            formatNumber(bucket.averageLoadoutValue),
+                          ],
+                        ].map(([label, value]) => (
+                          <div key={label}>
+                            <dt className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                              {label}
+                            </dt>
+                            <dd className="mt-1 font-display text-xl font-black">
+                              {value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+                <p className="border-t border-white/8 p-3 text-[9px] leading-4 text-white/45">
+                  Buy groups are AgentStats review categories, not Riot labels.
+                  Efficiency uses Riot&apos;s round loadout value so saved
+                  weapons carried into a zero-spend round still have a cost
+                  basis.
+                </p>
+              </section>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      04 / Round timing
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Early, mid, and late duels
+                    </h3>
+                  </div>
+                  <div className="grid gap-px bg-white/8 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    {summary.roundTiming.map((phase) => (
+                      <article key={phase.id} className="bg-[var(--panel)] p-4">
+                        <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                          {phase.window}
+                        </p>
+                        <h4 className="mt-1 font-black">{phase.label}</h4>
+                        <p className="mt-3 font-display text-2xl font-black">
+                          {formatNumber(phase.duelWinRate)}%
+                        </p>
+                        <p className="mt-1 text-[9px] text-white/45">
+                          {phase.kills} kills · {phase.deaths} deaths
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      05 / Consistency
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Match-to-match variance
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-px bg-white/8">
+                    {[
+                      [
+                        "ACS σ",
+                        formatNumber(
+                          summary.consistencyReport.acsDeviation,
+                          1,
+                        ),
+                      ],
+                      [
+                        "ADR σ",
+                        formatNumber(
+                          summary.consistencyReport.adrDeviation,
+                          1,
+                        ),
+                      ],
+                      [
+                        "K/D σ",
+                        formatNumber(
+                          summary.consistencyReport.kdDeviation,
+                          2,
+                        ),
+                      ],
+                    ].map(([label, value]) => (
+                      <div key={label} className="bg-[var(--panel)] p-4">
+                        <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                          {label}
+                        </p>
+                        <p className="mt-1 font-display text-2xl font-black">
+                          {value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-white/8 p-4">
+                    <div className="flex items-center justify-between text-[10px] text-[var(--muted)]">
+                      <span>Rolling five-match ACS</span>
+                      <span>
+                        {summary.consistencyReport.matchesAboveAverageAcs} above
+                        personal average
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-5 gap-2">
+                      {recentRollingAcs.map((point) => (
+                        <div
+                          key={point.playedAt}
+                          className="border border-white/8 bg-black/15 p-2 text-center"
+                        >
+                          <p className="font-mono text-xs font-black">
+                            {formatNumber(point.averageAcs)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <section className="mt-4 border border-white/10 bg-[var(--panel)]">
+                <div className="flex flex-col gap-2 border-b border-white/8 p-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      06 / Agent × map
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Combination matrix
+                    </h3>
+                  </div>
+                  <p className="text-[10px] text-[var(--muted)]">
+                    Single-match rows are shown, but should not be treated as a trend
+                  </p>
+                </div>
+                <div
+                  role="region"
+                  aria-label="Agent and map combination statistics"
+                  tabIndex={0}
+                  className="tactical-scrollbar overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                >
+                  <table className="w-full min-w-[48rem] border-collapse text-left text-xs">
+                    <thead className="bg-white/5 text-[9px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                      <tr>
+                        <th className="p-3">Agent</th>
+                        <th className="p-3">Map</th>
+                        <th className="p-3">Matches</th>
+                        <th className="p-3">Win rate</th>
+                        <th className="p-3">ACS</th>
+                        <th className="p-3">KAST</th>
+                        <th className="p-3">DDΔ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.agentMaps.slice(0, 10).map((row) => (
+                        <tr
+                          key={`${row.agentName}:${row.mapName}`}
+                          className="border-t border-white/8"
+                        >
+                          <td className="p-3">
+                            <div className="flex items-center gap-2">
+                              <div className="relative size-8 shrink-0 bg-white/5">
+                                {row.agentIcon ? (
+                                  <Image
+                                    src={row.agentIcon}
+                                    alt=""
+                                    fill
+                                    sizes="32px"
+                                    className="object-cover"
+                                  />
+                                ) : null}
+                              </div>
+                              <span className="font-black">{row.agentName}</span>
+                            </div>
+                          </td>
+                          <td className="p-3">{row.mapName}</td>
+                          <td className="p-3">{row.games}</td>
+                          <td className="p-3 font-black">
+                            {formatNumber(row.winRate)}%
+                          </td>
+                          <td className="p-3">
+                            {formatNumber(row.averageAcs)}
+                          </td>
+                          <td className="p-3">{formatNumber(row.kast)}%</td>
+                          <td className="p-3">
+                            {formatSigned(row.damageDeltaPerRound)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      07 / Session performance
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Output as play continues
+                    </h3>
+                    <p className="mt-1 text-[9px] text-white/45">
+                      A new session starts after a 90-minute gap.
+                    </p>
+                  </div>
+                  <div className="grid gap-px bg-white/8 sm:grid-cols-3">
+                    {summary.sessions.byPosition.map((row) => (
+                      <article
+                        key={row.position}
+                        className="bg-[var(--panel)] p-4"
+                      >
+                        <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                          {row.label}
+                        </p>
+                        <p className="mt-1 font-display text-2xl font-black">
+                          {formatNumber(row.form.averageAcs)}
+                        </p>
+                        <p className="mt-1 text-[9px] text-white/45">
+                          {row.form.games} matches ·{" "}
+                          {formatNumber(row.form.winRate)}% WR
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                  <p className="border-t border-white/8 p-3 text-[9px] text-white/45">
+                    {summary.sessions.count} sessions ·{" "}
+                    {formatNumber(summary.sessions.averageMatches, 1)} matches
+                    per session · longest {summary.sessions.longestSession}
+                  </p>
+                </section>
+
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      08 / Utility usage
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Official ability cast counters
+                    </h3>
+                  </div>
+                  {summary.utility.matchesWithData > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-px bg-white/8">
+                        {[
+                          ["Grenade slot", summary.utility.grenadeCasts],
+                          ["Ability 1", summary.utility.ability1Casts],
+                          ["Ability 2", summary.utility.ability2Casts],
+                          ["Ultimate", summary.utility.ultimateCasts],
+                        ].map(([label, value]) => (
+                          <div key={label} className="bg-[var(--panel)] p-4">
+                            <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                              {label}
+                            </p>
+                            <p className="mt-1 font-display text-2xl font-black">
+                              {value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="border-t border-white/8 p-3 text-[9px] leading-4 text-white/45">
+                        {formatNumber(summary.utility.castsPerRound, 2)} casts
+                        per round ·{" "}
+                        {formatNumber(
+                          summary.utility.ultimateCastsPerMatch,
+                          2,
+                        )}{" "}
+                        ultimates per match. Cast counts do not measure utility
+                        effectiveness.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="p-4 text-xs leading-5 text-[var(--muted)]">
+                      Riot did not include ability cast counters in the matches
+                      returned for this sample. AgentStats does not estimate
+                      missing casts.
+                    </p>
+                  )}
+                </section>
+              </div>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      09 / Personal benchmarks
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Compare against your own baseline
+                    </h3>
+                  </div>
+                  <div className="grid gap-px bg-white/8 sm:grid-cols-3">
+                    {personalBenchmarks.map((benchmark) => (
+                      <article
+                        key={benchmark.label}
+                        className="bg-[var(--panel)] p-4"
+                      >
+                        <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                          {benchmark.label}
+                        </p>
+                        <p className="mt-1 font-display text-2xl font-black">
+                          {benchmark.value}
+                        </p>
+                        <p
+                          className={`mt-1 font-mono text-xs font-black ${deltaClass(benchmark.delta)}`}
+                        >
+                          {benchmark.delta === null
+                            ? "Baseline"
+                            : `${formatSigned(benchmark.delta)} ACS`}
+                        </p>
+                        <p className="mt-1 text-[9px] leading-4 text-white/45">
+                          {benchmark.note}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="border border-white/10 bg-[var(--panel)]">
+                  <div className="border-b border-white/8 p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                      10 / Rank + agent benchmark
+                    </p>
+                    <h3 className="mt-1 font-display text-lg font-black uppercase">
+                      Opt-in cohort comparison
+                    </h3>
+                  </div>
+                  {competitiveAgentSample &&
+                  agentBenchmark?.eligible ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-px bg-white/8">
+                        {[
+                          [
+                            "ACS",
+                            competitiveAgentSample.averageAcs,
+                            agentBenchmark.averageAcs,
+                          ],
+                          [
+                            "ADR",
+                            competitiveAgentSample.averageDamagePerRound,
+                            agentBenchmark.averageDamagePerRound,
+                          ],
+                          [
+                            "K/D",
+                            competitiveAgentSample.kd,
+                            agentBenchmark.kd,
+                          ],
+                          [
+                            "KAST",
+                            competitiveAgentSample.kast,
+                            agentBenchmark.kast,
+                          ],
+                        ].map(([label, playerValue, cohortValue]) => {
+                          const delta =
+                            Number(playerValue) - Number(cohortValue);
+                          const isPercent = label === "KAST";
+                          return (
+                            <article
+                              key={String(label)}
+                              className="bg-[var(--panel)] p-4"
+                            >
+                              <p className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
+                                {label}
+                              </p>
+                              <p className="mt-1 font-display text-2xl font-black">
+                                {formatNumber(
+                                  Number(playerValue),
+                                  label === "K/D" ? 2 : 0,
+                                )}
+                                {isPercent ? "%" : ""}
+                              </p>
+                              <p
+                                className={`mt-1 font-mono text-xs font-black ${deltaClass(delta)}`}
+                              >
+                                {formatSigned(
+                                  delta,
+                                  label === "K/D" ? 2 : 0,
+                                )}
+                                {isPercent ? " pts" : ""}
+                              </p>
+                              <p className="mt-1 text-[9px] text-white/45">
+                                Cohort{" "}
+                                {formatNumber(
+                                  Number(cohortValue),
+                                  label === "K/D" ? 2 : 0,
+                                )}
+                                {isPercent ? "%" : ""}
+                              </p>
+                            </article>
+                          );
+                        })}
+                      </div>
+                      <p className="border-t border-white/8 p-3 text-[9px] leading-4 text-white/45">
+                        {competitiveAgentSample.agentName} in{" "}
+                        {agentBenchmark.rankBucketLabel}:{" "}
+                        {agentBenchmark.sampleMatches} consented matches from{" "}
+                        {agentBenchmark.trackedPlayers} other players. This is
+                        an aggregate comparison, not a hidden rating.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="p-4">
+                      <p className="text-sm font-black">
+                        Benchmark withheld
+                      </p>
+                      <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
+                        {competitiveAgentSample
+                          ? `The matching opt-in cohort has ${agentBenchmark?.sampleMatches ?? 0} matches from ${agentBenchmark?.trackedPlayers ?? 0} other players. AgentStats requires at least ${agentBenchmark?.minimumMatches ?? 10} matches and ${agentBenchmark?.minimumPlayers ?? 3} players.`
+                          : "No competitive agent sample is available for this player."}
+                      </p>
+                    </div>
+                  )}
+                </section>
+              </div>
             </section>
 
             <section id="matches" className="scroll-mt-32 pt-10">

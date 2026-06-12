@@ -6,7 +6,10 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { JsonLd } from "@/components/json-ld";
 import { RouteLink } from "@/components/route-link";
 import { VideoPreviewModal } from "@/components/video-preview-modal";
-import { getCurrentFavoritesOrEmpty } from "@/lib/community";
+import {
+  getCommunityCountsOrEmpty,
+  getCurrentFavoritesOrEmpty,
+} from "@/lib/community";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
 import {
   getContentTiers,
@@ -69,9 +72,10 @@ export default async function SkinPage({ params }: SkinPageProps) {
     if (error instanceof ValorantApiError && error.status === 404) notFound();
     throw error;
   }
-  const [contentTiers, favorites] = await Promise.all([
+  const [contentTiers, favorites, favoriteCounts] = await Promise.all([
     getContentTiers(),
     getCurrentFavoritesOrEmpty(),
+    getCommunityCountsOrEmpty("skin"),
   ]);
   const skin = weapon?.skins.find((item) => item.uuid === skinUuid);
 
@@ -141,6 +145,10 @@ export default async function SkinPage({ params }: SkinPageProps) {
                 targetName={cleanName(skin.displayName)}
                 selected={favorites.skin[weapon.uuid] === skin.uuid}
                 selectedTargetId={favorites.skin[weapon.uuid] ?? null}
+                voteCount={
+                  favoriteCounts.find((count) => count.targetId === skin.uuid)
+                    ?.votes ?? 0
+                }
               />
             </div>
           </div>

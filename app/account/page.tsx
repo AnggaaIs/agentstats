@@ -177,6 +177,30 @@ export default async function AccountPage({
         </section>
 
         <aside className="grid content-start gap-4">
+          <section className="border border-white/10 bg-[var(--panel)] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+              Performance workspace
+            </p>
+            <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
+              Review evidence-based coaching, set one measurable target, keep
+              private match notes, and control shareable reports.
+            </p>
+            <div className="mt-5 grid gap-3">
+              <Link
+                href="/improve"
+                className="valorant-action flex min-h-10 items-center justify-center bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-[0.12em]"
+              >
+                Open improve
+              </Link>
+              <Link
+                href="/teams"
+                className="valorant-action flex min-h-10 items-center justify-center border border-white/15 px-4 text-[11px] font-black uppercase tracking-[0.12em]"
+              >
+                Team workspaces
+              </Link>
+            </div>
+          </section>
+
           <section className="border border-white/10 p-5">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted)]">
               Aggregate analytics

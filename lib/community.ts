@@ -65,6 +65,16 @@ export async function getCommunityCounts(
   }));
 }
 
+export async function getCommunityCountsOrEmpty(
+  category: FavoriteCategoryName,
+): Promise<CommunityCount[]> {
+  try {
+    return await getCommunityCounts(category);
+  } catch {
+    return [];
+  }
+}
+
 export async function getCommunityOverview() {
   const [agent, map, weapon, skin, devices] = await Promise.all([
     getCommunityCounts("agent"),

@@ -51,6 +51,14 @@ export default function AcceptableUsePage() {
           player-specific gameplay data without the player&apos;s opt-in.
         </li>
         <li>
+          Share team join codes or performance-report links to harass,
+          rank-shame, expose, or profile another person.
+        </li>
+        <li>
+          Put confidential information, unlawful material, or another
+          person&apos;s private information in journals or linked VOD content.
+        </li>
+        <li>
           Resell AgentStats data or present the service as an official Riot
           Games product.
         </li>

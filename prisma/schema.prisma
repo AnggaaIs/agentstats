@@ -35,6 +35,26 @@ enum ObservationScope {
   MATCH_CONTEXT
 }
 
+enum ImprovementMetric {
+  OPENING_CONVERSION
+  SURVIVAL_RATE
+  KAST
+  PISTOL_WIN_RATE
+  ECONOMY_DAMAGE
+  CONSISTENCY
+}
+
+enum ImprovementPlanStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum TeamRole {
+  OWNER
+  MEMBER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -59,6 +79,11 @@ model User {
   sessions               Session[]
   agentMatchObservations AgentMatchObservation[]
   legalConsents          LegalConsent[]
+  improvementPlans       ImprovementPlan[]
+  matchJournals          MatchJournal[]
+  shareReports           ShareReport[]
+  ownedTeams             Team[]                  @relation("TeamOwner")
+  teamMemberships        TeamMember[]
 
   @@index([gameName, tagLine])
   @@index([visibility, publishedAt])
@@ -199,4 +224,91 @@ model AgentMatchObservation {
   @@index([agentId, actId])
   @@index([matchStartedAt])
   @@map("agent_match_observations")
+}
+
+model ImprovementPlan {
+  id            String                @id @default(cuid())
+  userId        String
+  metric        ImprovementMetric
+  baselineValue Float
+  targetValue   Float
+  durationDays  Int
+  status        ImprovementPlanStatus @default(ACTIVE)
+  startsAt      DateTime              @default(now())
+  endsAt        DateTime
+  completedAt   DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@map("improvement_plans")
+}
+
+model MatchJournal {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String
+  focus     String
+  mood      Int
+  stackSize Int
+  note      String
+  vodUrl    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+  @@index([userId, updatedAt])
+  @@map("match_journals")
+}
+
+model ShareReport {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  title      String
+  anonymized Boolean  @default(true)
+  snapshot   Json
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([token, revokedAt])
+  @@map("share_reports")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  joinCode  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner   User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  @@index([ownerId, createdAt])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  userId   String
+  role     TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId, joinedAt])
+  @@map("team_members")
 }
