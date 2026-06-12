@@ -5,6 +5,7 @@ import { after } from "next/server";
 
 import { Pagination } from "@/components/pagination";
 import { RouteLink } from "@/components/route-link";
+import { RouteSelect } from "@/components/route-select";
 import { syncAgentMatchObservations } from "@/lib/agent-meta";
 import { isRsoConfigured } from "@/lib/auth-config";
 import { getPlayerAccess } from "@/lib/player-access";
@@ -1005,22 +1006,16 @@ export default async function PlayerPage({
                     Recent matches
                   </h2>
                 </div>
-                <div
-                  role="group"
-                  aria-label="Filter matches by mode"
-                  className="tactical-scrollbar flex max-w-full overflow-x-auto border border-white/10"
-                >
-                  {QUEUE_FILTERS.map(([value, label]) => (
-                    <RouteLink
-                      key={value}
-                      href={`${profilePath}?queue=${value}#matches`}
-                      current={selectedQueue === value}
-                      className="valorant-action flex min-h-11 shrink-0 items-center px-4 text-[10px] font-black uppercase tracking-[0.12em]"
-                    >
-                      {label}
-                    </RouteLink>
-                  ))}
-                </div>
+                <RouteSelect
+                  label="Match queue"
+                  selectedValue={selectedQueue}
+                  className="w-full lg:w-72"
+                  options={QUEUE_FILTERS.map(([value, label]) => ({
+                    value,
+                    label,
+                    href: `${profilePath}?queue=${value}#matches`,
+                  }))}
+                />
               </div>
 
               <div className="mt-4 grid gap-2">

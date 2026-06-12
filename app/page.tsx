@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Suspense } from "react";
 
 import { PlayerSearch } from "@/components/player-search";
 import { RouteLink } from "@/components/route-link";
@@ -41,7 +42,56 @@ function formatObservedAt(value: Date | null): string {
   }).format(value);
 }
 
-export default async function HomePage() {
+function HomePageFallback() {
+  return (
+    <section
+      aria-busy="true"
+      className="grid-noise border-b border-white/8"
+    >
+      <div className="mx-auto grid w-full max-w-[86rem] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-10">
+        <div className="min-w-0">
+          <p className="eyebrow">Valorant tracker</p>
+          <h1 className="responsive-text mt-4 max-w-3xl font-display text-[clamp(2.75rem,9vw,5rem)] font-black uppercase leading-[0.84] tracking-[-0.07em]">
+            Valorant stats
+          </h1>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--muted)]">
+            Search a Riot ID, inspect match history, and track agent meta.
+          </p>
+          <div className="mt-6 max-w-3xl border border-white/10 bg-[var(--panel)] p-2.5">
+            <div className="skeleton-sweep h-11" />
+            <div className="mt-2.5 grid grid-cols-4 gap-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} className="skeleton-sweep h-9 opacity-70" />
+              ))}
+            </div>
+          </div>
+        </div>
+        <aside className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div
+              key={index}
+              className="min-h-24 border border-white/10 bg-[var(--panel)] p-4"
+            >
+              <div className="skeleton-sweep h-2.5 w-24 opacity-60" />
+              <div className="skeleton-sweep mt-4 h-7 w-32" />
+              <div className="skeleton-sweep mt-3 h-2.5 w-40 opacity-50" />
+            </div>
+          ))}
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomePageFallback />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
   const [agents, maps, versionResult, currentAct] = await Promise.all([
     getAgents(),
     getMaps(),
@@ -69,12 +119,12 @@ export default async function HomePage() {
     featuredAgent.fullPortrait ?? featuredAgent.displayIcon;
   const topMetaAgent =
     agentMeta.rows.find((agent) => agent.picks > 0) ?? agentMeta.rows[0];
-  const metaPreviewRows = agentMeta.rows.slice(0, 8);
+  const metaPreviewRows = agentMeta.rows.slice(0, 5);
   const mapPreviewRows = (
     mapMeta.rows.some((row) => row.modeId === "competitive")
       ? mapMeta.rows.filter((row) => row.modeId === "competitive")
       : mapMeta.rows
-  ).slice(0, 6);
+  ).slice(0, 3);
 
   return (
     <>
@@ -84,8 +134,6 @@ export default async function HomePage() {
           <Image
             src={featuredPortrait}
             fill
-            priority
-            unoptimized
             alt=""
             sizes="42vw"
             className="object-contain object-right-bottom"
@@ -197,29 +245,17 @@ export default async function HomePage() {
                       href={`/agents/${agent.agentId}`}
                       className="flex items-center gap-3 font-black uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                     >
-                      <span className="relative size-9 shrink-0 overflow-hidden bg-[#202832]">
-                        <Image
-                          src={agent.icon}
-                          alt=""
-                          fill
-                          sizes="36px"
-                          className="object-cover"
-                        />
+                      <span
+                        aria-hidden="true"
+                        className="grid size-9 shrink-0 place-items-center border border-white/10 bg-[#202832] font-display text-sm font-black text-[var(--accent)]"
+                      >
+                        {agent.name.slice(0, 1)}
                       </span>
                       {agent.name}
                     </RouteLink>
                   </td>
                   <td className="px-4 py-2.5 sm:px-5">
                     <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
-                      {agent.roleIcon ? (
-                        <Image
-                          src={agent.roleIcon}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="size-4 object-contain"
-                        />
-                      ) : null}
                       {agent.role}
                     </span>
                   </td>

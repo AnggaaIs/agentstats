@@ -147,6 +147,20 @@ canvas {
   word-break: normal;
 }
 
+.catalog-card-meta > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  text-wrap: balance;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 button,
 a,
 input,
@@ -271,6 +285,7 @@ body > main {
 .valorant-action {
   position: relative;
   overflow: hidden;
+  vertical-align: middle;
   background: transparent;
   transition:
     color 160ms ease,

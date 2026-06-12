@@ -1,4 +1,4 @@
-import { RouteLink } from "@/components/route-link";
+import { RouteSelect } from "@/components/route-select";
 import type { Region } from "@/lib/constants";
 import type { CompetitiveAct } from "@/lib/valorant-api";
 
@@ -28,40 +28,19 @@ export function ActSelector({
           {acts.length} acts
         </span>
       </div>
-      <div
-        role="region"
-        aria-label="Competitive Acts"
-        tabIndex={0}
-        className="tactical-scrollbar flex snap-x gap-2 overflow-x-auto pb-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-      >
-        {acts.map((act) => (
-          <RouteLink
-            key={act.uuid}
-            href={`/leaderboard?region=${region}&act=${act.uuid}&page=1`}
-            current={act.uuid === selectedActId}
-            className="valorant-action grid min-h-16 min-w-44 snap-start grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border border-white/12 px-4 py-3"
-          >
-            <span className="min-w-0">
-              <span className="block text-[9px] font-black uppercase leading-4 tracking-[0.14em] text-current opacity-65">
-                {act.seasonDisplayName ?? "Competitive"}
-              </span>
-              {act.isCurrent ? (
-                <span className="mt-0.5 block text-[9px] font-black uppercase tracking-[0.14em] text-current opacity-65">
-                  Current
-                </span>
-              ) : null}
-            </span>
-            <span className="flex items-center gap-3">
-              <span aria-hidden="true" className="text-xl text-white/25">
-                /
-              </span>
-              <span className="font-display text-lg font-black uppercase leading-none">
-                {act.displayName}
-              </span>
-            </span>
-          </RouteLink>
-        ))}
-      </div>
+      <RouteSelect
+        label="Competitive Act"
+        selectedValue={selectedActId}
+        className="max-w-xl"
+        options={acts.map((act) => ({
+          value: act.uuid,
+          label: act.displayLabel,
+          href: `/leaderboard?region=${region}&act=${act.uuid}&page=1`,
+          note: act.isCurrent
+            ? "Current"
+            : (act.seasonDisplayName ?? undefined),
+        }))}
+      />
     </nav>
   );
 }

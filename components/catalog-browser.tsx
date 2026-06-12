@@ -157,7 +157,7 @@ export function CatalogBrowser({
       {visible.length ? (
         <div className={`motion-stagger mt-7 grid min-w-0 gap-4 ${gridClass}`}>
           {visible.map((item) => (
-            <div key={item.id} className="motion-card relative min-w-0">
+            <div key={item.id} className="motion-card relative h-full min-w-0">
               <CatalogCard
                 href={item.href}
                 image={item.image}

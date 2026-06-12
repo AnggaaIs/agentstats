@@ -6,10 +6,25 @@ const DEFAULT_DESCRIPTION =
   "Explore Valorant agents, weapons, skins, bundles, maps, ranked leaderboards, service status, and player tools with AgentStats.";
 
 export function getSiteUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const deploymentUrl =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ??
+    process.env.VERCEL_URL?.trim();
+  const configuredIsLocal =
+    configuredUrl?.includes("localhost") ||
+    configuredUrl?.includes("127.0.0.1");
+  const candidate =
+    process.env.NODE_ENV === "production" && configuredIsLocal
+      ? deploymentUrl
+      : configuredUrl || deploymentUrl;
+
+  if (!candidate) return "http://localhost:3000";
+
+  const normalized = /^https?:\/\//i.test(candidate)
+    ? candidate
+    : `https://${candidate}`;
+
+  return normalized.replace(/\/+$/, "");
 }
 
 export function absoluteUrl(path = "/"): string {

@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
+import { RouteSelect } from "@/components/route-select";
 import {
   buildEmptyMapAgentPickDataset,
   buildEmptyMapMetaDataset,
@@ -127,7 +128,7 @@ export default async function MapMetaPage({
         </div>
       </div>
 
-      <section className="mt-7 overflow-hidden border border-white/10 bg-[var(--panel)]">
+      <section className="mt-7 border border-white/10 bg-[var(--panel)]">
         <div className="grid-noise border-b border-white/10 p-5 sm:p-6 lg:flex lg:items-end lg:justify-between">
           <div>
             <p className="eyebrow">Agent selection by battlefield</p>
@@ -159,35 +160,23 @@ export default async function MapMetaPage({
           </div>
         </div>
 
-        <nav
-          aria-label="Agent picks by map mode"
-          className="tactical-scrollbar flex gap-2 overflow-x-auto border-b border-white/10 p-3"
-        >
-          {MAP_AGENT_PICK_QUEUES.map((queue) => {
-            const active = queue.id === selectedMode;
-            const hasSamples = mapAgentPicks.modes.includes(queue.id);
-
-            return (
-              <RouteLink
-                key={queue.id}
-                href={
-                  queue.id === "competitive"
-                    ? "/maps/meta"
-                    : `/maps/meta?mode=${queue.id}`
-                }
-                current={active}
-                className={`valorant-action inline-flex min-h-10 shrink-0 items-center border px-4 text-[11px] font-black uppercase tracking-[0.12em] ${
-                  active
-                    ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                    : "border-white/15 text-[var(--muted)]"
-                }`}
-              >
-                {queue.label}
-                {!hasSamples ? " · pending" : ""}
-              </RouteLink>
-            );
-          })}
-        </nav>
+        <div className="border-b border-white/10 p-3 sm:max-w-xl">
+          <RouteSelect
+            label="Agent pick mode"
+            selectedValue={selectedMode}
+            options={MAP_AGENT_PICK_QUEUES.map((queue) => ({
+              value: queue.id,
+              label: queue.label,
+              href:
+                queue.id === "competitive"
+                  ? "/maps/meta"
+                  : `/maps/meta?mode=${queue.id}`,
+              note: mapAgentPicks.modes.includes(queue.id)
+                ? undefined
+                : "Pending",
+            }))}
+          />
+        </div>
 
         {agentPickRows.length > 0 ? (
           <div className="grid gap-px bg-white/10 lg:grid-cols-2">

@@ -189,34 +189,30 @@ export function CommunityLeaderboard({
 
         {category === "skin" ? (
           <div className="border-b border-white/10 px-4 py-3 sm:px-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
-              Weapon collection
-            </p>
-            <div
-              role="group"
-              aria-label="Choose weapon skin leaderboard"
-              tabIndex={0}
-              className="tactical-scrollbar mt-3 flex gap-2 overflow-x-auto pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-            >
-              {skinGroups.map((group) => (
-                <button
-                  key={group.scopeKey}
-                  type="button"
-                  aria-pressed={skinGroup === group.scopeKey}
-                  onClick={() => setSkinGroup(group.scopeKey)}
-                  className={`valorant-action min-h-10 shrink-0 border px-4 text-[10px] font-black uppercase tracking-[0.12em] ${
-                    skinGroup === group.scopeKey
-                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                      : "border-white/12 text-[var(--muted)]"
-                  }`}
+            <label className="block max-w-md">
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
+                Weapon collection
+              </span>
+              <span className="relative mt-2 block">
+                <select
+                  value={skinGroup}
+                  onChange={(event) => setSkinGroup(event.target.value)}
+                  className="min-h-11 w-full appearance-none border border-white/12 bg-[#10161d] px-4 pr-10 text-[11px] font-black uppercase tracking-[0.1em] outline-none focus:border-[var(--accent)]"
                 >
-                  {group.label}
-                  <span className="ml-2 font-mono opacity-65">
-                    {group.total}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  {skinGroups.map((group) => (
+                    <option key={group.scopeKey} value={group.scopeKey}>
+                      {group.label} ({group.total})
+                    </option>
+                  ))}
+                </select>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[var(--accent)]"
+                >
+                  ↓
+                </span>
+              </span>
+            </label>
           </div>
         ) : null}
 

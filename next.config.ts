@@ -42,6 +42,8 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
+    deviceSizes: [390, 640, 750, 828, 1080, 1200, 1440, 1920],
+    imageSizes: [16, 20, 32, 36, 40, 48, 56, 64, 80, 96, 112, 160, 256],
   },
 };
 

@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 
 import { auth } from "@/auth";
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
-import {
-  SiteHeader,
-  type HeaderStatusNotice,
-} from "@/components/site-header";
+import { SiteHeader, type HeaderStatusNotice } from "@/components/site-header";
 import { isRsoConfigured } from "@/lib/auth-config";
 import { APP_NAME, REGIONS } from "@/lib/constants";
 import {
@@ -98,10 +97,7 @@ async function getHeaderStatus(): Promise<HeaderStatusNotice | null> {
     const activeNotices = results.flatMap((result) => {
       if (result.status !== "fulfilled") return [];
 
-      return [
-        ...result.value.incidents,
-        ...result.value.maintenances,
-      ]
+      return [...result.value.incidents, ...result.value.maintenances]
         .filter((notice) => isActiveStatusNotice(notice))
         .map((notice) => ({ notice }));
     });
@@ -140,11 +136,7 @@ async function getHeaderStatus(): Promise<HeaderStatusNotice | null> {
   }
 }
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+async function SiteHeaderWithData() {
   const [statusNotice, session] = await Promise.all([
     getHeaderStatus(),
     isRsoConfigured() ? auth() : Promise.resolve(null),
@@ -155,6 +147,15 @@ export default async function RootLayout({
         label: session?.user?.gameName ?? "Connect Riot",
       }
     : null;
+
+  return <SiteHeader statusNotice={statusNotice} account={account} />;
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const structuredData = [
     {
       "@context": "https://schema.org",
@@ -180,6 +181,7 @@ export default async function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <JsonLd data={structuredData} />
@@ -191,11 +193,16 @@ export default async function RootLayout({
         >
           Skip navigation
         </a>
-        <SiteHeader statusNotice={statusNotice} account={account} />
+        <Suspense
+          fallback={<SiteHeader statusNotice={null} account={null} />}
+        >
+          <SiteHeaderWithData />
+        </Suspense>
         <main id="main-content" className="flex-1">
           {children}
         </main>
         <SiteFooter />
+        <GoogleAnalytics />
       </body>
     </html>
   );

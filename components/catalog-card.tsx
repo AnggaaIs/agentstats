@@ -25,6 +25,15 @@ export function CatalogCard({
   imageFit = "cover",
   action,
 }: CatalogCardProps) {
+  const titleSize =
+    title.length >= 34
+      ? "text-[0.875rem] sm:text-[0.95rem]"
+      : title.length >= 24
+        ? "text-[0.95rem] sm:text-[1.05rem]"
+        : "text-[1.05rem] sm:text-[1.25rem]";
+  const titleClassName = `catalog-card-title responsive-text mt-1 font-display ${titleSize} font-black uppercase leading-[1.02] tracking-[-0.035em]`;
+  const informationClassName =
+    "relative -mt-7 grid h-28 min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-8";
   const artwork = (
     <div
       className={
@@ -48,17 +57,15 @@ export function CatalogCard({
     </div>
   );
   const information = (
-    <div className="relative -mt-7 grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-8">
-      <div className="responsive-text">
+    <div className={informationClassName}>
+      <div className="min-w-0">
         <AgentRoleLabel
           name={meta}
           icon={metaIcon}
-          className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
+          className="catalog-card-meta max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.14em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.17em]"
           iconClassName="size-4"
         />
-        <h2 className="responsive-text mt-1 font-display text-[clamp(1.1rem,5vw,1.35rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
-          {title}
-        </h2>
+        <h2 className={titleClassName}>{title}</h2>
       </div>
       {action ? <div className="relative z-10 shrink-0">{action}</div> : null}
     </div>
@@ -66,7 +73,7 @@ export function CatalogCard({
 
   if (!href) {
     return (
-      <article className="group valorant-panel">
+      <article className="group valorant-panel h-full">
         {artwork}
         {information}
       </article>
@@ -74,7 +81,7 @@ export function CatalogCard({
   }
 
   return (
-    <article className="group valorant-panel">
+    <article className="group valorant-panel h-full">
       <RouteLink
         href={href}
         aria-label={`View ${title}`}
@@ -82,20 +89,18 @@ export function CatalogCard({
       >
         {artwork}
       </RouteLink>
-      <div className="relative -mt-7 grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-end gap-3 p-4 sm:-mt-8">
+      <div className={informationClassName}>
         <RouteLink
           href={href}
-          className="responsive-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
+          className="min-w-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
           <AgentRoleLabel
             name={meta}
             icon={metaIcon}
-            className="responsive-text max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.16em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.2em]"
+            className="catalog-card-meta max-w-full text-[9px] font-black uppercase leading-4 tracking-[0.14em] text-[var(--accent)] sm:text-[10px] sm:tracking-[0.17em]"
             iconClassName="size-4"
           />
-          <h2 className="responsive-text mt-1 font-display text-[clamp(1.1rem,5vw,1.35rem)] font-black uppercase leading-[1.05] tracking-[-0.04em]">
-            {title}
-          </h2>
+          <h2 className={titleClassName}>{title}</h2>
         </RouteLink>
         {action ? <div className="relative z-10 shrink-0">{action}</div> : null}
       </div>

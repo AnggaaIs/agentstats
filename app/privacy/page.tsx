@@ -103,7 +103,11 @@ export default function PrivacyPage() {
       </p>
       <p>
         AgentStats does not accept payments, display advertising, or use
-        audience-tracking tools.
+        cross-site audience profiling. A deployment may enable Google
+        Analytics for aggregate page and traffic-source diagnostics. When
+        enabled by the operator, AgentStats requests denied analytics and
+        advertising storage by default, disables Google Signals and ad
+        personalization, and does not use the data for advertising.
       </p>
 
       <h2>Why information is used</h2>
@@ -115,6 +119,10 @@ export default function PrivacyPage() {
         </li>
         <li>To remember recent searches on your device.</li>
         <li>To protect the service and investigate errors or misuse.</li>
+        <li>
+          To diagnose aggregate traffic and page performance when optional
+          analytics is enabled.
+        </li>
         <li>To count community favorites and limit manipulated voting.</li>
         <li>To meet legal obligations and enforce the service rules.</li>
       </ul>

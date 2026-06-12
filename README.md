@@ -119,6 +119,26 @@ This project uses:
 Set `NEXT_PUBLIC_LEGAL_EMAIL` to the public address that should receive legal,
 privacy, and misuse reports before deploying the site publicly.
 
+Set the public production URL so canonical and social metadata use the deployed
+domain. Vercel deployments also fall back to
+`VERCEL_PROJECT_PRODUCTION_URL` automatically.
+
+```bash
+NEXT_PUBLIC_APP_URL=https://your-production-domain.example
+```
+
+Google Analytics is optional and loads during browser idle time only when a
+valid GA4 measurement ID is configured:
+
+```bash
+NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+```
+
+Email authentication is configured in DNS, not in this repository. If the
+production domain never sends email, publish a single TXT SPF record such as
+`v=spf1 -all`. If it sends mail through a provider, use that provider's exact
+SPF include record instead; do not publish multiple SPF records.
+
 ## Database migrations
 
 Use `DATABASE_URL` for the pooled application connection. For Supabase, set

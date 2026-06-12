@@ -50,6 +50,13 @@ export default function CookiesPage() {
         return to a previous search. The list is not used for advertising or
         cross-site tracking.
       </p>
+      <p>
+        A production deployment may load Google Analytics for aggregate
+        traffic diagnostics. AgentStats sends denied analytics and advertising
+        storage consent by default, so the integration is not permitted to set
+        analytics or advertising cookies unless a future consent control
+        explicitly changes that state.
+      </p>
       <ClearLocalData />
 
       <h2>Community voting control</h2>

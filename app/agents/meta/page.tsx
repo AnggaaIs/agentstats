@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import { PageHeading } from "@/components/page-heading";
 import { RouteLink } from "@/components/route-link";
+import { RouteSelect } from "@/components/route-select";
 import {
   AGENT_META_QUEUES,
   AGENT_RANK_BUCKETS,
@@ -165,48 +166,39 @@ export default async function AgentMetaPage({
         ))}
       </div>
 
-      <div className="tactical-scrollbar mt-6 grid grid-flow-col auto-cols-max gap-2 overflow-x-auto border border-white/10 p-2 sm:flex sm:flex-wrap">
-        {AGENT_META_QUEUES.map((queue) => (
-          <RouteLink
-            key={queue.id}
-            href={metaHref({ mode: queue.id })}
-            current={selectedMode === queue.id}
-            className="valorant-action flex min-h-11 shrink-0 items-center px-4 text-[10px] font-black uppercase tracking-[0.13em]"
-          >
-            {queue.label}
-          </RouteLink>
-        ))}
+      <div
+        className={`mt-6 grid gap-3 ${
+          hasRankFilter ? "md:grid-cols-2" : "md:max-w-xl"
+        }`}
+      >
+        <RouteSelect
+          label="Game mode"
+          selectedValue={selectedMode}
+          options={AGENT_META_QUEUES.map((queue) => ({
+            value: queue.id,
+            label: queue.label,
+            href: metaHref({ mode: queue.id }),
+          }))}
+        />
+        {hasRankFilter ? (
+          <RouteSelect
+            label="Competitive rank"
+            selectedValue={selectedRank}
+            options={AGENT_RANK_BUCKETS.map((bucket) => ({
+              value: bucket.id,
+              label: bucket.label,
+              href: metaHref({ rank: bucket.id }),
+              icon: getRankBucketIcon(bucket),
+            }))}
+          />
+        ) : null}
       </div>
 
-      {hasRankFilter ? (
-        <div className="tactical-scrollbar mt-3 grid grid-flow-col auto-cols-max gap-2 overflow-x-auto border border-white/10 p-2 sm:flex sm:flex-wrap">
-          {AGENT_RANK_BUCKETS.map((bucket) => {
-            const icon = getRankBucketIcon(bucket);
-
-            return (
-              <RouteLink
-                key={bucket.id}
-                href={metaHref({ rank: bucket.id })}
-                current={selectedRank === bucket.id}
-                className="valorant-action flex min-h-11 shrink-0 items-center gap-2 px-4 text-[10px] font-black uppercase tracking-[0.13em]"
-              >
-                {icon ? (
-                  <Image
-                    src={icon}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="size-5 object-contain"
-                  />
-                ) : null}
-                {bucket.label}
-              </RouteLink>
-            );
-          })}
-        </div>
-      ) : null}
-
-      <div className="tactical-scrollbar mt-3 grid grid-flow-col auto-cols-max gap-2 overflow-x-auto border border-white/10 p-2 sm:flex sm:flex-wrap">
+      <div
+        role="group"
+        aria-label="Filter agents by role"
+        className="mt-3 flex flex-wrap gap-2 border border-white/10 p-2"
+      >
         <RouteLink
           href={metaHref({ role: "all" })}
           current={selectedRole === "all"}

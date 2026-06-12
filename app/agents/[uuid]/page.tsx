@@ -88,7 +88,6 @@ export default async function AgentPage({ params }: AgentPageProps) {
             src={agent.background}
             alt=""
             fill
-            priority
             sizes="100vw"
             className="-z-20 object-cover opacity-10"
           />

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ActSelector } from "@/components/act-selector";
 import { Pagination } from "@/components/pagination";
-import { PageHeading } from "@/components/page-heading";
 import { RankDistribution } from "@/components/rank-distribution";
 import { RouteLink } from "@/components/route-link";
+import { RouteSelect } from "@/components/route-select";
 import { REGIONS, type Region } from "@/lib/constants";
 import {
   buildRankDistribution,
@@ -67,45 +66,105 @@ export default async function LeaderboardPage({
     (page - 1) * perPage,
     page * perPage,
   );
+  const averageRating =
+    leaderboard.players.length > 0
+      ? leaderboard.players.reduce(
+          (total, player) => total + player.rankedRating,
+          0,
+        ) / leaderboard.players.length
+      : 0;
+  const averageWins =
+    leaderboard.players.length > 0
+      ? leaderboard.players.reduce(
+          (total, player) => total + player.numberOfWins,
+          0,
+        ) / leaderboard.players.length
+      : 0;
+  const topRating = Math.max(
+    0,
+    ...leaderboard.players.map((player) => player.rankedRating),
+  );
+  const leaderboardStats = [
+    ["Visible", String(leaderboard.players.length)],
+    ["Top RR", String(topRating)],
+    ["Avg RR", averageRating.toFixed(0)],
+    ["Avg Wins", averageWins.toFixed(1)],
+    ["Radiant Cutoff", String(leaderboard.topTierRRThreshold)],
+  ] as const;
 
   return (
-    <section className="mx-auto max-w-[86rem] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-      <PageHeading
-        eyebrow={`${act.displayLabel} / ${region}`}
-        title="Leaderboard"
-        description="Explore the official competitive ladder by region and Act, with exact Immortal and Radiant distribution."
-      />
-      <ActSelector
-        acts={visibleActs}
-        selectedActId={act.uuid}
-        region={region}
-      />
-      <nav className="mt-8 flex flex-wrap gap-2" aria-label="Leaderboard region">
-        {REGIONS.map((item) => (
-          <RouteLink
-            key={item}
-            href={`/leaderboard?region=${item}&act=${act.uuid}&page=1`}
-            current={item === region}
-            className={
-              item === region
-                ? "min-h-10 border border-[var(--accent)] bg-[var(--accent)] px-4 text-[11px] font-black uppercase tracking-widest"
-                : "valorant-action min-h-10 border border-white/10 px-4 text-[11px] font-black uppercase tracking-widest hover:border-white/30"
-            }
-          >
-            {item}
-          </RouteLink>
-        ))}
-      </nav>
-      <RankDistribution
-        distribution={distribution}
-        totalPlayers={leaderboard.totalPlayers}
-        region={region}
-      />
+    <section className="mx-auto max-w-[86rem] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="border border-white/10 bg-[var(--panel)] p-4 sm:p-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-3xl">
+            <p className="eyebrow">{act.displayLabel} / {region}</p>
+            <h1 className="mt-2 font-display text-[clamp(2rem,5vw,3rem)] font-black uppercase leading-[0.92] tracking-[-0.05em]">
+              Leaderboard
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Official competitive ladder snapshot with Immortal and Radiant breakdown.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 xl:min-w-[32rem] xl:grid-cols-5">
+            {leaderboardStats.map(([label, value]) => (
+              <article
+                key={label}
+                className="bg-[var(--panel)] px-3 py-3 last:col-span-2 sm:last:col-span-1"
+              >
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-[var(--muted)]">
+                  {label}
+                </p>
+                <p className="mt-1 font-display text-2xl font-black tracking-[-0.05em]">
+                  {value}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem] xl:items-start">
+          <div className="min-w-0">
+            <RouteSelect
+              label="Competitive Act"
+              selectedValue={act.uuid}
+              className="mb-3 sm:max-w-[30rem]"
+              options={visibleActs.map((item) => ({
+                value: item.uuid,
+                label: item.displayLabel,
+                href: `/leaderboard?region=${region}&act=${item.uuid}&page=1`,
+                note: item.isCurrent ? "Current" : undefined,
+              }))}
+            />
+            <RankDistribution
+              distribution={distribution}
+              totalPlayers={leaderboard.totalPlayers}
+              region={region}
+            />
+          </div>
+
+          <nav className="flex flex-wrap gap-2" aria-label="Leaderboard region">
+            {REGIONS.map((item) => (
+              <RouteLink
+                key={item}
+                href={`/leaderboard?region=${item}&act=${act.uuid}&page=1`}
+                current={item === region}
+                className={`valorant-action inline-flex min-h-11 min-w-16 items-center justify-center border px-4 text-center text-[11px] font-black leading-none uppercase tracking-widest ${
+                  item === region
+                    ? "border-[var(--accent)] bg-[var(--accent)]"
+                    : "border-white/10 hover:border-white/30"
+                }`}
+              >
+                {item}
+              </RouteLink>
+            ))}
+          </nav>
+        </div>
+      </div>
       <div
         role="region"
         aria-label="Competitive leaderboard table"
         tabIndex={0}
-        className="tactical-scrollbar mt-6 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        className="tactical-scrollbar mt-4 overflow-x-auto border border-white/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         <table className="w-full min-w-[48rem] border-collapse text-left">
           <thead className="bg-white/5 text-xs uppercase tracking-widest text-[var(--muted)]">

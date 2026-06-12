@@ -24,14 +24,14 @@ export function Pagination({ page, totalPages, makeHref }: PaginationProps) {
       {page <= 1 ? (
         <span
           aria-disabled="true"
-          className="inline-flex min-h-10 items-center border border-white/8 px-4 text-[11px] font-black uppercase tracking-widest text-white/30"
+          className="inline-flex min-h-10 items-center justify-center border border-white/8 px-4 text-center text-[11px] font-black leading-none uppercase tracking-widest text-white/30"
         >
           Previous
         </span>
       ) : (
         <RouteLink
           href={makeHref(page - 1)}
-          className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest"
+          className="valorant-action inline-flex min-h-10 items-center justify-center border border-white/15 px-4 text-center text-[11px] font-black leading-none uppercase tracking-widest"
         >
           Previous
         </RouteLink>
@@ -56,14 +56,14 @@ export function Pagination({ page, totalPages, makeHref }: PaginationProps) {
       {page >= totalPages ? (
         <span
           aria-disabled="true"
-          className="inline-flex min-h-10 items-center border border-white/8 px-4 text-[11px] font-black uppercase tracking-widest text-white/30"
+          className="inline-flex min-h-10 items-center justify-center border border-white/8 px-4 text-center text-[11px] font-black leading-none uppercase tracking-widest text-white/30"
         >
           Next
         </span>
       ) : (
         <RouteLink
           href={makeHref(page + 1)}
-          className="valorant-action min-h-10 border border-white/15 px-4 text-[11px] font-black uppercase tracking-widest"
+          className="valorant-action inline-flex min-h-10 items-center justify-center border border-white/15 px-4 text-center text-[11px] font-black leading-none uppercase tracking-widest"
         >
           Next
         </RouteLink>

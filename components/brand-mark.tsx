@@ -13,7 +13,6 @@ export function BrandMark({ className }: BrandMarkProps) {
       alt=""
       width={36}
       height={36}
-      priority
       aria-hidden="true"
       className={cn(
         "brand-pulse size-9 shrink-0",

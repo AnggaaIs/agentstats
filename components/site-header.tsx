@@ -65,6 +65,7 @@ export function SiteHeader({ statusNotice, account }: SiteHeaderProps) {
         <div className="mx-auto flex h-14 max-w-[86rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
+            aria-label={`${APP_NAME} home`}
             className="flex min-h-11 shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
           >
             <BrandMark />
