@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils/cn";
 export interface RouteSelectOption {
   value: string;
   label: string;
-  href: string;
+  href?: string;
   icon?: string | null;
   note?: string;
   disabled?: boolean;
@@ -20,6 +20,7 @@ interface RouteSelectProps {
   selectedValue: string;
   options: RouteSelectOption[];
   className?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export function RouteSelect({
@@ -27,6 +28,7 @@ export function RouteSelect({
   selectedValue,
   options,
   className,
+  onValueChange,
 }: RouteSelectProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const selected =
@@ -138,6 +140,25 @@ export function RouteSelect({
             );
           }
 
+          if (onValueChange) {
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={current}
+                onClick={() => {
+                  onValueChange(option.value);
+                  detailsRef.current?.removeAttribute("open");
+                }}
+                className={`valorant-action flex min-h-11 w-full items-center justify-between border-b border-white/8 px-3 py-2 text-left text-[10px] font-black uppercase tracking-[0.1em] last:border-b-0 ${
+                  current ? "bg-white/[0.06]" : ""
+                }`}
+              >
+                {content}
+              </button>
+            );
+          }
+
           if (current) {
             return (
               <button
@@ -150,6 +171,10 @@ export function RouteSelect({
                 {content}
               </button>
             );
+          }
+
+          if (!option.href) {
+            return null;
           }
 
           return (

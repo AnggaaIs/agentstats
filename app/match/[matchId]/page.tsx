@@ -9,11 +9,7 @@ import {
   resolveGameMode,
 } from "@/lib/match-context";
 import { getMatchAccess } from "@/lib/player-access";
-import {
-  getMatch,
-  getParticipantHeadshotRate,
-  RiotApiError,
-} from "@/lib/riot";
+import { getMatch, getParticipantHeadshotRate, RiotApiError } from "@/lib/riot";
 import {
   getAgents,
   getEvents,
@@ -65,12 +61,12 @@ export default async function MatchPage({
   const region: Region = isRegion(selectedRegion) ? selectedRegion : "ap";
   const [matchResult, agentsResult, mapsResult, modesResult, eventsResult] =
     await Promise.allSettled([
-    getMatch(matchId, region),
-    getAgents(),
-    getMaps(),
-    getGameModes(),
-    getEvents(),
-  ]);
+      getMatch(matchId, region),
+      getAgents(),
+      getMaps(),
+      getGameModes(),
+      getEvents(),
+    ]);
   if (matchResult.status === "rejected") {
     if (
       matchResult.reason instanceof RiotApiError &&
@@ -81,13 +77,10 @@ export default async function MatchPage({
     throw matchResult.reason;
   }
   const match = matchResult.value;
-  const agents =
-    agentsResult.status === "fulfilled" ? agentsResult.value : [];
+  const agents = agentsResult.status === "fulfilled" ? agentsResult.value : [];
   const maps = mapsResult.status === "fulfilled" ? mapsResult.value : [];
-  const gameModes =
-    modesResult.status === "fulfilled" ? modesResult.value : [];
-  const events =
-    eventsResult.status === "fulfilled" ? eventsResult.value : [];
+  const gameModes = modesResult.status === "fulfilled" ? modesResult.value : [];
+  const events = eventsResult.status === "fulfilled" ? eventsResult.value : [];
   const access = await getMatchAccess(match);
   if (!access.canView) notFound();
   const agentById = new Map(
@@ -181,7 +174,9 @@ export default async function MatchPage({
                 Event window
               </p>
               <p className="responsive-text mt-1 text-sm font-black uppercase">
-                {event?.shortDisplayName || event?.displayName || "Standard season"}
+                {event?.shortDisplayName ||
+                  event?.displayName ||
+                  "Standard season"}
               </p>
             </div>
           </div>
@@ -232,7 +227,8 @@ export default async function MatchPage({
                         <div>
                           <p className="font-black">{player.gameName}</p>
                           <p className="text-xs text-[var(--muted)]">
-                            #{player.tagLine} · {agent?.displayName ?? "Unknown agent"}
+                            #{player.tagLine} ·{" "}
+                            {agent?.displayName ?? "Unknown agent"}
                           </p>
                         </div>
                       </div>
@@ -240,7 +236,9 @@ export default async function MatchPage({
                     <td className="p-4">{player.teamId}</td>
                     <td className="p-4 font-black">
                       {player.stats?.roundsPlayed
-                        ? Math.round(player.stats.score / player.stats.roundsPlayed)
+                        ? Math.round(
+                            player.stats.score / player.stats.roundsPlayed,
+                          )
                         : 0}
                     </td>
                     <td className="p-4">{player.stats?.kills ?? 0}</td>

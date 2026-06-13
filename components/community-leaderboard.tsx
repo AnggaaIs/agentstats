@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { FavoriteButton } from "@/components/favorite-button";
+import { RouteSelect } from "@/components/route-select";
 import type {
   CommunityLeaderboardCategory,
   CurrentFavorites,
@@ -194,30 +195,17 @@ export function CommunityLeaderboard({
 
         {category === "skin" ? (
           <div className="border-b border-white/10 px-4 py-3 sm:px-5">
-            <label className="block max-w-md">
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--muted)]">
-                Weapon collection
-              </span>
-              <span className="relative mt-2 block">
-                <select
-                  value={skinGroup}
-                  onChange={(event) => setSkinGroup(event.target.value)}
-                  className="min-h-11 w-full appearance-none border border-white/12 bg-[#10161d] px-4 pr-10 text-[11px] font-black uppercase tracking-[0.1em] outline-none focus:border-[var(--accent)]"
-                >
-                  {skinGroups.map((group) => (
-                    <option key={group.scopeKey} value={group.scopeKey}>
-                      {group.label} ({formatCompactNumber(group.total)})
-                    </option>
-                  ))}
-                </select>
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[var(--accent)]"
-                >
-                  ↓
-                </span>
-              </span>
-            </label>
+            <RouteSelect
+              label="Weapon collection"
+              selectedValue={skinGroup}
+              onValueChange={setSkinGroup}
+              className="max-w-md"
+              options={skinGroups.map((group) => ({
+                value: group.scopeKey,
+                label: group.label,
+                note: formatCompactNumber(group.total),
+              }))}
+            />
           </div>
         ) : null}
 
